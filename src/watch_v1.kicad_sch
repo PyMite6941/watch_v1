@@ -1,0 +1,130 @@
+EESchema Schematic File Version 4
+LIBS:
+#End LIBS
+
+# 
+# EELAYER 30 0
+EELAYER 31 0
+#End EELAYER
+DESCR
+#End DESR
+
+$Comp
+L ESP32-C3 SuperMini U1
+U 1 1 5F5E9C3D
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 5643A-1 DISPLAY1
+U 1 1 5F5E9C3E
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L TP4056 U2
+U 1 1 5F5E9C3F
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 1N5819 D1
+U 1 1 5F5E9C40
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L MCP1700-33 U3
+U 1 1 5F5E9C41
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L Tactile Switch SW1
+U 1 1 5F5E9C42
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L Tactile Switch SW2
+U 1 1 5F5E9C43
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R1
+U 1 1 5F5E9C44
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R2
+U 1 1 5F5E9C45
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R3
+U 1 1 5F5E9C46
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R4
+U 1 1 5F5E9C47
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R5
+U 1 1 5F5E9C48
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R6
+U 1 1 5F5E9C49
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R7
+U 1 1 5F5E9C50
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R8
+U 1 1 5F5E9C51
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 10kΩ R9
+U 1 1 5F5E9C52
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 10kΩ R10
+U 1 1 5F5E9C53
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 10kΩ R11
+U 1 1 5F5E9C54
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 10kΩ R12
+U 1 1 5F5E9C55
+P 2 0
+0    0    0    0    0
+$EndComp
+# End of Comp entries
+# Nets and wires would go here; user to complete
+#End NETLIST
+$EndSCHEMATC
+```

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ESP32‑C3 SuperMini Watch (Watch V1) – Documentation</title>
+    <style>
+        body {font-family: Arial, sans-serif; margin: 40px; line-height: 1.6;}
+        h1, h2 {color: #2c3e50;}
+        pre {background:#f4f4f4; padding:15px; overflow:auto;}
+        a {color:#2980b9;}
+    </style>
+</head>
+<body>
+    <h1>ESP32‑C3 SuperMini Watch (Watch V1)</h1>
+    <p>A cyber‑punk style, see‑through wrist watch built around an ESP32‑C3 SuperMini, a 4‑digit 7‑segment display, two tactile buttons, ambient‑light sensor (LDR) for auto‑brightness, and a rechargeable Li‑Po battery charged via USB‑C.</p>
+    <h2>Table of Contents</h2>
+    <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#repository-layout">Repository layout</a></li>
+        <li><a href="#getting-started">Getting started</a></li>
+        <li><a href="#license">License</a></li>
+    </ul>
+    <h2 id="overview">Overview</h2>
+    <p>This repository contains all source files, documentation, and 3D models needed to build, replicate, and modify the watch. The design is open‑source (MIT License) and intended as a gift for teachers and fellow makers.</p>
+    <h2 id="repository-layout">Repository layout</h2>
+    <pre>
+docs/   – Documentation (README, build guide, license)
+src/    – Source files: firmware, schematic, parts list, KiCad project
+assets/ – 3D models (OpenSCAD) and other assets for the enclosure
+    </pre>
+    <h2 id="getting-started">Getting started</h2>
+    <ol>
+        <li>Read the <a href="BUILD_GUIDE.md">Build Guide</a> for wiring and assembly instructions.</li>
+        <li>Order the parts listed in <a href="../src/parts_list.md">parts_list.md</a>.</li>
+        <li>Wire the breadboard per <a href="../src/ascii_schematic.txt">ascii_schematic.txt</a>.</li>
+        <li>Flash the firmware (<a href="../src/firmware.ino">firmware.ino</a>) to the ESP32‑C3 SuperMini.</li>
+        <li>Test the display, buttons, and auto‑brightness.</li>
+        <li>When satisfied, generate Gerbers from the KiCad project (<a href="../src/watch_v1.kicad_proj">watch_v1.kicad_proj</a>) and order a PCB, or assemble on perfboard.</li>
+        <li>Print the enclosure from the OpenSCAD files in <a href="../assets/">assets/</a>.</li>
+        <li>Assemble the printed case, insert the PCB and battery, and seal with optional conformal coating.</li>
+    </ol>
+    <h2 id="license">License</h2>
+    <p>MIT License – see <a href="LICENSE">LICENSE</a>.</p>
+    <hr>
+    <p><small>Generated from the repository README. For the full source, visit the GitHub repository.</small></p>
+</body>
+</html>
