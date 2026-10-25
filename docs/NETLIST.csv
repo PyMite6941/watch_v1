@@ -1,0 +1,123 @@
+# Connection Netlist for Watch V1 (derived from ASCII schematic)
+
+# Format: Net Name, Node 1 (Component Pin), Node 2 (Component Pin)
+# Components referenced by designator and pin number/function as per schematic.
+
+# Power
+VBUS, TP4056.IN, USB_C_VBUS
+VBUS, TP4056.IN, ESP32_C3.VBUS  # Actually VBUS goes to TP4056 IN and also to ESP32? In SuperMini VBUS is 5V input to board; we treat as same net.
+# For simplicity, we define VBUS as the 5V line from USB-C.
+VBUS, TP4056.IN, USB_C_VBUS
+VBUS, ESP32_C3.VBUS, USB_C_VBUS  # ESP32-C3 VBUS pin (if exposed)
+# Actually ESP32-C3 SuperMini has VBUS pin connected to USB-C VBUS.
+
+# TP4056
+TP4056.IN, VBUS
+TP4056.BAT+, LiPo.BAT+
+TP4056.BAT-, LiPo.BAT-
+TP4056.PROG, PROG_RESISTOR, GND  # 12kΩ to GND
+
+# Schottky diode
+Schottky.A, LiPo.BAT+
+Schottky.K, LDO.IN
+
+# LDO
+LDO.IN, Schottky.K
+LDO.OUT, ESP32_C3.VIN_3V3
+LDO.OUT, 3.3V_Rail
+
+# 3.3V rail
+3.3V_Rail, LDO.OUT
+3.3V_Rail, ESP32_C3.3V3
+3.3V_Rail, LCD_COMMON? Actually display segments powered via 3.3V through resistors.
+3.3V_Rail, Segment_Resistors (one side)
+3.3V_Rail, LDR_Pullup? Actually LDR one side to 3.3V.
+3.3V_Rail, LDR.1
+3.3V_Rail, RGB_LED_Resistors (one side)
+
+# Segment resistors (8x)
+Segment_Resistor_R1, ESP32_C3.GPIO7, Display.SEG_A
+Segment_Resistor_R2, ESP32_C3.GPIO8, Display.SEG_B
+Segment_Resistor_R3, ESP32_C3.GPIO9, Display.SEG_C
+Segment_Resistor_R4, ESP32_C3.GPIO10, Display.SEG_D
+Segment_Resistor_R5, ESP32_C3.GPIO11, Display.SEG_E
+Segment_Resistor_R6, ESP32_C3.GPIO12, Display.SEG_F
+Segment_Resistor_R7, ESP32_C3.GPIO13, Display.SEG_G
+Segment_Resistor_R8, ESP32_C3.GPIO14, Display.SEG_DP
+
+# Display segments (common cathode)
+Display.SEG_A, Segment_Resistor_R1
+Display.SEG_B, Segment_Resistor_R2
+Display.SEG_C, Segment_Resistor_R3
+Display.SEG_D, Segment_Resistor_R4
+Display.SEG_E, Segment_Resistor_R5
+Display.SEG_F, Segment_Resistor_R6
+Display.SEG_G, Segment_Resistor_R7
+Display.SEG_DP, Segment_Resistor_R8
+
+# Digit drivers (NPN transistors)
+NPN_Q0.Base, ESP32_C3.GPIO0, Base_Resistor_R9
+NPN_Q0.Collector, Display.DIGIT_COMMON_0
+NPN_Q0.Emitter, GND
+NPN_Q1.Base, ESP32_C3.GPIO2, Base_Resistor_R10
+NPN_Q1.Collector, Display.DIGIT_COMMON_1
+NPN_Q1.Emitter, GND
+NPN_Q2.Base, ESP32_C3.GPIO4, Base_Resistor_R11
+NPN_Q2.Collector, Display.DIGIT_COMMON_2
+NPN_Q2.Emitter, GND
+NPN_Q3.Base, ESP32_C3.GPIO5, Base_Resistor_R12
+NPN_Q3.Collector, Display.DIGIT_COMMON_3
+NPN_Q3.Emitter, GND
+
+# Base bias resistors (4.7kΩ)
+Base_Resistor_R9, ESP32_C3.GPIO0, NPN_Q0.Base
+Base_Resistor_R10, ESP32_C3.GPIO2, NPN_Q1.Base
+Base_Resistor_R11, ESP32_C3.GPIO4, NPN_Q2.Base
+Base_Resistor_R12, ESP32_C3.GPIO5, NPN_Q3.Base
+
+# Buttons
+BTN1, ESP32_C3.GPIO1, GND
+BTN2, ESP32_C3.GPIO3, GND
+
+# LDR
+LDR.1, 3.3V_Rail
+LDR.2, ESP32_C3.GPIO6, LDR_PULLDOWN
+LDR_PULLDOWN, ESP32_C3.GPIO6, 10kΩ_RESISTOR, GND
+
+# 10kΩ pull-down for LDR
+LDR_PULLDOWN_RESISTOR, ESP32_C3.GPIO6, GND
+
+# RGB LED
+LED_R, ESP32_C3.GPIO16, LED_R_RESISTOR
+LED_G, ESP32_C3.GPIO17, LED_G_RESISTOR
+LED_B, ESP32_C3.GPIO18, LED_B_RESISTOR
+LED_R_RESISTOR, ESP32_C3.GPIO16, LED_R
+LED_G_RESISTOR, ESP32_C3.GPIO17, LED_G
+LED_B_RESISTOR, ESP32_C3.GPIO18, LED_B
+LED_R.Common_Cathode, GND
+LED_G.Common_Cathode, GND
+LED_B.Common_Cathode, GND
+
+# Optional encoder (KY-040)
+ENCODER_CLK, ESP32_C3.GPIO19
+ENCODER_DT, ESP32_C3.GPIO20
+ENCODER_SW, ESP32_C3.GPIO21
+
+# Ground
+GND, ESP32_C3.GND
+GND, LDO.GND
+GND, TP4056.GND
+GND, Schottky.K? Actually Schottky cathode to LDO IN, anode to LiPo BAT+, so Schottky cathode is not GND.
+GND, Segment_Resistors? other side goes to display segments.
+GND, Display.Common_Cathode
+GND, NPN_Q0.Emitter, NPN_Q1.Emitter, NPN_Q2.Emitter, NPN_Q3.Emitter
+GND, LED_R.Common_Cathode, LED_G.Common_Cathode, LED_B.Common_Cathode
+GND, LDR_PULLDOWN_RESISTOR (other side)
+GND, Base_Resistor_R9? other side to GPIO0.
+GND, USB_C_GND (shield)
+
+# USB-C
+USB_C.VBUS, VBUS
+USB_C.GND, GND
+USB_C.D+, ESP32_C3.D+  # if connected
+USB_C.D-, ESP32_C3.D-  # if connected

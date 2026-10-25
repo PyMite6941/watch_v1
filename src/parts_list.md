@@ -6,7 +6,7 @@
 - TP4056 micro‑USB Li‑Po charger module (adjustable charge current) – Charges the Li‑Po battery from USB‑C; charge current set by PROG resistor.
 - Schottky diode (e.g., 1N5819) – USB power priority – Prevents back‑feeding from battery to USB and gives USB priority when plugged in.
 - 3.3 V LDO regulator (e.g., MCP1700‑33‑T0/TO‑92 or AMS1117‑3.3) – Provides a stable 3.3 V supply to the ESP32‑C3 and display from battery/USB.
-- Tactile push buttons (6 mm × 6 mm) ×2 – User input: BTN1 cycles display modes (HH:MM, MM:SS, MM:DD); BTN2 controls the RGB LED (short press = next color/OFF, long press = party mode).
+- Touch buttons: use ESP32-C3 built‑in touch sensing on GPIO1 (MODE) and GPIO3 (LED) (no external parts). Mechanical buttons optional.
 - Jumper wires / breadboard for prototyping – Used to assemble and test the circuit before soldering or PCB fabrication.
 - Perfboard or custom PCB (optional) – Final platform for mounting components; perfboard for quick build, PCB for a clean, replicable design.
 
@@ -20,17 +20,26 @@
 
 ## Passive Components
 - Resistors:
-  - 8 × 220 Ω (segment current limit) – 1/4 W or 1/8 W – Limits current through each LED segment to ~5‑6 mA at 3.3 V.
-  - 4 × 4.7 kΩ (NPN transistor base bias) – 1/4 W – Biases the bases of the four NPN transistors that drive the digit commons. (Reduced from 10 kΩ to ensure sufficient base current for saturation.)
-  - 1 × 12 kΩ (TP4056 PROG) – sets charge current ≈ 83 mA for the 150 mAh Li‑Po (safe 0.55 C).
+- 8 × 220 Ω (segment current limit) – 1/4 W or 1/8 W – Limits current through each LED segment to ~5‑6 mA at 3.3 V.
+- 4 × 4.7 kΩ (NPN transistor base bias) – 1/4 W – Biases the bases of the four NPN transistors that drive the digit commons.
+- 1 × 10 kΩ (LDR pull‑down) – 1/4 W – Pull‑down resistor for the LDR on GPIO6.
+- 1 × 12 kΩ (TP4056 PROG) – sets charge current ≈ 83 mA for the 150 mAh Li‑Po (safe 0.55 C).
 - Capacitors (optional for LDO stability):
   - 1 × 1 µF ceramic (LDO input) – Decouples the LDO input.
   - 1 × 1 µF ceramic (LDO output) – Decouples the LDO output.
+  - 1 × 0.1µF ceramic (shift register decoupling) – Decouples the 74HC595 VCC‑GND.
+
+
+## Active Components
+- NPN transistors (e.g., 2N2222) ×4 – Used as low‑side switches for the digit commons (multiplexing).
+- 74HC595N 8‑bit shift register (e.g., SN74HC595N) – Drives the 7‑segment display segments via serial‑in, parallel‑out, reducing GPIO usage to three pins (DATA, CLK, LATCH).  
+  *Example Lazada/Shopee:* 1 pcs for ฿69 (Shopee, iseerobot.th) or 50 pcs for ฿465 (Lazada, rthgu654dfj).
 
 ## Enclosure
 - Clear PETG or acrylic sheet (front “glass” wall) – cut to ~60 mm × 40 mm – Transparent front panel so the internal circuitry is visible.
 - Clear PETG or resin for side walls (can be 3D printed) – Forms the remaining walls of the see‑through case.
 - 3D‑printed battery pocket (PETG or PLA) – dimensions ~30 mm × 15 mm × 5 mm – Holds the Li‑Po battery securely inside the enclosure.
+- Filament needed: ~3.5–4 m of 1.75 mm PETG (≈10 g) for enclosure (base, lid, optional frame).
 - O‑ring or silicone gasket (optional for water resistance) – Provides a basic seal against moisture/splashes.
 - Small screws or snap‑fit design for assembly – Mechanically joins the front, sides, and back of the enclosure.
 
@@ -40,6 +49,15 @@
 - Heat‑shrink tubing or electrical tape – Insulates solder joints and wires.
 - Isopropyl alcohol & conformal coating spray (optional waterproofing) – Cleans the PCB and adds a protective moisture‑resistant layer.
 - Double‑sided foam tape or adhesive for securing display – Holds the 5643A‑1 module in place without obstructing light.
+
+
+## Optional Components
+- KY-040 rotary encoder (optional) – Connect CLK to GPIO19, DT to GPIO20, SW to GPIO21 (with pull‑ups). Firmware ignores it by default; enable in code if needed.
+## Wireless Charging Add‑on (optional)
+- Wireless charging receiver module (e.g., RXS5V-1000 or similar) – provides 5 V output from Qi coil.
+- Connect VOUT to TP4056 IN+ (USB‑C VBUS) and GND to TP4056 IN‑ (or directly to battery via Schottky diode if preferred).
+- Ensure the coil fits inside enclosure; may require thin ferrite sheet.
+- No firmware changes needed; TP4056 handles charging.
 
 ## Notes
 - All components are through‑hole or breadboard‑friendly; no fine‑pitch SMD required except the ESP32‑C3 module (pre‑mounted).
@@ -62,3 +80,13 @@
 - Common cathode RGB LED (e.g., 5mm diffused) – Provides color feedback and party mode.
 - 3 × 220 Ω resistors (current limit for R, G, B channels) – 1/4 W – Connect each anode to ESP32 GPIO via resistor; cathode to GND.
 - LED dome/diffuser (optional) – A small hemispherical dome that fits over the RGB LED to spread the light evenly, especially useful in party mode.
+## Haptics
+- Vibration motor (coin type, ~10mm diameter, 3V rated) – Provides haptic feedback for button presses, alarms, or notifications.
+- Diode (e.g., 1N4148 or Schottky 1N5819) – Flyback diode across vibration motor to suppress back EMF.
+- NPN transistor (e.g., 2N2222) – Low‑side switch to drive the vibration motor from an ESP32 GPIO.
+- Resistor, 1 kΩ – Base current limit for the transistor.
+
+## Touch Buttons
+- Use the ESP32-C3 built‑in touch sensor on GPIO1 (MODE) and GPIO3 (LED). No extra parts required.
+- Firmware uses touchRead with a threshold (see firmware).
+- Mechanical buttons can be used alternatively: connect one side to GPIO, other side to GND, and enable internal pull‑up in firmware (comment out touch lines and restore pinMode).

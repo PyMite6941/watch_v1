@@ -1,0 +1,152 @@
+EESchema Schematic File Version 4
+LIBS:
+#End LIBS
+
+# 
+# EELAYER 30 0
+EELAYER 31 0
+#End EELAYER
+DESCR
+#End DESR
+
+$Comp
+L ESP32-C3 SuperMini U1
+U 1 1 5F5E9C3D
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 5643A-1 DISPLAY1
+U 1 1 5F5E9C3E
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L TP4056 U2
+U 1 1 5F5E9C3F
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 1N5819 D1
+U 1 1 5F5E9C40
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L MCP1700-33 U3
+U 1 1 5F5E9C41
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L Tactile Switch SW1
+U 1 1 5F5E9C42
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L Tactile Switch SW2
+U 1 1 5F5E9C43
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R1
+U 1 1 5F5E9C44
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R2
+U 1 1 5F5E9C45
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R3
+U 1 1 5F5E9C46
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R4
+U 1 1 5F5E9C47
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R5
+U 1 1 5F5E9C48
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R6
+U 1 1 5F5E9C49
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R7
+U 1 1 5F5E9C50
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 220Ω R8
+U 1 1 5F5E9C51
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 10kΩ R9
+U 1 1 5F5E9C52
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 10kΩ R10
+U 1 1 5F5E9C53
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 10kΩ R11
+U 1 1 5F5E9C54
+P 2 0
+0    0    0    0    0
+$EndComp
+$Comp
+L 10kΩ R12
+U 1 1 5F5E9C55
+P 2 0
+0    0    0    0    0
+$EndComp
+# Connections per ASCII schematic:
+# USB-C VBUS -> TP4056 IN
+# TP4056 IN -> LiPo BAT+ (via TP4056) and BAT- to LiPo-
+# LiPo BAT+ -> Schottky diode anode
+# Schottky diode cathode -> MCP1700-33 (LDO) input
+# MCP1700-33 output -> ESP32-C3 VIN and 3.3V rail
+# ESP32-C3 GPIOs 7-14 -> 220Ω resistors -> display segments a,b,c,d,e,f,g,dp (via 8x220Ω)
+# ESP32-C3 GPIOs 0,2,4,5 -> 4.7kΩ resistors -> NPN transistor bases (2N2222) for digit drivers
+# NPN collectors -> display digit commons (via digit enable pins)
+# NPN emitters -> GND
+# ESP32-C3 GPIO1 -> Tactile Switch SW1 (other side to GND)
+# ESP32-C3 GPIO3 -> Tactile Switch SW2 (other side to GND)
+# ESP32-C3 GPIO6 -> LDR (one side); other side of LDR to 3.3V via? Actually LDR: one side to 3.3V, other side to GPIO6 plus 10k pull-down to GND.
+# ESP32-C3 GPIO16 -> 220Ω -> LED_R anode
+# ESP32-C3 GPIO17 -> 220Ω -> LED_G anode
+# ESP32-C3 GPIO18 -> 220Ω -> LED_B anode
+# RGB LED common cathode -> GND
+# Optional KY-040 encoder: CLK GPIO19, DT GPIO20, SW GPIO21 (with pull-ups)
+# 10kΩ resistors R9-R12: pull-ups for buttons? (firmware uses INPUT_PULLUP, external optional)
+Wire Wire Line
+0 0 0 0
+Text Label 0 0 0 50 ~ 0 VBUS
+Wire Wire Line
+0 0 0 0
+Text Label 0 0 0 50 ~ 0 GND
+#End NETLIST
+$EndSCHEMATC

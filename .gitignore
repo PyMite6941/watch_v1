@@ -1,0 +1,18 @@
+# Git ignore for watch project
+shipping_prefs.txt
+# Ignore OS-generated files
+.DS_Store
+Thumbs.db
+# Ignore local build artifacts
+build/
+# Ignore downloaded tools / binaries
+bin/
+*.o
+*.elf
+*.hex
+# Ignore IDE files
+.vscode/
+.idea/
+# Ignore temporary files
+*.tmp
+*.temp

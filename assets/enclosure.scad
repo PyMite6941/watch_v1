@@ -18,6 +18,10 @@
  *   led_holder_hole_diameter – diameter of blind hole in holder (mm) = post - tolerance
  *   led_holder_post_height – depth of blind hole in holder / height of post (mm)
  *   led_holder_outward_offset – how much holder sticks out beyond lid corner (mm)
+usb_cutout_width = 8;   // mm width of USB-C cutout
+usb_cutout_height = 4; // mm height of USB-C cutout
+usb_cutout_offset_x = 0; // X offset from center (positive right)
+usb_cutout_offset_y = 0; // Y offset from center (positive forward)
  *   tolerance – interference for snap fit (positive means hole smaller than post)
  * 
  * To generate STL files:
@@ -94,6 +98,13 @@ module base() {
                     -wall_thickness // go a bit below to ensure full cut
                 ])
                     cylinder(d=screw_hole_diameter, h=base_height+2*wall_thickness, center=false);
+        // USB-C cutout (side wall, front)
+        // This creates a horizontal slot through the side wall (width = wall_thickness)
+        // centered along the X-axis (mid-width) and positioned 2mm above the bottom.
+        // To move the cutout, adjust usb_cutout_offset_x/y and the translation Z value.
+        // Example: to shift 5mm to the right, set usb_cutout_offset_x = 5;
+        // Example: to move up 3mm, change the Z translation from 2 to 5.
+        translate([(outer_length - usb_cutout_width)/2, 0, 2]) cube([usb_cutout_width, wall_thickness, usb_cutout_height]);
     }
 }
 
@@ -205,3 +216,7 @@ module frame() {
 //     translate([20, 0, 0])
 //         cylinder(d=led_holder_hole_diameter, h=led_holder_post_height);
 // }
+// TODO: To add USB-C cutout, subtract a cube from the base or lid at the desired location.
+// Example: inside base() difference(), add:
+// translate([wall_thickness + inner_length/2 - usb_cutout_width/2, -wall_thickness, 0])
+//     cube([usb_cutout_width, usb_cutout_height, base_height+2*wall_thickness]);

@@ -1,42 +1,58 @@
 /*
  * Watch V1 Firmware
  * ESP32-C3 SuperMini + 5643A-1 4-digit 7-segment display (common cathode)
- * Two buttons: Mode (GPIO1), LED Control (GPIO3)
+ * Two touch buttons: Mode (GPIO1), LED Control (GPIO3)
  * LDR ambient light sensor on GPIO6 (ADC) with 10k pull-down to GND
  * Rotary encoder (KY-040): CLK GPIO19, DT GPIO20, SW GPIO21 (optional)
  * RGB LED: common cathode on GPIO16 (R), GPIO17 (G), GPIO18 (B)
  * Features: time display, mode switching (HH:MM, MM:SS, MM:DD), button/encoder increment,
- *           Bluetooth placeholder, auto‑brightness via LDR, light sleep after 3s inactivity wakeable by buttons,
+ *           Bluetooth placeholder, auto-brightness via LDR, deep sleep after 3s inactivity wakeable by touch/timer,
  *           RGB LED color control (short press = next color/OFF, long press = party mode),
- *           Hold Mode button to fast‑adjust time.
- */
- 
+ *           Hold Mode button to fast-adjust time.
+ *           Wi-Fi + NTP time sync (optional, configure SSID/PASS below)
+ *           Deep-sleep with periodic wake-up and touch buttons for ultra-low power.
+	 */
 #include <Arduino.h>
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
+#include <WiFi.h>
+#include <WiFiManager.h>
+#include <esp_sntp.h>
 #include "esp_sleep.h"
+void triggerHaptics(uint16_t durationMs = 50);
+
+// ----- Wi-Fi Settings -----
+// Replace with your network credentials or leave empty to skip NTP sync.
+// const char* ssid     = "YOUR_SSID";     // <-- set your Wi-Fi SSID
+// const char* password = "YOUR_PASSWORD"; // <-- set your Wi-Fi password
 
 // ----- Pin Definitions -----
-// Segment pins (a,b,c,d,e,f,g,dp)
-const uint8_t segPins[8] = {7, 8, 9, 10, 11, 12, 13, 14};
-// Digit enable pins (NPN transistor bases) – also used for PWM brightness
-const uint8_t digitPins[4] = {0, 2, 4, 5};
+// 74HC595 shift register for segment lines
+const uint8_t SR_DATA = 0;   // DS
+const uint8_t SR_CLK  = 1;   // SH_CP
+const uint8_t SR_LATCH= 2;   // ST_CP
+// Wiring assumption: QA -> segment a, QB -> b, QC -> c, QD -> d, QE -> e, QF -> f, QG -> g, QH -> dp (colon)
+// Use MSBFIRST so that bit0 (LSB) appears at QA, bit7 (MSB) at QH.
+// Digit enable pins (NPN transistor bases)
+const uint8_t digitPins[4] = {3, 4, 5, 6};
 // Buttons
-const uint8_t btnMode = 1; // BTN1: mode cycling (strapping pin, use external pull‑up)
-const uint8_t btnLed  = 3; // BTN2: LED control (strapping pin, use external pull‑up)
+const uint8_t btnMode = 7; // BTN1: mode cycling
+const uint8_t btnLed  = 8; // BTN2: LED control
 // LDR (ambient light)
-const uint8_t ldrPin  = 6; // LDR (ambient light) on strapping pin, use external 10k pull‑down to GND
-// Rotary encoder (KY-040)
-const uint8_t ENC_CLK = 19;
+const uint8_t ldrPin  = 9; // LDR on ADC
+// Rotary encoder (KY-040) – optional
+const uint8_t ENC_CLK = 10;
 const uint8_t ENC_DT  = 20;
-const uint8_t ENC_SW  = 21;   // optional push‑button
-// RGB LED (common cathode)
-const uint8_t PIN_R = 16;
-const uint8_t PIN_G = 17;
-const uint8_t PIN_B = 18;
+const uint8_t ENC_SW  = 21;   // optional push-button
+// RGB LED and haptic motor omitted (use I2C expander if needed)
+// const uint8_t PIN_R = 16;
+// const uint8_t PIN_G = 17;
+// const uint8_t PIN_B = 18;
+// const uint8_t hapticsPin = 15;
 
-// ----- Display Mapping -----
+const uint16_t TOUCH_THRESHOLD = 400; // touch threshold for button detection
+
 // Segment bit order: a b c d e f g dp
 const uint8_t digitSegments[10] = {
   0b00111111, // 0
@@ -59,12 +75,12 @@ const uint8_t COLON_OFF = 0b00000000;
 enum DisplayMode { MODE_HOUR_MIN, MODE_MIN_SEC, MODE_MONTH_DAY };
 DisplayMode curMode = MODE_HOUR_MIN;
 
-// Time variables (simplified)
-uint8_t hours   = 0;
-uint8_t minutes = 0;
-uint8_t seconds = 0;
-uint8_t month   = 1;
-uint8_t day     = 1;
+// Time variables (simplified) - retained across deep sleep
+RTC_DATA_ATTR uint8_t hours   = 0;
+RTC_DATA_ATTR uint8_t minutes = 0;
+RTC_DATA_ATTR uint8_t seconds = 0;
+RTC_DATA_ATTR uint8_t month   = 1;
+RTC_DATA_ATTR uint8_t day     = 1;
 
 // Button debounce & timing
 unsigned long lastBtnTime = 0;
@@ -85,29 +101,34 @@ uint16_t ldrRaw = 0;
 float brightnessFactor = 1.0; // 0.0 - 1.0
 
 // Inactivity timer for light sleep
-unsigned long lastActivity = 0;
+RTC_DATA_ATTR unsigned long lastActivity = 0;
 const unsigned long INACTIVITY_MS = 3000;   // 3 seconds
 
-// RGB LED control
-enum LedMode { LED_NORMAL, LED_PARTY };
-LedMode ledMode = LED_NORMAL;
-uint8_t currentColorIdx = 0; // index into preset colors
-const uint8_t numColors = 5; // OFF, Red, Blue, Green, White
-// Preset colors: R,G,B (0-255)
-const uint8_t presetColors[][3] = {
-  {0,   0,   0}, // OFF
-  {255,   0,   0}, // Red
-  {0,   255,   0}, // Green
-  {0,     0, 255}, // Blue
-  {255, 255, 255}  // White
-};
-unsigned long lastPartyUpdate = 0;
-const unsigned long partyInterval = 50; // ms between hue steps in party mode
-float hue = 0.0; // 0-1
+// RGB LED control - disabled
+// enum LedMode { LED_NORMAL, LED_PARTY };
+// LedMode ledMode = LED_NORMAL;
+// uint8_t currentColorIdx = 0; // index into preset colors
+// const uint8_t numColors = 5; // OFF, Red, Blue, Green, White
+// // Preset colors: R,G,B (0-255)
+// const uint8_t presetColors[][3] = {
+//   {0,   0,   0}, // OFF
+//   {255,   0,   0}, // Red
+//   {0,   255,   0}, // Green
+//   {0,     0, 255}, // Blue
+//   {255, 255, 255}  // White
+// };
+// unsigned long lastPartyUpdate = 0;
+// const unsigned long partyInterval = 50; // ms between hue steps in party mode
+// float hue = 0.0; // 0-1
+
+// NTP sync flag
+bool ntpSynced = false;
 
 // ----- Functions -----
 void setupDisplayPins() {
-  for (int i = 0; i < 8; i++) pinMode(segPins[i], OUTPUT);
+  pinMode(SR_DATA, OUTPUT);
+  pinMode(SR_CLK,  OUTPUT);
+  pinMode(SR_LATCH,OUTPUT);
   for (int i = 0; i < 4; i++) pinMode(digitPins[i], OUTPUT);
   pinMode(btnMode, INPUT_PULLUP);
   pinMode(btnLed,  INPUT_PULLUP);
@@ -115,30 +136,31 @@ void setupDisplayPins() {
   // Encoder pins
   pinMode(ENC_CLK, INPUT_PULLUP);
   pinMode(ENC_DT,  INPUT_PULLUP);
-  pinMode(ENC_SW,  INPUT_PULLUP);   // if using the push‑button
-  // RGB LED pins (common cathode: LOW = on)
-  pinMode(PIN_R, OUTPUT);
-  pinMode(PIN_G, OUTPUT);
-  pinMode(PIN_B, OUTPUT);
-  // Initially off
-  digitalWrite(PIN_R, HIGH);
-  digitalWrite(PIN_G, HIGH);
-  digitalWrite(PIN_B, HIGH);
+  pinMode(ENC_SW,  INPUT_PULLUP);   // if using the push-button
+  // RGB LED and haptic motor not used; keep pins as inputs to avoid floating
+  // pinMode(PIN_R, INPUT);
+  // pinMode(PIN_G, INPUT);
+  // pinMode(PIN_B, INPUT);
+  // pinMode(hapticsPin, INPUT);
   // Initially disable all digits
   for (int i = 0; i < 4; i++) digitalWrite(digitPins[i], LOW); // NPN: LOW = off
+}
+
+void shiftOutSegments(uint8_t seg) {
+  digitalWrite(SR_LATCH, LOW);
+  shiftOut(SR_DATA, SR_CLK, MSBFIRST, seg);
+  digitalWrite(SR_LATCH, HIGH);
 }
 
 void displayDigit(uint8_t digitIdx, uint8_t value, bool showColon = false) {
   // Turn off all digits first
   for (int i = 0; i < 4; i++) digitalWrite(digitPins[i], LOW);
-  // Set segment pins
+  // Set segment pattern via shift register
   uint8_t seg = digitSegments[value];
   if (showColon) seg |= COLON_ON;
   else seg &= ~COLON_ON;
-  for (int i = 0; i < 8; i++) {
-    digitalWrite(segPins[i], (seg >> i) & 0x01);
-  }
-  // Enable selected digit with brightness‑adjusted pulse width
+  shiftOutSegments(seg);
+  // Enable selected digit with brightness-adjusted pulse width
   digitalWrite(digitPins[digitIdx], HIGH); // NPN: HIGH = conduct
   unsigned int pulseUs = (unsigned int)(basePulseUs * brightnessFactor);
   if (pulseUs < 100) pulseUs = 100; // clamp minimum to avoid flicker
@@ -173,22 +195,25 @@ void updateDisplay() {
 
 void handleButtons() {
   unsigned long now = millis();
-  // Read raw states (LOW = pressed because INPUT_PULLUP)
-  bool modeRaw = (digitalRead(btnMode) == LOW);
-  bool ledRaw  = (digitalRead(btnLed)  == LOW);
+  // Read touch values; lower means touched
+  uint16_t modeTouch = digitalRead(btnMode) ? 4095 : 0;
+  uint16_t ledTouch  = digitalRead(btnLed)  ? 4095 : 0;
+  bool modeTouched = (modeTouch < TOUCH_THRESHOLD);
+  bool ledTouched  = (ledTouch  < TOUCH_THRESHOLD);
 
   // ----- Mode button -----
-  if (modeRaw && !btnModePressed) {
-    // just pressed
+  if (modeTouched && !btnModePressed) {
+    // just touched
     btnModePressed = true;
     btnModePressStart = now;
-  } else if (!modeRaw && btnModePressed) {
+  } else if (!modeTouched && btnModePressed) {
     // just released
     btnModePressed = false;
     unsigned long pressDuration = now - btnModePressStart;
     if (pressDuration < longPressTime) {
       // short press -> cycle display mode
       curMode = (DisplayMode)((curMode + 1) % 3);
+      // triggerHaptics();
       noteActivity();
     } else {
       // long press -> fast adjust time (add minutes quickly)
@@ -201,33 +226,23 @@ void handleButtons() {
   }
 
   // ----- LED button -----
-  if (ledRaw && !btnLedPressed) {
+  if (ledTouched && !btnLedPressed) {
     btnLedPressed = true;
     btnLedPressStart = now;
-  } else if (!ledRaw && btnLedPressed) {
+  } else if (!ledTouched && btnLedPressed) {
     btnLedPressed = false;
     unsigned long pressDuration = now - btnLedPressStart;
     if (pressDuration < longPressTime) {
       // short press -> next LED color (including OFF)
-      currentColorIdx = (currentColorIdx + 1) % numColors;
-      setLedColor(presetColors[currentColorIdx][0],
-                  presetColors[currentColorIdx][1],
-                  presetColors[currentColorIdx][2]);
+      // currentColorIdx = (currentColorIdx + 1) % numColors;
+      // setLedColor(presetColors[currentColorIdx][0],
+      //             presetColors[currentColorIdx][1],
+      //             presetColors[currentColorIdx][2]);
       noteActivity();
-    } else {
-      // long press -> toggle party mode
-      ledMode = (ledMode == LED_NORMAL) ? LED_PARTY : LED_NORMAL;
-      if (ledMode == LED_NORMAL) {
-        // restore last solid color
-        setLedColor(presetColors[currentColorIdx][0],
-                    presetColors[currentColorIdx][1],
-                    presetColors[currentColorIdx][2]);
+      // triggerHaptics();
       }
-      noteActivity();
-    }
     delay(150);
   }
-
   // If button still held down, we could repeat action; optional.
 }
 
@@ -245,7 +260,7 @@ void updateTime() {
 
 // Read LDR and update brightness factor (call periodically)
 void updateBrightness() {
-  ldrRaw = analogRead(ldrPin); // 0‑4095
+  ldrRaw = analogRead(ldrPin); // 0-4095
   // LDR voltage divider: Vout = Vcc * (Rldr/(Rldr+10k)). In dark, Rldr high => Vout high => reading high.
   // We want brighter display in light, dim in dark.
   float norm = (float)ldrRaw / 4095.0;
@@ -262,7 +277,7 @@ void IRAM_ATTR encISR() {
   uint8_t dt  = digitalRead(ENC_DT);
   if (clk != lastCLK) {                     // edge on CLK
     if (dt != clk) encoderDelta++;         // clockwise
-    else           encoderDelta--;         // counter‑clockwise
+    else           encoderDelta--;         // counter-clockwise
     encoderChanged = true;
   }
   lastCLK = clk;
@@ -271,8 +286,12 @@ void IRAM_ATTR encISR() {
 void setupEncoder() {
   pinMode(ENC_CLK, INPUT_PULLUP);
   pinMode(ENC_DT,  INPUT_PULLUP);
-  pinMode(ENC_SW,  INPUT_PULLUP);   // if you use the push‑button
+  pinMode(ENC_SW,  INPUT_PULLUP);   // if you use the push-button
   attachInterrupt(digitalPinToInterrupt(ENC_CLK), encISR, CHANGE);
+}
+
+void triggerHaptics(uint16_t durationMs) {
+  // Haptic motor disabled
 }
 
 /* ----- Call this from loop() to apply encoder movement ----- */
@@ -297,45 +316,21 @@ void applyEncoder() {
       seconds = (seconds + delta + 60) % 60;
       break;
     case MODE_MONTH_DAY:
-      day = (day + delta - 1) % 31 + 1;   // keep 1‑31
+      day = (day + delta - 1) % 31 + 1;   // keep 1-31
       if (day < 1) day = 31;
       // month wrap handled later if needed
       break;
   }
   noteActivity();
+    // triggerHaptics();
 }
 
-/* ----- RGB LED helpers ----- */
 void setLedColor(uint8_t r, uint8_t g, uint8_t b) {
-  // common cathode: LOW turns on the LED
-  analogWrite(PIN_R, 255 - r);
-  analogWrite(PIN_G, 255 - g);
-  analogWrite(PIN_B, 255 - b);
+  // RGB LED disabled
 }
 
 void updatePartyLed() {
-  if (ledMode != LED_PARTY) return;
-  unsigned long now = millis();
-  if (now - lastPartyUpdate < partyInterval) return;
-  lastPartyUpdate = now;
-  hue += 0.01; // increment hue
-  if (hue > 1.0) hue -= 1.0;
-  // Convert HSV to RGB (V=1, S=1)
-  float r, g, b;
-  int i = (int)(hue * 6);
-  float f = hue * 6 - i;
-  float p = 0;
-  float q = 1 - f;
-  float t = f;
-  switch (i % 6) {
-    case 0: r = 1; g = t; b = 0; break;
-    case 1: r = q; g = 1; b = 0; break;
-    case 2: r = 0; g = 1; b = t; break;
-    case 3: r = 0; g = q; b = 1; break;
-    case 4: r = t; g = 0; b = 1; break;
-    case 5: r = 1; g = 0; b = q; break;
-  }
-  setLedColor((uint8_t)(r * 255), (uint8_t)(g * 255), (uint8_t)(b * 255));
+  // Party LED disabled
 }
 
 /* ----- BLE placeholder (optional) ----- */
@@ -355,38 +350,89 @@ void noteActivity() { lastActivity = millis(); }
 void checkInactivity() {
   unsigned long now = millis();
   if (now - lastActivity > INACTIVITY_MS) {
-    // Enable wakeup on btnMode or btnLed (ext1) and go to light sleep
-    uint64_t pinMask = (1ULL << btnMode) | (1ULL << btnLed);
-    esp_sleep_enable_ext1_wakeup(pinMask, ESP_EXT1_WAKEUP_ANY_LOW);
-    // Optional: also allow wakeup by timer (e.g., 30s) to prevent sleeping forever
-    esp_sleep_enable_timer_wakeup(30 * 1000000ULL); // 30 seconds
-    esp_light_sleep_start();
-    // After waking, we need to re‑initialize peripherals that may have been powered down.
-    // For simplicity, we just continue; the ESP32‑C3 retains GPIO state in light sleep.
+    // Power down Wi-Fi and BLE if active
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+    // Enter deep sleep for 1 second
+    esp_sleep_enable_timer_wakeup(1000000ULL); // 1 second
+    esp_deep_sleep_start();
   }
 }
 
+/* ----- Wi-Fi + NTP time sync ----- */
+void setupTime() {
+  // WiFiManager
+  WiFiManager wm;
+  // Optional: set AP password
+  // wm.setAPPassword("config123");
+  // Try to autoConnect; if fails, start AP
+  if (!wm.autoConnect("WatchV1-Setup")) {
+    Serial.println("Failed to connect, restarting...");
+    ESP.restart();
+  }
+  Serial.println("WiFi connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+
+  // NTP sync
+  const long gmtOffset_sec = 7 * 3600;   // Thailand ICT
+  const int daylightOffset_sec = 0;
+  configTime(gmtOffset_sec, daylightOffset_sec, "pool.ntp.org", "time.nist.gov");
+  Serial.print("Waiting for NTP sync");
+  unsigned long waitStart = millis();
+  while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && millis() - waitStart < 15000) {
+    delay(500);
+    Serial.print(".");
+  }
+  if (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET) {
+    Serial.println("\nNTP sync failed – continuing with local clock");
+  } else {
+    Serial.println("\nNTP synced");
+    updateTimeFromNTP(); // seed RTC-retained time vars
+  }
+}
+
+/* Pull current time from NTP (if synced) and update globals */
+void updateTimeFromNTP() {
+  if (!ntpSynced) return;
+  time_t now;
+  struct tm timeinfo;
+  if (time(&now) == 0) return;
+  if (localtime_r(&now, &timeinfo) == NULL) return;
+  hours   = timeinfo.tm_hour;
+  minutes = timeinfo.tm_min;
+  seconds = timeinfo.tm_sec;
+  month   = timeinfo.tm_mon + 1;
+  day     = timeinfo.tm_mday;
+}
+
+/* ----- Arduino setup & loop ----- */
 void setup() {
   Serial.begin(115200);
   setupDisplayPins();
+  pinMode(btnMode, INPUT_PULLUP);
+  pinMode(btnLed, INPUT_PULLUP);
   setupEncoder();
-  // setupBLE();
+  // setupBLE();   // uncomment if you want BLE initialized
   lastTick = millis();
   lastActivity = millis(); // start activity timer
   // Initialize LED to first color (OFF)
-  setLedColor(presetColors[currentColorIdx][0],
-              presetColors[currentColorIdx][1],
-              presetColors[currentColorIdx][2]);
+  // setLedColor(presetColors[currentColorIdx][0],
+  //              presetColors[currentColorIdx][1],
+  //              presetColors[currentColorIdx][2]);
+  // Attempt Wi-Fi + NTP sync
+  setupTime();
 }
 
 void loop() {
   handleButtons();
   applyEncoder();          // ← use encoder to change values
-  updateTime();
+  updateTime();            // local millis() based tick
+  updateTimeFromNTP();     // override with NTP if available
   updateBrightness();      // adjust brightness based on ambient light
   updateDisplay();
-  // loopBLE();
-  updatePartyLed();        // handle party mode LED cycling
+  // loopBLE();             // uncomment if BLE used
+  // updatePartyLed();        // handle party mode LED cycling
   noteActivity();          // any loop pass counts as activity (optional)
   checkInactivity();       // → light sleep after 3 s idle
 }

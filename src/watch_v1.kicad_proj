@@ -1,6 +1,6 @@
 [BoardUpdateTimes]
-[cvpcb]
-version=1
 [eeschema]
+SchFile=watch_v1.kicad_sch
+[cvpcb]
 version=1
 [eeschema/libraries]
