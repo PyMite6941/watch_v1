@@ -36,7 +36,7 @@ Refer to `src/parts_list.md` for the full bill of materials, including the recom
 12. The watch enters light sleep after 3 seconds of inactivity; pressing any button wakes it instantly.
 
 ## 4. PCB fabrication (optional but recommended)
-1. Open the KiCad project `src/watch_v1.kicad_proj`.
+1. Open the KiCad project `assets/watch_v1/watch_v1.kicad_proj`.
 2. Verify the schematic matches the ASCII diagram; add any missing nets.
    - You can import the connection netlist from `docs/NETLIST.csv` to help with wiring.
 3. Assign footprints (use standard through‑hole footprints for all components; ESP32‑C3 SuperMini has a predefined footprint).

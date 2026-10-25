@@ -20,7 +20,7 @@
    - Upload the sketch.
 
 5. Wiring the display and peripherals on breadboard:
-   Refer to the pin definitions in firmware.ino (lines 28-46) and the schematic in src/watch_v1.kicad_sch.
+   Refer to the pin definitions in firmware.ino (lines 28-46) and the schematic in assets/watch_v1/watch_v1.kicad_sch.
 
    Summary of connections:
    - Segment pins (a,b,c,d,e,f,g,dp): GPIOs 7,8,9,10,11,12,13,14 → each through a 220 Ω resistor to the corresponding segment on the 5643A-1 display.
@@ -50,3 +50,13 @@
    - Verify haptic feedback on button presses.
 
 7. Once breadboard testing is successful, proceed to order PCB from JLCPCB (or similar) using the Gerbers generated from the KiCad project, and assemble the final watch.
+
+## KiCad Design — Complete (assets/watch_v1/)
+- Schematic (`watch_v1.kicad_sch`): fully wired — ESP32-C3 SuperMini, 5643A-1 display, TP4056 charger, 1N5819 Schottky, MCP1700-33 LDO, 4× 2N2222 digit drivers, buttons, LDR, RGB LED, vibration motor, resistors, decoupling caps; all nets connected per docs/NETLIST.csv and src/ascii_schematic.txt
+- PCB (`watch_v1.kicad_pcb`): 60mm × 40mm board outline, 40 footprint modules placed, 40 nets defined, 4× 2.2mm mounting holes, net classes for Default and Power
+- Fixed LDO_OUT power-short bug (was incorrectly tied to 5V VBUS; now kept on separate 3.3V rail)
+- Temp files removed: `.hermes-tmp.*`, `*.bak`, `fp-info-cache`
+- Duplicate KiCad files removed from `src/`; canonical project lives in `assets/watch_v1/`
+- `.gitignore`: added `*.bak`, `*.kicad_sch.bak`, `fp-info-cache`
+
+**Next:** Open in KiCad 6+, run "Update PCB from Schematic", run ERC/DRC, route traces, generate Gerbers.

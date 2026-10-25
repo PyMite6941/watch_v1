@@ -16,3 +16,7 @@ bin/
 # Ignore temporary files
 *.tmp
 *.temp
+# Ignore KiCad generated/cache/backup files
+*.bak
+*.kicad_sch.bak
+fp-info-cache

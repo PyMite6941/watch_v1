@@ -17,8 +17,8 @@ The watch is designed to be 3D‑printed in clear PETG/resin so the internal cir
 4. Flash the firmware (`src/firmware.ino`) to the ESP32‑C3 SuperMini.
    - The firmware now includes optional Wi‑Fi + NTP time synchronisation (set your SSID/PASS at the top of the file), deep‑sleep power saving, and touch‑button sensing; retains full manual time setting via buttons/encoder.
 5. Test the display, touch buttons, and auto‑brightness.
-6. When satisfied, generate Gerbers from the KiCad project (`src/watch_v1.kicad_proj`) and order a PCB, or assemble on perfboard.
-   - The schematic (`src/watch_v1.kicad_sch`) now contains a detailed connection comment block to assist with wiring.
+6. When satisfied, generate Gerbers from the KiCad project (`assets/watch_v1/watch_v1.kicad_proj`) and order a PCB, or assemble on perfboard.
+   - The schematic (`assets/watch_v1/watch_v1.kicad_sch`) now contains a detailed connection comment block to assist with wiring.
 7. Print the enclosure from the OpenSCAD files in `assets/`.
 8. Assemble the printed case, insert the PCB and battery, and seal with optional conformal coating.
 
@@ -38,7 +38,7 @@ The watch is designed to be 3D‑printed in clear PETG/resin so the internal cir
 - Expected battery life > 60 days on a 150 mAh Li‑Po with typical use.
 ## Viewing and downloading files
 All source files are hosted on GitHub and can be viewed or downloaded directly:
-- **Schematic:** https://github.com/pymite6941/watch_v1/blob/main/src/watch_v1.kicad_sch
+- **Schematic:** https://github.com/pymite6941/watch_v1/blob/main/assets/watch_v1/watch_v1.kicad_sch
 - **Firmware:** https://github.com/pymite6941/watch_v1/blob/main/src/firmware.ino
 - **Parts list:** https://github.com/pymite6941/watch_v1/blob/main/src/parts_list.md
 - **ASCII schematic:** https://github.com/pymite6941/watch_v1/blob/main/src/ascii_schematic.txt
