@@ -85,8 +85,8 @@
                 │   │  plus 10 kΩ pull‑down to GND │
                 │   +----------------+   +----------------+
                 │
-                │   +----------------+   +----------------+
-                │   │   RGB LED      │   │ 3×220Ω Resistors│
+                │   +-----------------+   +-----------------+
+                │   │   RGB LED       │   │ 3×220Ω Resistors│
                 │   │ (common cathode)│   │ (R,G,B channels)│
                 │   │   Red   → GPIO16│   │ 220Ω            │
                 │   │   Green → GPIO17│   │ 220Ω            │
