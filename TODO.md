@@ -30,12 +30,13 @@
    - Rotary encoder (KY-040): CLK → GPIO19, DT → GPIO20, SW → GPIO21 (with pull‑ups, either external 10 kΩ or enable internal in firmware).
    - RGB LED (common cathode): Red anode → GPIO16 via 220 Ω, Green → GPIO17 via 220 Ω, Blue → GPIO18 via 220 Ω; cathode to GND.
    - Vibration motor: Driver NPN (e.g., 2N2222) base → GPIO15 via 1 kΩ, collector → motor+ (other side to VCC via Schottky flyback diode), emitter to GND.
-   - Power:
-     * USB‑C VBUS → TP4056 IN+.
-     * TP4056 OUT+ → Li‑Po BAT+ (through TP4056) and BAT‑ to Li‑Po‑.
-     * Li‑Po BAT+ → anode of Schottky diode (1N5819), cathode → MCP1700‑33 VIN.
-     * MCP1700‑33 VOUT → ESP32‑C3 VIN and 3.3 V rail.
-     * ESP32‑C3 GND → common ground.
+   - Power (load sharing, diode OR-ing):
+     * USB-C VBUS → D2 (1N5819 Schottky) → MCP1700-33 LDO IN → LDO OUT → ESP32 VIN & 3.3V rail (USB-powered mode; battery NOT discharged)
+     * Li-Po BAT+ → D1 (1N5819 Schottky) → MCP1700-33 LDO IN (battery-only mode, when USB absent)
+     * USB-C VBUS → TP4056 IN+ (charges battery whenever USB is present, independent of load source)
+     * TP4056 CHRG → GPIO4 (LOW = charging), STDBY → GPIO5 (LOW = charge done)
+     * Battery voltage monitor → GPIO2 (ADC1_CH2) via 100k/100k divider (R19/R20)
+     * ESP32-C3 GND → common ground.
 
    Double-check all connections against the schematic before powering.
 
@@ -52,11 +53,21 @@
 7. Once breadboard testing is successful, proceed to order PCB from JLCPCB (or similar) using the Gerbers generated from the KiCad project, and assemble the final watch.
 
 ## KiCad Design — Complete (assets/watch_v1/)
-- Schematic (`watch_v1.kicad_sch`): fully wired — ESP32-C3 SuperMini, 5643A-1 display, TP4056 charger, 1N5819 Schottky, MCP1700-33 LDO, 4× 2N2222 digit drivers, buttons, LDR, RGB LED, vibration motor, resistors, decoupling caps; all nets connected per docs/NETLIST.csv and src/ascii_schematic.txt
+- Schematic (`watch_v1.kicad_sch`, rev 2): fully wired — ESP32-C3 SuperMini, 5643A-1 display, TP4056 charger, 2× 1N5819 Schottky (D1 battery→LDO, D2 USB→LDO for load sharing), MCP1700-33 LDO, 4× 2N2222 digit drivers, buttons, LDR, RGB LED, vibration motor, resistors, decoupling caps, battery voltage divider; all nets connected per docs/NETLIST.csv and src/ascii_schematic.txt
 - PCB (`watch_v1.kicad_pcb`): 60mm × 40mm board outline, 40 footprint modules placed, 40 nets defined, 4× 2.2mm mounting holes, net classes for Default and Power
 - Fixed LDO_OUT power-short bug (was incorrectly tied to 5V VBUS; now kept on separate 3.3V rail)
 - Temp files removed: `.hermes-tmp.*`, `*.bak`, `fp-info-cache`
 - Duplicate KiCad files removed from `src/`; canonical project lives in `assets/watch_v1/`
 - `.gitignore`: added `*.bak`, `*.kicad_sch.bak`, `fp-info-cache`
 
-**Next:** Open in KiCad 6+, run "Update PCB from Schematic", run ERC/DRC, route traces, generate Gerbers.
+## Firmware — Complete (src/firmware.ino)
+- Corrected GPIO pin mapping to match KiCad schematic (GPIO7-14 segments, GPIO0/2/4/5 digit drivers, GPIO1/3 touch buttons, GPIO6 LDR, GPIO16/17/18 RGB, GPIO15 haptics, GPIO4/5 TP4056 status, GPIO2 battery ADC)
+- Touch buttons use `touchRead()` (capacitive) instead of broken `digitalRead()`
+- RGB LED party mode implemented: short press cycles through 6 colors + OFF, long press toggles HSV color-cycling party mode
+- Battery voltage monitoring via GPIO2 ADC (100k/100k divider)
+- TP4056 charging status monitoring (CHRG/STDBY on GPIO4/5)
+- Fixed `ntpSynced` flag never being set (NTP sync now works)
+- Removed 74HC595 shift register (not in schematic); segments driven directly from GPIO7-14
+- Deep sleep after 3s inactivity, wake by timer
+
+**Next:** Open in KiCad 6+, run "Update PCB from Schematic", run ERC/DRC, route traces, generate Gerbers. Flash firmware via Arduino IDE (ESP32C3 Dev Module).
