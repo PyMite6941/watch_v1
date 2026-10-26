@@ -20,3 +20,8 @@ bin/
 *.bak
 *.kicad_sch.bak
 fp-info-cache
+# Ignore KiCad lock files
+*~*.kicad_pro.lck
+*~*.kicad_sch.lck
+*.kicad_pro.lck
+*.kicad_sch.lck
