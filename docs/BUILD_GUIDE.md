@@ -16,8 +16,11 @@ Refer to `src/parts_list.md` for the full bill of materials, including the recom
    - LDR → one side to 3.3 V, other side to GPIO6 with a 10 kΩ pull‑down to GND.
    - RGB LED → connect each anode (R, G, B) through a 220 Ω resistor to ESP32 GPIOs 16, 17, 18; common cathode to GND.
    - Haptics: Connect vibration motor + to collector of NPN transistor (2N2222); emitter to GND. Motor - to +3.3V via flyback diode (cathode to +3.3V, anode to motor -). Base of transistor through 1kΩ resistor to ESP32 GPIO15.
-   - Power: USB‑C VBUS → TP4056 IN → BAT+ / BAT‑ to Li‑Po → Schottky diode (cathode to VBUS side) → 3.3 V LDO input → LDO output → ESP32 VIN and 3.3 V rail.
-   - Add decoupling capacitors (1 µF) near LDO input/output if available.
+   - Power: USB‑C VBUS → D2 (1N5819 Schottky) → LDO IN → LDO OUT → ESP32 VIN and 3.3 V rail (USB-powered mode).
+     - Battery BAT+ → D1 (1N5819 Schottky) → LDO IN (battery-only mode, when USB absent).
+     - Diode OR‑ing: when USB is connected (5V − 0.3V ≈ 4.7V), D2 conducts and D1 is reverse‑biased (battery ≈ 3.7–4.2V − 0.3V ≈ 3.4–3.9V), so the load runs from USB and the battery is **not** discharged while charging. When USB is removed, D1 conducts and the battery seamlessly powers the load.
+     - TP4056 IN+ → USB‑C VBUS (charges battery whenever USB is present, independent of load source).
+     - Add decoupling capacitors (1 µF) near LDO input/output if available.
 5. Double-check all connections, especially the Schottky diode orientation (cathode to VBUS side) and transistor polarity (NPN: collector to digit common, emitter to GND).
 
 ## 3. Firmware upload

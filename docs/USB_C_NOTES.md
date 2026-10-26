@@ -1,16 +1,24 @@
 # USB‑C Considerations for ESP32‑C3 SuperMini Watch
 
-## Power Path Overview
-The watch is designed to be powered and programmed via the USB‑C connector on the ESP32‑C3 SuperMini module. The ASCII schematic and Build Guide show the following power flow:
+## Power Path Overview (with load sharing)
+
+The watch uses diode OR‑ing for load sharing between USB and battery:
 
 ```
-USB‑C VBUS (5 V) → TP4056 IN → Li‑Po BAT+/BAT‑ → Schottky diode → 3.3 V LDO → ESP32‑C3 VIN & 3.3 V rail
+USB‑C VBUS (5V) ──[D2: 1N5819]──┐
+                                ├──→ MCP1700‑33 LDO IN → 3.3V → ESP32‑C3
+Li‑Po BAT+ (3.7–4.2V) ──[D1: 1N5819]──┘
+TP4056 IN+ ←── USB‑C VBUS (charges battery whenever USB is present)
 ```
 
-- The ESP32‑C3 SuperMini provides a USB‑C receptacle that supplies 5 V VBUS when connected to a host or charger.
-- The TP4056 Li‑Po charger module is used to charge the battery from that 5 V source.
-- A Schottky diode prevents back‑feeding from the battery to the USB‑C port and gives USB priority when plugged in.
-- The 3.3 V LDO (MCP1700‑33 or similar) regulates the voltage for the ESP32‑C3 and display.
+**How it works:**
+- **USB connected:** D2 conducts (~4.7V after Schottky drop), D1 is reverse‑biased (battery ~3.4–3.9V). The load runs from USB. The TP4056 charges the battery simultaneously. Battery is **not** discharged.
+- **USB disconnected:** D2 is off, D1 conducts. The battery seamlessly powers the load through the LDO.
+- **Charge status:** TP4056 CHRG (GPIO4, LOW = charging) and STDBY (GPIO5, LOW = charge done) are monitored by firmware.
+
+**Voltage considerations:**
+- MCP1700‑33 dropout: needs ~3.5V+ input for 3.3V output. Battery below ~3.8V may cause LDO dropout — watch will shut down, which is expected end‑of‑life behavior.
+- Battery voltage is monitored via GPIO2 (ADC1_CH2) through a 100k/100k divider (R19/R20). 4.2V Li‑Po reads ≈2.1V at the ADC.
 
 ## TP4056 Module Compatibility
 The parts list describes the TP4056 as a **micro‑USB** Li‑Po charger, but the schematic and Build Guide treat its input as USB‑C VBUS. In practice you have two options:

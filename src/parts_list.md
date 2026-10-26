@@ -4,7 +4,7 @@
 - ESP32-C3 SuperMini development board (USB‑C, 3.3 V) – Main microcontroller; runs firmware, multiplexes display, reads buttons/LDR, handles Bluetooth.
 - 5643A‑1 4‑digit 7‑segment LED display with colon (common cathode) – Shows time/date; driven via segment resistors and NPN digit drivers.
 - TP4056 micro‑USB Li‑Po charger module (adjustable charge current) – Charges the Li‑Po battery from USB‑C; charge current set by PROG resistor.
-- Schottky diode (e.g., 1N5819) – USB power priority – Prevents back‑feeding from battery to USB and gives USB priority when plugged in.
+- Schottky diode (e.g., 1N5819) ×2 – D1: battery → LDO (battery-only operation); D2: USB → LDO (USB-powered operation with load sharing). When USB is connected, D2 conducts and D1 is reverse-biased, so the load runs from USB and the battery is not discharged. When USB is absent, D1 conducts and the battery powers the load.
 - 3.3 V LDO regulator (e.g., MCP1700‑33‑T0/TO‑92 or AMS1117‑3.3) – Provides a stable 3.3 V supply to the ESP32‑C3 and display from battery/USB.
 - Touch buttons: use ESP32-C3 built‑in touch sensing on GPIO1 (MODE) and GPIO3 (LED) (no external parts). Mechanical buttons optional.
 - Jumper wires / breadboard for prototyping – Used to assemble and test the circuit before soldering or PCB fabrication.
@@ -24,6 +24,7 @@
 - 4 × 4.7 kΩ (NPN transistor base bias) – 1/4 W – Biases the bases of the four NPN transistors that drive the digit commons.
 - 1 × 10 kΩ (LDR pull‑down) – 1/4 W – Pull‑down resistor for the LDR on GPIO6.
 - 1 × 12 kΩ (TP4056 PROG) – sets charge current ≈ 83 mA for the 150 mAh Li‑Po (safe 0.55 C).
+- 2 × 100 kΩ (battery voltage divider) – R19/R20 form a 100k/100k divider from BAT+ to GND with midpoint on GPIO2 (ADC1_CH2) for battery voltage monitoring. Full-scale Li‑Po (4.2V) reads ≈ 2.1V at the ADC.
 - Capacitors (optional for LDO stability):
   - 1 × 1 µF ceramic (LDO input) – Decouples the LDO input.
   - 1 × 1 µF ceramic (LDO output) – Decouples the LDO output.
@@ -32,8 +33,7 @@
 
 ## Active Components
 - NPN transistors (e.g., 2N2222) ×4 – Used as low‑side switches for the digit commons (multiplexing).
-- 74HC595N 8‑bit shift register (e.g., SN74HC595N) – Drives the 7‑segment display segments via serial‑in, parallel‑out, reducing GPIO usage to three pins (DATA, CLK, LATCH).  
-  *Example Lazada/Shopee:* 1 pcs for ฿69 (Shopee, iseerobot.th) or 50 pcs for ฿465 (Lazada, rthgu654dfj).
+- 74HC595N 8‑bit shift register (e.g., SN74HC595N) – **NOT USED** in the current design. Segments are driven directly from ESP32 GPIO7‑14 through 220Ω resistors. The shift register footprint is reserved for a future revision if GPIO count becomes a constraint.
 
 ## Enclosure
 - Clear PETG or acrylic sheet (front “glass” wall) – cut to ~60 mm × 40 mm – Transparent front panel so the internal circuitry is visible.
