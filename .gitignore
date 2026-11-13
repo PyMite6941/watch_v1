@@ -25,3 +25,12 @@ fp-info-cache
 *~*.kicad_sch.lck
 *.kicad_pro.lck
 *.kicad_sch.lck
+# Ignore personal tutorial notes
+tutorials.md
+todo.md
+future-todo.md
+# Local Wi-Fi seed for the firmware
+secrets.h
+# Python caches and generated fabrication output
+__pycache__/
+hardware/fab/gerbers/

@@ -1,145 +1,119 @@
-# Build Guide – ESP32‑C3 SuperMini Watch (Watch V1)
+# Build guide
 
-All source files (schematic, firmware, parts list, enclosure design, etc.) are available for viewing and download on GitHub: https://github.com/pymite6941/watch_v1
+From a bag of parts to a working watch. Read it through once before starting; allow an evening for the first one.
 
-## 1. Parts procurement
-Refer to `src/parts_list.md` for the full bill of materials, including the recommended YDL 3.7 V 150 mAh Li‑Po battery (JST‑PH 2.0 mm), TP4056 charger, Schottky diode, 3.3 V LDO, touch buttons (or optional tactile buttons), resistors, LDR, RGB LED, enclosure materials, and an optional wireless charging receiver.
+> **Honest status.** No watch has been built from revision 5 yet. The steps below are the plan; the first build is also the test of this guide. Note anything that did not match and fix it here.
 
-## 2. Breadboard prototype
-1. Lay out the breadboard.
-2. Place the ESP32‑C3 SuperMini (USB‑C facing outward for easy programming).
-3. Insert the 5643A‑1 4‑digit display.
-4. Wire exactly as shown in `src/ascii_schematic.txt`:
-   - Segment pins (a‑g, dp) → 220 Ω resistors → ESP32 GPIOs 7‑14.
-   - Digit commons → collector of NPN transistors (2N2222); emitter → GND; base → ESP32 GPIOs 0,2,4,5 via 4.7 kΩ.
-   - Buttons → connected to GPIOs 1 (MODE) and 3 (LED) (touch sensing, no external pull‑up needed).
-   - LDR → one side to 3.3 V, other side to GPIO6 with a 10 kΩ pull‑down to GND.
-   - RGB LED → connect each anode (R, G, B) through a 220 Ω resistor to ESP32 GPIOs 16, 17, 18; common cathode to GND.
-   - Haptics: Connect vibration motor + to collector of NPN transistor (2N2222); emitter to GND. Motor - to +3.3V via flyback diode (cathode to +3.3V, anode to motor -). Base of transistor through 1kΩ resistor to ESP32 GPIO15.
-   - Power: USB‑C VBUS → D2 (1N5819 Schottky) → LDO IN → LDO OUT → ESP32 VIN and 3.3 V rail (USB-powered mode).
-     - Battery BAT+ → D1 (1N5819 Schottky) → LDO IN (battery-only mode, when USB absent).
-     - Diode OR‑ing: when USB is connected (5V − 0.3V ≈ 4.7V), D2 conducts and D1 is reverse‑biased (battery ≈ 3.7–4.2V − 0.3V ≈ 3.4–3.9V), so the load runs from USB and the battery is **not** discharged while charging. When USB is removed, D1 conducts and the battery seamlessly powers the load.
-     - TP4056 IN+ → USB‑C VBUS (charges battery whenever USB is present, independent of load source).
-     - Add decoupling capacitors (1 µF) near LDO input/output if available.
-5. Double-check all connections, especially the Schottky diode orientation (cathode to VBUS side) and transistor polarity (NPN: collector to digit common, emitter to GND).
+## 0. Before ordering anything
 
-## 3. Firmware upload
+1. Finish the board: it is placed but not routed — [`hardware/README.md`](../hardware/README.md).
+2. Build the circuit on a breadboard and run the firmware on it (sections 2 and 5 work the same on a breadboard). This proves the design before money is spent on boards.
+3. Order boards, cases and parts — [ORDERING.md](ORDERING.md), [BOM.md](BOM.md).
 
-1. Install the ESP32 board package in the Arduino IDE (Boards Manager → esp32 by Espressif Systems).
-2. Select **ESP32C3 Dev Module** (or ESP32‑C3 SuperMini if available) and the correct USB‑C port.
-3. Open `src/firmware.ino`.
-4. At the top of the file, set your Wi‑Fi SSID and password (leave empty to skip NTP sync). The firmware will attempt to connect and synchronise time via NTP; if credentials are not provided, it will fall back to the internal millis() clock.
-5. Optional: add `Serial.println` statements in `updateBrightness()` to debug LDR values.
-6. Click **Upload**. After upload, open the Serial Monitor at 115200 baud.
-7. You should see the time incrementing each second.
-8. Touch BTN1 to cycle through HH:MM, MM:SS, MM:DD.
-9. Touch BTN2 to cycle through LED colors (including OFF) with a short press, or to toggle party mode with a long press.
-10. Hold BTN1 to fast‑adjust the time (adds 5 minutes per hold).
-11. Cover/expose the LDR (e.g., with your finger) – the display should dim in darkness and brighten in light.
-12. The watch enters light sleep after 3 seconds of inactivity; pressing any button wakes it instantly.
+## 1. Prepare the charger board
 
-## 4. PCB fabrication (optional but recommended)
-1. Open the KiCad project `assets/watch_v1/watch_v1.kicad_proj`.
-2. Verify the schematic matches the ASCII diagram; add any missing nets.
-   - You can import the connection netlist from `docs/NETLIST.csv` to help with wiring.
-3. Assign footprints (use standard through‑hole footprints for all components; ESP32‑C3 SuperMini has a predefined footprint).
-4. Run **Electrical Rules Check (ERC)** and fix any warnings.
-5. Switch to the PCB editor, set board outline to 60 mm × 40 mm (Edge.Cuts layer).
-6. Place components, keeping the display centered on the top side, buttons on one side, LDR near the edge for light exposure.
-7. Route traces (0.25 mm width for signals, 0.5 mm for power). Keep segment lines short and symmetric.
-8. Add four 2.2 mm drill holes for M2 screws in the corners (matching the enclosure design).
-9. Run **Design Rules Check (DRC)** and fix errors.
-10. Generate Gerber files (File → Plot → Format: Gerber, select all layers).
-11. Send the Gerbers to a PCB fab (e.g., JLCPCB, PCBWay) for a 2‑layer board.
+Do this first; it is the one fiddly surface-mount job.
 
-## 5. 3D‑printed enclosure
+1. Replace the charge-current resistor on the TP4056 board with 12 kΩ ([BOM.md](BOM.md) explains which one and why).
+2. Solder the battery leads to **B+** and **B−**. Red to B+. Check twice: reversing a lithium cell destroys the board and can start a fire.
+3. Plug a USB charger into the board: its "charging" light comes on, then the "full" light when done. With a multimeter, OUT+ to OUT− reads 3.7–4.2 V.
 
-**USB‑C access:** A USB‑C cutout is already present in `assets/enclosure.scad` (base sidewall, front, centered). Adjust its position if needed by modifying the `usb_cutout_offset_x`/`usb_cutout_offset_y` variables or the Z translation in the `base()` module.
-The enclosure consists of three printable parts:
-- **Top cover (lid)** – clear panel with a window for the display and an integrated hexagonal LED holder on the top‑right corner.
-- **Bottom base** – houses the battery holder and PCB mounting posts.
-- **Internal frame** (optional) – snaps around the PCB to hold it securely.
+## 2. Flash and test the processor board on its own
 
-All parts are parameterized in OpenSCAD (`assets/enclosure.scad`). To generate STL files:
+Easier to do before it is soldered down.
 
-1. Install OpenSCAD (https://www.openscad.org).
-2. Open `assets/enclosure.scad`.
-3. Adjust the following variables at the top of the file if needed:
-   - `outer_length = 60;` // mm
-   - `outer_width = 40;`
-   - `outer_height = 20;`
-   - `wall_thickness = 2;`
-   - `display_window = [12, 8];` // width, height of the display cutout
-   - `battery_pocket = [30, 15, 5];` // length, width, depth
-   - `screw_hole_diameter = 2.2;` // for M2 screws
-   - `screw_hole_spacing = [56, 36];` // positions from origin
-   - `lid_overlap = 1.5;` // mm overlap of lid over base
-   - // LED holder parameters (top‑right corner)
-   - `led_holder_size = 8;` // diameter across points of hexagonal holder (mm)
-   - `led_holder_height = 3;` // height of holder (mm)
-   - `led_holder_led_diameter = 3;` // diameter for LED hole (mm)
-   - `led_holder_post_diameter = 1.8;` // diameter of snap post (mm)
-   - `tolerance = 0.2;` // interference for snap fit (hole diameter = post - tolerance)
-   - `led_holder_post_height = 1.5;` // depth of blind hole in holder / height of post (mm)
-   - `led_holder_outward_offset = 2;` // how much holder sticks out beyond lid corner (mm)
-4. Press **F6** to render, then **File → Export → Export as STL**.
-5. Export three STL files: `top.stl`, `bottom.stl`, `frame.stl` (or however you split the model; the script includes modules for each).
-6. **Optional snap‑fit test:** Before printing the full lid, you can uncomment the `test_snap()` module at the bottom of the file, press F6, and export a small test piece to verify that the post and hole interlock with the desired snapping force on your printer. Adjust `tolerance` if needed (increase for tighter fit, decrease for looser).
-7. Print in clear PETG or transparent resin at 0.1‑0.2 mm layer height, 20 % infill (or 100 % for the window area if you want it solid but clear; you can leave the window as a hole and attach a clear sheet later).
-8. After printing, clean any support material.
+1. Install [Arduino IDE 2](https://www.arduino.cc/en/software). In *Boards Manager* install **esp32 by Espressif Systems** (version 3.x). In *Library Manager* install **ArduinoJson** (version 7).
+2. Open `firmware/watch_v1/watch_v1.ino`.
+3. *Tools* menu:
+   - Board: **ESP32C3 Dev Module**
+   - USB CDC On Boot: **Enabled**
+   - Partition Scheme: **Minimal SPIFFS (1.9MB APP with OTA/190KB SPIFFS)** — the default scheme is too small for Wi-Fi plus Bluetooth
+   - Port: the SuperMini's port
+4. Click *Upload*. If it will not connect: hold the board's **BOOT** button, tap **RST**, release BOOT, upload again.
+5. Open the Serial Monitor at 115200. You should see a line starting `Watch V1 fw 2.0.0`. Type `{"cmd":"info"}` and send; a line of JSON comes back. The processor and firmware are alive.
 
-## Filament estimation
-- **Material:** Clear PETG (or transparent resin).
-- **Estimated volume:** ~7.8 cm³ for base + lid + optional frame.
-- **Density of PETG:** ~1.25 g/cm³ → mass ≈ 9.8 g.
-- **Filament diameter:** 1.75 mm → cross‑section ≈ 2.405 mm².
-- **Length needed:** ~3.2 m; add ~10 % margin → **≈ 3.5–4 m** of filament.
-- **Where to buy:** A 1 kg spool (e.g., Creality Supply PETG on Lazada Thailand) is more than enough: https://www.lazada.co.th/products/creality-supply-petg-filament-10kg-175mm-3-i5364792975.html
+Command-line alternative:
 
-## 6. Assembly
-1. Insert the PCB into the bottom base; align the screw holes with the posts.
-2. Secure the PCB with M2×6 mm screws (or use the printed posts as snap‑fits if designed).
-3. Place the Li‑Po battery into the battery pocket (the pocket holds the battery snugly; add a small piece of foam if needed).
-4. If using the wireless charging receiver, place the coil module inside the enclosure (e.g., adhered to the inner side of the top cover or base) and connect its VOUT to TP4056 IN+ and GND to TP4056 IN‑ (respecting polarity). Ensure the coil aligns with a wireless charger pad when charging.
-5. Lay the display face‑up in the window; if you printed a separate clear window, glue it with a tiny amount of cyanoacrylate or use a snap‑fit lip.
-6. Place the top cover over the bottom base; align the screw holes and fasten with the remaining M2 screws.
-7. **Snap the LED holder:** The lid includes a small post on its top‑right corner. The hexagonal LED holder (printed as part of the lid) has a blind hole that fits over this post. Align the holder with the post and press down until it clicks into place.
-8. Insert the RGB LED into the central hole of the LED holder; the LED should sit flush with the holder’s top surface.
-9. Optional: apply a thin conformal coating to the PCB (avoid covering the display and buttons) and seal the seam between top and bottom with a silicone bead for splash resistance.
-10. Optional: place a small dome/diffuser over the RGB LED to spread light evenly, especially useful in party mode.
+```bash
+arduino-cli compile --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc,PartitionScheme=min_spiffs firmware/watch_v1
+arduino-cli upload  --fqbn esp32:esp32:esp32c3:CDCOnBoot=cdc,PartitionScheme=min_spiffs -p COM5 firmware/watch_v1
+```
 
+## 3. Solder the board
 
-## 7. Final testing
-Power the watch via USB‑C; it should run from USB and charge the battery.
-Unplug USB; the watch should continue running from the battery.
-Verify the auto‑brightness still works (the LDR must be exposed to ambient light through a small hole or the clear top).
-Enjoy your see‑through cyber‑punk watch!
+The display sits on the front; the processor board and both chips hang from the back, *underneath* the display. That forces the order: **everything under the display first, display last.**
 
-## 8. Troubleshooting
-- **Display dim or flickering** – check segment resistor values (220 Ω is correct for 3.3 V); ensure transistors are fully turning on (measure voltage across digit common when enabled).
-- **Buttons not responding** – confirm internal pull‑up is enabled in firmware (`INPUT_PULLUP`); check wiring to GND.
-- **LDR not changing brightness** – verify the voltage divider: measure GPIO6 voltage with a multimeter while covering/exposing the LDR; should vary between ~0 V and ~3.3 V.
-- **Battery not charging** – ensure TP4056 PROG resistor is correctly soldered; check USB‑C voltage at TP4056 IN (~5 V); measure voltage across BAT+ and BAT‑ while charging (should rise to ~4.2 V).
-- **RGB LED not lighting** – verify the 220 Ω resistors are in series with each color channel and that the common cathode is connected to GND; check firmware for LED control (short/long press on BTN2).
-- **LED holder not snapping** – ensure the post on the lid and the blind hole in the holder are free of debris; press firmly until you feel a click. If the holder is loose, check that the post diameter matches the hole (`led_holder_post_diameter` minus `tolerance`) and that the holder is not warped. Consider printing a snap‑fit test piece (see step 6 in the enclosure section) to fine‑tune `tolerance` for your printer.
-- **LED not seated in holder** – verify the LED’s diameter matches the hole (3 mm) and that the LED’s leads are not obstructing insertion.
+Work lowest parts first so the board lies flat.
 
+| Step | Side | Parts | Watch out for |
+|---|---|---|---|
+| 1 | Back | U2, U3 (74HC595) | Notch matches the printed outline. Solder directly, no sockets — there is no height for them. Trim the legs flush on the front; the display sits over them. |
+| 2 | Back | U1 (SuperMini) | USB-C towards the right edge ("USB-C THIS END"). Use the pin headers that came with it, plastic spacer against the PCB, and trim flush on the front. |
+| 3 | Front | Resistors R1–R21 | Standing up. Values are in [BOM.md](BOM.md); read the colour bands or measure each one. |
+| 4 | Front | Diodes D1, D2 | The band (cathode) matches the printed band. |
+| 5 | Front | Capacitors C1–C4 | Either way round. |
+| 6 | Front | Transistors Q1–Q5 | Flat side matches the outline. |
+| 7 | Front | LDR R21, RGB LED D3 | LED: longest leg in the hole marked for the cathode. Leave the LED and LDR standing about 8 mm tall so they reach the lid. |
+| 8 | Front | Switches SW1, SW2 | They click in. |
+| 9 | Front | J4 accessory socket | Hold it square while tacking one pin. |
+| 10 | — | **Stop and test** (section 4) | |
+| 11 | Front | DS1 display | Decimal points at the bottom. Sit it on a 2 mm spacer (two matchsticks) so it clears the joints beneath, solder two opposite corners, check it is level, then the rest. Once it is in, the parts under it cannot be reworked. |
 
-## Power saving & battery life
-- The firmware uses deep‑sleep with timer wake‑up (1 s) to achieve < 20 µA average current.
-- Touch buttons eliminate pull‑up current.
-- Display brightness is scaled via LDR and PWM‑like pulse width.
-- Wi‑Fi and BLE are powered down when not in use.
-- Expected battery life > 60 days on a 150 mAh Li‑Po with typical use.
-## License
-This documentation is released under the MIT License – see `docs/LICENSE`.
+Wires:
 
-In short: you are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the documentation, provided that the above copyright notice and this permission notice are included in all copies or substantial portions.
+| Pads | To |
+|---|---|
+| J2 `G` / `BAT` / `CHG` | Charger board OUT− / OUT+ / the pad of its *charging* LED nearest the chip (the TP4056's CHRG pin). CHG is optional: without it the watch simply never shows the charging dot. |
+| J1 `3V3` / `SDA` / `SCL` / `GND` | DS3231 module (leave `NC` empty) |
+| J3 `+` / `−` | Vibration motor |
 
-Attribution: Please retain the copyright notice (which includes the author's name) in any distribution.
+## 4. Test before the display goes in
 
-## Contributions
-Feel free to fork, improve, and submit pull requests manually.
-Automated or bot-generated pull requests are not allowed.
-Please ensure your contributions align with the project’s goals and follow the existing style.
+With the battery **not** connected, power from the SuperMini's USB-C.
 
+1. Multimeter: 3.3 V between the `3V3` and `G` pads of J1.
+2. Press each button: the serial monitor is silent, but the motor should tick (once it is wired).
+3. Send `{"cmd":"buzz","ms":500}` — the motor runs for half a second.
+4. Send `{"cmd":"info"}` — `"rtc":true` if the clock module is wired.
+5. Hold the display in its holes at a slight angle so the pins touch (do not solder yet): digits should appear. Dim or missing segments mean a resistor value or a solder joint on that segment; a missing digit means that digit's transistor.
+
+Then solder the display, connect the charger board, and unplug USB: the watch should wake from the battery when a button is pressed.
+
+## 5. Set it up
+
+[CONFIGURATION.md](CONFIGURATION.md): open the configurator, connect by USB, add Wi-Fi, choose the screens for this teacher, save. Press *Sync time now*; the watch shows `SYnC` then `On`.
+
+## 6. Case
+
+1. Print `fit_test.stl` first (ten minutes). Check that an M2 screw passes the post, bites in the boss, and that the PCB corner drops onto the post. Adjust `screw_tap_d`, `gap` in `enclosure/enclosure.scad` if not, and re-export.
+2. Print `base.stl` as it is and `lid.stl` as it is (already flipped so the outer face is on the bed). 0.2 mm layers, 3 walls, no supports. In clear PETG, print slow and hot with the fan low for the best transparency.
+3. Charger board on the floor between its two rails, USB socket in the left-hand opening; a square of foam tape holds it. Battery in its pocket to the right.
+4. Lower the PCB onto the four posts, wires tucked into the space under the display — not across the battery.
+5. Lid on: buttons, LED, light sensor and accessory socket line up with their openings.
+6. Four M2 × 16 screws from underneath. Snug only; the plastic strips easily.
+7. Thread the strap through both lugs.
+
+## 7. Final check
+
+- [ ] Wakes on each button, sleeps after a few seconds
+- [ ] Time is right after a sync; still right the next morning
+- [ ] Display dims when the light sensor is covered
+- [ ] Vibrates on presses
+- [ ] Charges from the left socket (charger light visible through the case) and runs with nothing plugged in
+- [ ] Configurator connects over USB (right socket) and over Bluetooth (both buttons, 2 s)
+- [ ] Each pack this teacher is getting works: sensor screens show numbers; the tuner follows a hummed note
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+|---|---|
+| Nothing at all on battery, fine on USB | D1 backwards, or the charger board's protection has tripped — plug the charger in for a second to reset it |
+| Whole display dark, motor works | R17 pulling the display off is normal until the firmware starts; if it stays dark, check the wire from GPIO20 to pin 13 of both chips |
+| One segment missing on every digit | That segment's resistor (R1–R8) or a joint on U2 |
+| One digit missing | That digit's transistor (Q1–Q4) or its 1 kΩ resistor |
+| Digits ghost into each other | A transistor in backwards (check E-B-C) |
+| Time resets | DS3231 not detected (`"rtc":false`) — check its four wires and its coin cell |
+| Battery screen reads far off | R18 / R19 values swapped with something else; both must be 100 kΩ |
+| Will not upload | Hold BOOT, tap RST, release BOOT; use a data cable, not a charge-only one |
+| Uploads, then "Sketch too big" | Partition Scheme is not set to Minimal SPIFFS |
+| Watch seems dead after a bad setting | Connect by USB and send `{"cmd":"factory_reset"}` |

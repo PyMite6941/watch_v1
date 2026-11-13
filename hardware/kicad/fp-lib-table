@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "watch_v1")(type "KiCad")(uri "${KIPRJMOD}/watch_v1.pretty")(options "")(descr "Watch V1 project footprints"))
+)

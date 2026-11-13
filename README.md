@@ -1,62 +1,63 @@
-# ESP32-C3 SuperMini Watch (Watch V1)
+# Watch V1
 
-A cyber‑punk style, see‑through wrist watch built around an ESP32‑C3 SuperMini, a 4‑digit 7‑segment display, two touch buttons, haptics vibration motor, ambient‑light sensor (LDR) for auto‑brightness, and a rechargeable Li‑Po battery charged via USB‑C or optional wireless charging receiver.
+A see-through, build-it-yourself wrist watch made as a gift for STEM teachers. An ESP32-C3 SuperMini drives a four-digit LED display, an RGB LED and a vibration motor inside a clear printed case. Every watch is set up for its owner from a web page — no programming — and takes plug-in **packs** for extra abilities (a weather sensor for biology, a microphone tuner for music).
 
-The watch is designed to be 3D‑printed in clear PETG/resin so the internal circuitry is visible, with a snap‑fit or screw‑together enclosure that holds the PCB, battery, and display.
+| | |
+|---|---|
+| Size | 62.8 × 48.8 × 25.3 mm case, 22 mm strap |
+| Display | 0.56" four-digit seven-segment, auto-dimming |
+| Battery | 150 mAh Li-Po, charged through its own USB socket |
+| Radios | Wi-Fi (time sync), Bluetooth LE (setup), ESP-NOW (watch-to-watch) |
+| Controls | Two buttons: MODE and SET |
+| Expansion | 2×3 accessory socket on the face (I²C, switched power, analogue in); USB-C for setup and firmware |
+
+## Where things stand
+
+| Part | State |
+|---|---|
+| Circuit (`hardware/scripts/design.py`) | Done, revision 5. Schematic generated, electrical rules check passes with 0 findings. |
+| PCB | All 47 parts placed and checked. **Not routed yet** — see [`hardware/README.md`](hardware/README.md). No Gerbers until that is done. |
+| Enclosure | Modelled; STL files exported in `enclosure/stl/`. Not yet test-printed against a real board. |
+| Firmware 2.0.0 | Complete and compiles for the ESP32-C3. **Not yet run on hardware** — expect a debugging session on the first assembled watch. |
+| Configurator | Written; needs a real watch to be tested end to end. |
+
+[`TODO.md`](TODO.md) is the live list of what is left.
+
+## Start here
+
+| You want to… | Read |
+|---|---|
+| Use a finished watch | [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) |
+| Set one up (Wi-Fi, screens, bells) | [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) |
+| Build one | [`docs/BUILD_GUIDE.md`](docs/BUILD_GUIDE.md), parts in [`docs/BOM.md`](docs/BOM.md) |
+| Order boards and cases | [`docs/ORDERING.md`](docs/ORDERING.md) |
+| Add sensors or other hardware | [`docs/ADDONS.md`](docs/ADDONS.md) |
+| See what it could do for each subject | [`docs/IDEAS.md`](docs/IDEAS.md) |
+| Change the circuit or board | [`hardware/README.md`](hardware/README.md) |
+
+## What it does
+
+- **Clock**: time, seconds, date, battery level. Keeps time with a DS3231 clock chip and corrects itself over Wi-Fi.
+- **Classroom tools**: stopwatch, countdown timer, tally counter, dice, bell schedule with a countdown to the next bell, metronome.
+- **Packs** (plug into the accessory socket): temperature, humidity and air pressure with a sample log you download as a spreadsheet; an instrument tuner.
+- **Watch-to-watch**: watches in the same group can see each other, buzz each other and share the time, with no router.
+- **Personal**: each owner chooses which screens appear and in what order, brightness, time zone, 12/24-hour, bells, and more.
+
+Battery life comes from being asleep: the watch wakes when a button is pressed, shows a screen for a few seconds and sleeps again. It also wakes on its own for a bell, a finished timer, a log sample or a time sync.
 
 ## Repository layout
-- `docs/` – Documentation (this README, build guide, license).
-- `src/` – Source files: firmware, schematic, parts list, KiCad project.
-- `assets/` – 3D models (OpenSCAD) and other assets for the enclosure.
-- `docs/NETLIST.csv` – Connection netlist derived from the ASCII schematic, useful for importing into KiCad.
 
-## Getting started
-1. Review the [Build Guide](docs/BUILD_GUIDE.md) for wiring and assembly instructions.
-2. Order the parts listed in `src/parts_list.md`.
-3. Wire the breadboard per `src/ascii_schematic.txt`.
-4. Flash the firmware (`src/firmware.ino`) to the ESP32‑C3 SuperMini.
-   - The firmware now includes optional Wi‑Fi + NTP time synchronisation (set your SSID/PASS at the top of the file), deep‑sleep power saving, and touch‑button sensing; retains full manual time setting via buttons/encoder.
-5. Test the display, touch buttons, and auto‑brightness.
-6. When satisfied, generate Gerbers from the KiCad project (`assets/watch_v1/watch_v1.kicad_proj`) and order a PCB, or assemble on perfboard.
-   - The schematic (`assets/watch_v1/watch_v1.kicad_sch`) now contains a detailed connection comment block to assist with wiring.
-7. Print the enclosure from the OpenSCAD files in `assets/`.
-8. Assemble the printed case, insert the PCB and battery, and seal with optional conformal coating.
+```
+firmware/watch_v1/     Arduino sketch (one file per feature; start with watch_v1.ino)
+tools/configurator/    index.html - the setup page (open in Chrome or Edge)
+hardware/scripts/      design.py is the circuit; the other scripts generate KiCad files from it
+hardware/kicad/        generated KiCad 10 project (schematic, board, libraries)
+enclosure/             OpenSCAD model and exported STL files
+docs/                  guides
+```
 
+## Licence
 
-## Filament & 3D printing
-- **Material:** Clear PETG (or transparent resin) for the enclosure.
-- **Estimated filament needed:** ~3.5–4 m of 1.75 mm PETG (≈10 g) for base, lid and optional frame.
-- **Recommended spool:** 1 kg PETG filament (1.75 mm) – more than enough for many prints.
-- **Where to buy (Lazada Thailand):** https://www.lazada.co.th/products/creality-supply-petg-filament-10kg-175mm-3-i5364792975.html
+MIT — see [`LICENSE`](LICENSE). Keep the copyright notice in copies.
 
-
-## Power saving & battery life
-- Deep‑sleep with timer wake‑up (1 s) reduces average current to < 20 µA.
-- Touch buttons eliminate mechanical pull‑up current.
-- Display brightness scaled via LDR and PWM‑like pulse width.
-- Peripherals (Wi‑Fi, BLE) powered down when not in use.
-- Expected battery life > 60 days on a 150 mAh Li‑Po with typical use.
-## Viewing and downloading files
-All source files are hosted on GitHub and can be viewed or downloaded directly:
-- **Schematic:** https://github.com/pymite6941/watch_v1/blob/main/assets/watch_v1/watch_v1.kicad_sch
-- **Firmware:** https://github.com/pymite6941/watch_v1/blob/main/src/firmware.ino
-- **Parts list:** https://github.com/pymite6941/watch_v1/blob/main/src/parts_list.md
-- **ASCII schematic:** https://github.com/pymite6941/watch_v1/blob/main/src/ascii_schematic.txt
-- **Enclosure OpenSCAD:** https://github.com/pymite6941/watch_v1/blob/main/assets/enclosure.scad
-- **Build guide:** https://github.com/pymite6941/watch_v1/blob/main/docs/BUILD_GUIDE.md
-- **Connection netlist (CSV):** https://github.com/pymite6941/watch_v1/blob/main/docs/NETLIST.csv
-- **USB‑C notes:** https://github.com/pymite6941/watch_v1/blob/main/docs/USB_C_NOTES.md
-
-To download a file, click the "Raw" button on the file's GitHub page, or use the URL with `?raw=true` appended.
-## License
-This project is licensed under the MIT License – see `docs/LICENSE`.
-
-In short: you are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the software, provided that the above copyright notice and this permission notice are included in all copies or substantial portions of the Software.
-
-Attribution: Please retain the copyright notice (which includes the author's name) in any distribution.
-
-## Contributions
-Feel free to fork, improve, and submit pull requests manually.
-Automated or bot-generated pull requests are not allowed.
-Please ensure your contributions align with the project’s goals and follow the existing code style.
-
+Pull requests are welcome when written by a person; automated or bot-generated pull requests are not accepted.
