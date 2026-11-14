@@ -20,6 +20,7 @@ Buy a few spares of the cheap parts: resistors and transistors come in strips an
 | R15, R16 | 2 | 100 Ω | Green and blue LED |
 | R17, R20 | 2 | 10 kΩ | Display-off-at-boot pull-up; light sensor divider |
 | R18, R19 | 2 | 100 kΩ | Battery measurement |
+| R22, R23 | 2 | 4.7 kΩ | I²C pull-ups |
 | R21 | 1 | Photoresistor (LDR) GL5528 | Light sensor |
 | C1–C4 | 4 | 100 nF ceramic capacitor, 2.5 mm pitch | |
 | SW1, SW2 | 2 | 6 × 6 mm tactile switch, **13 mm tall** | The height matters: the stem has to reach through the lid |

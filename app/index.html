@@ -1,0 +1,1075 @@
+<!doctype html>
+<!--
+  Watch Studio - the companion app for Watch V1.
+
+  One page, no build step, no server. Normally installed as a desktop app with
+  installer/ (Windows and macOS): it then opens in its own window from the
+  Start menu, Spotlight, the Dock or a keyboard shortcut, drawn by the Edge or
+  Chrome engine already on the computer, so it takes about 0.1 MB.
+  It also works opened directly in Chrome or Edge, or hosted on any https site.
+  config.js (written by the installer) holds the personal touches.
+
+  It speaks the watch's line protocol (docs/CONFIGURATION.md): one JSON
+  command per line, over
+    USB        Web Serial
+    Bluetooth  Web Bluetooth, Nordic UART service
+    Demo       a simulated watch inside this page - try everything first
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watch Studio</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon.png" sizes="256x256" type="image/png">
+<meta name="theme-color" content="#0b6e4f">
+<style>
+  :root { --bg:#f6f5f1; --card:#fff; --ink:#1d1d1f; --mute:#6b6b70; --line:#dedcd5; --accent:#0b6e4f; --on-accent:#fff; --bad:#b3261e; --seg:#e0362c; --segoff:#ece9e1; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#141416; --card:#1e1e21; --ink:#ececee; --mute:#9a9aa1; --line:#33333a; --accent:#4cc79a; --on-accent:#06281c; --bad:#ff8a80; --seg:#ff5a4f; --segoff:#2a2a2f; }
+  }
+  :root[data-theme="dark"] { --bg:#141416; --card:#1e1e21; --ink:#ececee; --mute:#9a9aa1; --line:#33333a; --accent:#4cc79a; --on-accent:#06281c; --bad:#ff8a80; --seg:#ff5a4f; --segoff:#2a2a2f; }
+  #welcome { border-color: var(--accent); }
+  #welcome p { margin: 6px 0 0; white-space: pre-wrap; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui, "Segoe UI", sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 16px 16px 60px; }
+  h1 { font-size: 22px; margin: 0; }
+  h2 { font-size: 16px; margin: 0 0 10px; }
+  h3 { font-size: 14px; margin: 14px 0 6px; }
+  p.sub, small { color:var(--mute); }
+  p.sub { margin: 0 0 12px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin: 0 0 14px; }
+  label { display:block; font-size:13px; color:var(--mute); margin: 10px 0 3px; }
+  input[type=text], input[type=number], input[type=password], input[type=date], select, textarea {
+    width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); font:inherit; }
+  textarea { font-family: ui-monospace, Consolas, monospace; font-size:13px; min-height:120px; }
+  .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0 14px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  button { font:inherit; padding:7px 13px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  button.small { padding:3px 9px; font-size:13px; }
+  button:disabled { opacity:.45; cursor:default; }
+  .check { display:flex; gap:7px; align-items:center; margin:8px 0 0; color:var(--ink); font-size:15px; }
+  .check input { width:auto; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; }
+  .chip { border:1px solid var(--line); border-radius:16px; padding:3px 10px; cursor:pointer; user-select:none; }
+  .chip.on { background:var(--accent); border-color:var(--accent); color:var(--on-accent); }
+  nav { display:flex; flex-wrap:wrap; gap:4px; margin: 0 0 14px; }
+  nav button { border-radius:8px; }
+  nav button.on { background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  #status { font-weight:600; }
+  #status.bad { color:var(--bad); }
+  table { border-collapse:collapse; width:100%; }
+  td, th { text-align:left; padding:5px 6px; border-bottom:1px solid var(--line); font-size:14px; vertical-align:middle; }
+  td.r { text-align:right; white-space:nowrap; }
+  pre { background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px; max-height:220px; overflow:auto; font-size:12px; margin:8px 0 0; white-space:pre-wrap; word-break:break-all; }
+  .hide { display:none !important; }
+  .tiles { display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; }
+  .tile { border:1px solid var(--line); border-radius:8px; padding:10px; }
+  .tile b { display:block; font-size:22px; font-variant-numeric: tabular-nums; }
+  .tile span { color:var(--mute); font-size:13px; }
+  .seg { display:inline-flex; gap:4px; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:6px 8px; vertical-align:middle; }
+  .seg svg { width:20px; height:34px; }
+  .seg .s { fill:var(--segoff); } .seg .s.on { fill:var(--seg); }
+  .warn { color:var(--bad); font-size:13px; }
+  .step { display:grid; grid-template-columns: 90px 1fr 1fr auto; gap:8px; align-items:center; margin:4px 0; }
+  meter { width:100%; }
+  header.top { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+</style>
+</head>
+<body>
+<main>
+  <header class="top">
+    <div><h1>Watch Studio</h1><small id="tagline">Set up, personalise and extend your watch.</small></div>
+    <small id="ver"></small>
+  </header>
+
+  <!-- A note from whoever gave the watch. Text comes from config.js, written by the installer. -->
+  <section id="welcome" class="hide">
+    <div class="row" style="justify-content:space-between"><h2 id="welcomeTitle" style="margin:0">Welcome</h2><button class="small" id="btnWelcomeClose">Close</button></div>
+    <p id="welcomeText"></p>
+  </section>
+
+  <section>
+    <div class="row">
+      <button class="primary" id="btnUsb">Connect by USB</button>
+      <button id="btnBle">Connect by Bluetooth</button>
+      <button id="btnDemo">Try the demo watch</button>
+      <button id="btnDisconnect" disabled>Disconnect</button>
+      <span id="status">Not connected</span>
+    </div>
+    <p id="hint" style="margin:10px 0 0"><small><b>USB:</b> plug a data cable into the USB-C socket on the watch's right-hand side and press a watch button.
+    <b>Bluetooth:</b> hold both watch buttons for 2 seconds until it shows <code>LInk</code>.
+    <b>Demo:</b> a pretend watch inside this page, for trying things out.</small></p>
+    <p id="unsupported" class="warn hide">This browser cannot talk to USB or Bluetooth devices. Use Chrome or Edge on a computer; the demo watch still works here.</p>
+    <div id="pinRow" class="row hide" style="margin-top:10px">
+      <input type="password" id="pin" placeholder="Watch PIN" style="max-width:160px">
+      <button id="btnPin">Unlock</button>
+    </div>
+  </section>
+
+  <nav id="tabs" class="hide">
+    <button data-tab="home" class="on">Watch</button>
+    <button data-tab="setup">Settings</button>
+    <button data-tab="apps">Apps</button>
+    <button data-tab="files">Files</button>
+    <button data-tab="lab">Lab</button>
+    <button data-tab="backup">Backup</button>
+    <button data-tab="console">Console</button>
+  </nav>
+
+  <!-- ============================== WATCH ============================== -->
+  <div id="tab-home" class="tab hide">
+    <section id="quick" class="hide">
+      <h2>Quick setup</h2>
+      <p class="sub">Four things and the watch is ready. Everything here can be changed later under Settings.</p>
+      <div class="grid">
+        <div><label>1. Name for the watch</label><input type="text" id="qName" maxlength="16" placeholder="e.g. Ms Rivera"></div>
+        <div><label>2. Greeting when it wakes (4 characters)</label><input type="text" id="qHello" maxlength="4" placeholder="HI"> <span id="qHelloSeg"></span></div>
+        <div><label>3. Time zone</label><select id="qTz"></select></div>
+        <div><label>4. Wi-Fi network (optional)</label><input type="text" id="qSsid" placeholder="network name"></div>
+        <div><label>Wi-Fi password</label><input type="password" id="qPass"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="qTime" checked> Set the watch's clock from this computer</label>
+      <div class="row" style="margin-top:12px">
+        <button class="primary" id="btnQuickDone">Finish setup</button>
+        <button id="btnQuickSkip">Skip</button>
+      </div>
+    </section>
+    <section>
+      <h2>This watch</h2>
+      <table id="info"></table>
+      <div class="row" style="margin-top:12px">
+        <button id="btnSync">Sync time over Wi-Fi</button>
+        <button id="btnTimePc">Set time from this computer</button>
+        <button id="btnBuzz">Test vibration</button>
+        <button id="btnQuickOpen">Quick setup</button>
+        <input type="text" id="showText" maxlength="4" placeholder="text" style="max-width:80px"><button id="btnShow">Show on watch</button>
+      </div>
+    </section>
+    <section>
+      <h2>Wi-Fi networks</h2>
+      <p class="sub">Up to 5. The watch joins the strongest one it knows, only to fetch the time. Passwords stay on the watch.</p>
+      <table id="wifiList"></table>
+      <div class="grid">
+        <div><label>Network name</label><input type="text" id="ssid" list="scanList"><datalist id="scanList"></datalist></div>
+        <div><label>Password</label><input type="password" id="pass"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="btnWifiAdd">Save network</button>
+        <button id="btnScan">Scan for networks</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ============================= SETTINGS ============================ -->
+  <div id="tab-setup" class="tab hide">
+    <section>
+      <h2>Screens</h2>
+      <p class="sub">Click to turn a screen on or off. MODE on the watch steps through them in this order, then through your apps. Turn one off and on again to move it to the end. Screens marked * need a pack.</p>
+      <div class="chips" id="views"></div>
+    </section>
+    <section>
+      <h2>Personal</h2>
+      <div class="grid">
+        <div><label>Watch name</label><input type="text" id="name" maxlength="16"></div>
+        <div><label>Greeting when switched on (4 characters)</label><input type="text" id="hello" maxlength="4"> <span id="helloSeg"></span></div>
+        <div><label>Time zone</label><select id="tzPick"></select></div>
+        <div><label>Time zone (POSIX string)</label><input type="text" id="tz"></div>
+        <div><label>Display stays on (seconds)</label><input type="number" id="awake_s" min="3" max="60"></div>
+        <div><label>Brightness: darkest (1-255)</label><input type="number" id="bright_min" min="1" max="255"></div>
+        <div><label>Brightness: brightest (1-255)</label><input type="number" id="bright_max" min="1" max="255"></div>
+        <div><label>Countdown timer (seconds)</label><input type="number" id="timer_s" min="5" max="5999"></div>
+        <div><label>Dice sides</label><input type="number" id="dice" min="2" max="99"></div>
+        <div><label>Metronome (beats per minute)</label><input type="number" id="bpm" min="30" max="240"></div>
+        <div><label>Tuner reference A4 (Hz)</label><input type="number" id="tune_a4" min="400" max="480"></div>
+        <div><label>Log a sample every (minutes, 0 = off)</label><input type="number" id="log_min" min="0" max="1440"></div>
+        <div><label>Bluetooth PIN (blank = none)</label><input type="password" id="pinSet" maxlength="8" placeholder="unchanged"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="h24"> 24-hour clock</label>
+      <label class="check"><input type="checkbox" id="auto_bright"> Brightness follows the light sensor</label>
+      <label class="check"><input type="checkbox" id="haptic"> Vibrate on button presses</label>
+      <label class="check"><input type="checkbox" id="fahrenheit"> Temperature in Fahrenheit</label>
+      <label class="check"><input type="checkbox" id="usb_awake"> Stay awake while plugged into a computer</label>
+    </section>
+    <section>
+      <h2>Bell schedule</h2>
+      <p class="sub">The watch vibrates at these times, and the "Next bell" screen counts down to the next one.</p>
+      <label>Times, 24-hour, separated by spaces (up to 16)</label>
+      <input type="text" id="alerts" placeholder="08:30 09:20 10:10 11:15 12:05 13:00 13:50 14:40">
+      <div class="grid">
+        <div><label>Warn this many minutes before (0 = off)</label><input type="number" id="alert_warn_min" min="0" max="30"></div>
+        <div><label>Days</label><div class="chips" id="days"></div></div>
+      </div>
+    </section>
+    <section>
+      <h2>Time source</h2>
+      <div class="grid">
+        <div><label>Get the time from</label><select id="time_src"><option value="ntp">NTP server (normal)</option><option value="http">A web API (JSON)</option></select></div>
+        <div><label>NTP server</label><input type="text" id="ntp"></div>
+        <div><label>API address</label><input type="text" id="time_url" placeholder="https://example.org/api/time"></div>
+        <div><label>JSON field with Unix time</label><input type="text" id="time_key" placeholder="unixtime  or  data.epoch"></div>
+        <div><label>Sync every (hours, 0 = never)</label><input type="number" id="resync_h" min="0" max="2000"></div>
+      </div>
+    </section>
+    <section>
+      <h2>Watch-to-watch (mesh)</h2>
+      <label class="check"><input type="checkbox" id="mesh"> Enable group messaging</label>
+      <div class="grid">
+        <div><label>Group name (same on every watch in the group)</label><input type="text" id="mesh_group" maxlength="16"></div>
+        <div><label>Wi-Fi channel (1-13, same on every watch)</label><input type="number" id="mesh_ch" min="1" max="13"></div>
+        <div><label>Send four characters to the group</label><div class="row"><input type="text" id="meshText" maxlength="4" style="max-width:90px"><button id="btnMesh">Send</button><button id="btnMeshBuzz">Buzz</button></div></div>
+      </div>
+    </section>
+    <section>
+      <div class="row">
+        <button class="primary" id="btnSave">Save settings to the watch</button>
+        <button id="btnReload">Reload from the watch</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- =============================== APPS ============================== -->
+  <div id="tab-apps" class="tab hide">
+    <section>
+      <h2>Your apps</h2>
+      <p class="sub">Each app is an extra screen on the watch, after the built-in ones. No programming: pick a kind, fill it in, save. Up to 8.</p>
+      <table id="appList"></table>
+      <div class="row" style="margin-top:10px">
+        <span>New:</span>
+        <button data-new="sequence">Step timer</button>
+        <button data-new="picker">Random picker</button>
+        <button data-new="countdown">Countdown to a date</button>
+        <button data-new="message">Scrolling message</button>
+      </div>
+    </section>
+    <section id="appEditor" class="hide">
+      <h2 id="appEdTitle">App</h2>
+      <p class="sub" id="appEdHelp"></p>
+      <div class="grid">
+        <div><label>File name (letters, digits, dash)</label><input type="text" id="appFile" maxlength="20"></div>
+        <div><label>Title on the watch (4 characters)</label><input type="text" id="appTitle" maxlength="4"> <span id="appTitleSeg"></span></div>
+      </div>
+      <div id="edSequence" class="hide">
+        <h3>Steps</h3>
+        <div id="steps"></div>
+        <div class="row"><button class="small" id="btnAddStep">Add step</button>
+          <label class="check" style="margin:0"><input type="checkbox" id="seqRepeat"> Repeat until stopped</label></div>
+        <p><small>On the watch: SET starts, SET again skips to the next step, hold SET to stop. It buzzes and shows the label at every change, even if the watch was asleep.</small></p>
+      </div>
+      <div id="edPicker" class="hide">
+        <label>Names or labels, one per line, up to 32 (4 characters each). Leave empty to pick a number instead.</label>
+        <textarea id="pickItems" placeholder="AnnA&#10;bEn&#10;CArL"></textarea>
+        <div class="grid">
+          <div><label>…or pick a number from 1 to</label><input type="number" id="pickMax" min="2" max="9999" value="28"></div>
+        </div>
+        <label class="check"><input type="checkbox" id="pickNoRepeat"> Nobody twice until everyone has had a turn</label>
+        <div id="pickPreview" style="margin-top:8px"></div>
+      </div>
+      <div id="edCountdown" class="hide">
+        <div class="grid"><div><label>Date</label><input type="date" id="cdDate"></div></div>
+        <p><small>Shows the days left, for example <code>d 42</code>; on the last day, hours and minutes.</small></p>
+      </div>
+      <div id="edMessage" class="hide">
+        <label>Text (up to 96 characters)</label>
+        <input type="text" id="msgText" maxlength="96">
+        <div id="msgPreview" style="margin-top:8px"></div>
+      </div>
+      <p id="appWarn" class="warn"></p>
+      <div class="row">
+        <button class="primary" id="btnAppSave">Save to the watch</button>
+        <button id="btnAppCancel">Cancel</button>
+      </div>
+    </section>
+    <section>
+      <h2>Letters the display can show</h2>
+      <p class="sub">Four seven-segment digits cannot draw every letter. These work; anything else shows as a blank.</p>
+      <div id="alphabet"></div>
+    </section>
+  </div>
+
+  <!-- ============================== FILES ============================== -->
+  <div id="tab-files" class="tab hide">
+    <section>
+      <h2>Files on the watch</h2>
+      <meter id="fsMeter" min="0" max="1" value="0"></meter>
+      <small id="fsText"></small>
+      <table id="fileList" style="margin-top:8px"></table>
+      <div class="row" style="margin-top:10px">
+        <select id="upDir" style="max-width:150px"><option value="/">/ (top)</option><option value="/apps/">/apps/</option><option value="/notes/">/notes/</option></select>
+        <button id="btnUpload">Add a file from this computer…</button>
+        <input type="file" id="upFile" class="hide">
+        <button id="btnFilesRefresh">Refresh</button>
+      </div>
+      <p><small>Text files only (JSON, CSV, notes), and small ones: the watch has about 190 kB. Files in <code>/apps</code> become screens; anything else is simply kept for you, or for a pack's own page.</small></p>
+    </section>
+    <section id="fileView" class="hide">
+      <h2 id="fileViewName"></h2>
+      <textarea id="fileViewText" spellcheck="false"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="primary" id="btnFileSave">Save changes</button>
+        <button id="btnFileDownload">Download</button>
+        <button id="btnFileClose">Close</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- =============================== LAB =============================== -->
+  <div id="tab-lab" class="tab hide">
+    <section>
+      <h2>Live readings</h2>
+      <p class="sub">The watch sends its sensors to this page as they change. Record a run and open it in a spreadsheet.</p>
+      <div class="row">
+        <select id="labRate" style="max-width:190px"><option value="250">4 times a second</option><option value="500" selected>Twice a second</option><option value="1000">Every second</option><option value="5000">Every 5 seconds</option></select>
+        <button class="primary" id="btnStream">Start</button>
+        <button id="btnRecord" disabled>Record</button>
+        <button id="btnCsv" disabled>Save recording (CSV)</button>
+        <small id="labCount"></small>
+      </div>
+      <div class="tiles" id="tiles" style="margin-top:12px"></div>
+      <h3>Buttons pressed on the watch</h3>
+      <pre id="btnLog">—</pre>
+    </section>
+    <section>
+      <h2>Stored samples</h2>
+      <div class="row">
+        <button id="btnEnv">Read sensor now</button>
+        <button id="btnLog">Download the watch's log (CSV)</button>
+        <button id="btnLogClear">Clear the log</button>
+      </div>
+      <p id="envLine"><small>—</small></p>
+    </section>
+    <section>
+      <h2>Accessory socket</h2>
+      <p class="sub">Lists every I²C device that answers on the socket — the first thing to check when a new pack does nothing.</p>
+      <div class="row"><button id="btnI2c">Scan the socket</button></div>
+      <table id="i2cList" style="margin-top:8px"></table>
+    </section>
+  </div>
+
+  <!-- ============================== BACKUP ============================= -->
+  <div id="tab-backup" class="tab hide">
+    <section>
+      <h2>Backup and copy</h2>
+      <p class="sub">One file holds this watch's settings and every file on it. Keep it as a backup, or restore it onto another watch to make a twin. Wi-Fi passwords and the PIN are never included.</p>
+      <div class="row">
+        <button class="primary" id="btnBackup">Save a backup file</button>
+        <button id="btnRestore">Restore from a backup file…</button>
+        <input type="file" id="restoreFile" accept=".json" class="hide">
+      </div>
+      <p id="backupLine"><small></small></p>
+    </section>
+    <section>
+      <h2>Start over</h2>
+      <div class="row">
+        <button id="btnReboot">Restart watch</button>
+        <button id="btnFactory">Erase all settings</button>
+      </div>
+      <p><small>Erasing settings keeps the files; delete those from the Files tab.</small></p>
+    </section>
+  </div>
+
+  <!-- ============================== CONSOLE ============================ -->
+  <div id="tab-console" class="tab hide">
+    <section>
+      <h2>Conversation with the watch</h2>
+      <p class="sub">Every command this page sends, and every answer. Type your own — the full list is in docs/CONFIGURATION.md.</p>
+      <div class="row"><input type="text" id="raw" placeholder='{"cmd":"info"}' style="flex:1"><button id="btnRaw">Send</button></div>
+      <pre id="log" style="max-height:420px"></pre>
+    </section>
+  </div>
+</main>
+
+<!-- Written by the installer (installer/). Missing when the page is opened straight from the repository: that is fine. -->
+<script src="config.js"></script>
+<script>
+"use strict";
+const STUDIO_VERSION = "1.1";
+const CONFIG = Object.assign({ forName: "", message: "", from: "", accent: "green", theme: "auto" }, window.STUDIO_CONFIG || {});
+const $ = id => document.getElementById(id);
+const NUS = { service: "6e400001-b5a3-f393-e0a9-e50e24dcca9e", rx: "6e400002-b5a3-f393-e0a9-e50e24dcca9e", tx: "6e400003-b5a3-f393-e0a9-e50e24dcca9e" };
+const VIEWS = { time: "Time", seconds: "Seconds", date: "Date", battery: "Battery", stopwatch: "Stopwatch", timer: "Timer",
+  counter: "Tally counter", dice: "Dice", period: "Next bell", mesh: "Mesh", temp: "Temperature*", humidity: "Humidity*",
+  pressure: "Air pressure*", tuner: "Tuner*", metronome: "Metronome" };
+const ZONES = [["", "custom"], ["<+07>-7", "Bangkok, Jakarta (UTC+7)"], ["JST-9", "Tokyo, Seoul (UTC+9)"], ["<+08>-8", "Singapore, Beijing (UTC+8)"],
+  ["IST-5:30", "India (UTC+5:30)"], ["GMT0BST,M3.5.0/1,M10.5.0", "London"], ["CET-1CEST,M3.5.0,M10.5.0/3", "Paris, Berlin"],
+  ["EST5EDT,M3.2.0,M11.1.0", "New York"], ["CST6CDT,M3.2.0,M11.1.0", "Chicago"], ["MST7MDT,M3.2.0,M11.1.0", "Denver"],
+  ["PST8PDT,M3.2.0,M11.1.0", "Los Angeles"], ["AEST-10AEDT,M10.1.0,M4.1.0/3", "Sydney"], ["UTC0", "UTC"]];
+const TEXT = ["name", "hello", "tz", "ntp", "time_url", "time_key", "mesh_group", "time_src"];
+const NUMS = ["awake_s", "bright_min", "bright_max", "timer_s", "dice", "bpm", "tune_a4", "log_min", "alert_warn_min", "resync_h", "mesh_ch"];
+const BOOLS = ["h24", "auto_bright", "haptic", "fahrenheit", "usb_awake", "mesh"];
+const I2C_NAMES = { 0x68: "DS3231 clock (or MPU6050)", 0x57: "clock module memory / MAX30102", 0x76: "BME280 / BMP280", 0x77: "BME280 / BMP280",
+  0x3C: "SSD1306 display", 0x23: "BH1750 light", 0x10: "VEML7700 light", 0x62: "SCD40 CO2", 0x29: "VL53L0X distance", 0x18: "LIS3DH motion",
+  0x69: "MPU6050 motion", 0x48: "ADS1115 analogue inputs", 0x20: "MCP23017 extra pins", 0x40: "PCA9685 servo driver" };
+const APP_KINDS = {
+  sequence: ["Step timer", "A chain of timed steps: a lab protocol, a practice routine, work and break rounds."],
+  picker: ["Random picker", "Draws a name from your list, or a number. For choosing who answers next."],
+  countdown: ["Countdown to a date", "How many days are left: exams, a concert, the holidays."],
+  message: ["Scrolling message", "A line of text that slides across the display."] };
+
+// The watch's seven-segment alphabet. Must match glyph() in firmware/watch_v1/watch_v1.ino.
+// bit0 = a (top), b, c, d (bottom), e, f, g (middle).
+const GLYPHS = { "0":0x3F,"1":0x06,"2":0x5B,"3":0x4F,"4":0x66,"5":0x6D,"6":0x7D,"7":0x07,"8":0x7F,"9":0x6F,
+  A:0x77,a:0x77,B:0x7C,b:0x7C,C:0x39,c:0x58,D:0x5E,d:0x5E,E:0x79,e:0x79,F:0x71,f:0x71,G:0x3D,g:0x3D,H:0x76,h:0x74,
+  I:0x06,i:0x04,J:0x1E,j:0x1E,L:0x38,l:0x38,N:0x54,n:0x54,O:0x3F,o:0x5C,P:0x73,p:0x73,Q:0x67,q:0x67,R:0x50,r:0x50,
+  S:0x6D,s:0x6D,T:0x78,t:0x78,U:0x3E,u:0x1C,Y:0x6E,y:0x6E,"-":0x40,"_":0x08,"*":0x63," ":0x00 };
+const SEG_SHAPES = ["M4 2h12l-2 3H6z", "M17 3v13l-3-2V6z", "M17 18v13l-3-3v-8z", "M4 32h12l-2-3H6z", "M3 18v13l3-3v-8z", "M3 3v13l3-2V6z", "M5 17l2-2h6l2 2-2 2H7z"];
+
+function segHtml(text) {
+  let out = '<span class="seg" title="How the watch shows it">';
+  for (const ch of (text + "    ").slice(0, 4)) {
+    const bits = GLYPHS[ch] ?? 0;
+    out += '<svg viewBox="0 0 20 34">' + SEG_SHAPES.map((d, i) => '<path class="s' + (bits >> i & 1 ? " on" : "") + '" d="' + d + '"/>').join("") + "</svg>";
+  }
+  return out + "</span>";
+}
+const unshowable = text => [...new Set([...text].filter(ch => !(ch in GLYPHS)))];
+
+// ------------------------------------------------------------------ the link
+let link = null;            // { send(text), close() }
+let buffer = "";
+let waiting = [];           // resolvers for replies, in order
+let busy = Promise.resolve();   // commands go out one at a time
+let views = [], days = 0x3E, info = null;
+
+function log(dir, text) {
+  const el = $("log");
+  el.textContent += dir + " " + text + "\n";
+  if (el.textContent.length > 60000) el.textContent = el.textContent.slice(-40000);
+  el.scrollTop = el.scrollHeight;
+}
+function setStatus(text, bad) { $("status").textContent = text; $("status").className = bad ? "bad" : ""; }
+
+function onData(chunk) {
+  buffer += chunk;
+  let i;
+  while ((i = buffer.indexOf("\n")) >= 0) {
+    const line = buffer.slice(0, i).trim();
+    buffer = buffer.slice(i + 1);
+    if (!line) continue;
+    if (line[0] !== "{") { log("<", line); continue; }           // boot messages and other chatter
+    let msg;
+    try { msg = JSON.parse(line); } catch (e) { log("<", line); continue; }
+    if (msg.ev) { onEvent(msg); continue; }                      // live data, not a reply
+    log("<", line);
+    const w = waiting.shift();
+    if (w) w(msg);
+  }
+}
+
+function send(obj, timeout = 30000) {
+  const run = () => new Promise((resolve, reject) => {
+    if (!link) return reject(new Error("not connected"));
+    const text = JSON.stringify(obj);
+    log(">", obj.pass ? text.replace(JSON.stringify(obj.pass), '"****"') : text);
+    const timer = setTimeout(() => { waiting = waiting.filter(w => w !== done); reject(new Error("the watch did not answer - press a button to wake it")); }, timeout);
+    const done = msg => { clearTimeout(timer); resolve(msg); };
+    waiting.push(done);
+    link.send(text + "\n").catch(e => { clearTimeout(timer); reject(e); });
+  });
+  const result = busy.then(run, run);
+  busy = result.catch(() => {});
+  return result;
+}
+async function ok(promise) { const r = await promise; if (!r.ok) throw new Error(r.err || "the watch said no"); return r; }
+function run(fn) { fn().then(() => { if (link) setStatus($("status").textContent.replace(/ — .*$/, "") + " — done"); }).catch(e => setStatus(e.message, true)); }
+
+async function connectUsb() {
+  const port = await navigator.serial.requestPort();
+  await port.open({ baudRate: 115200 });
+  const writer = port.writable.getWriter();
+  const reader = port.readable.getReader();
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  let open = true;
+  (async () => {
+    try { while (open) { const { value, done } = await reader.read(); if (done) break; onData(dec.decode(value)); } }
+    catch (e) { if (open) disconnected("USB: " + e.message); }
+  })();
+  link = { send: t => writer.write(enc.encode(t)),
+           close: async () => { open = false; try { await reader.cancel(); } catch (e) {} try { writer.releaseLock(); await port.close(); } catch (e) {} } };
+  await afterConnect("USB");
+}
+
+async function connectBle() {
+  const device = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: "Watch-" }], optionalServices: [NUS.service] });
+  const server = await device.gatt.connect();
+  const service = await server.getPrimaryService(NUS.service);
+  const rx = await service.getCharacteristic(NUS.rx);
+  const tx = await service.getCharacteristic(NUS.tx);
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  tx.addEventListener("characteristicvaluechanged", e => onData(dec.decode(e.target.value)));
+  await tx.startNotifications();
+  device.addEventListener("gattserverdisconnected", () => disconnected("Bluetooth link closed"));
+  link = { send: async t => { const bytes = enc.encode(t); for (let i = 0; i < bytes.length; i += 20) await rx.writeValue(bytes.slice(i, i + 20)); },
+           close: async () => device.gatt.disconnect() };
+  await afterConnect("Bluetooth");
+}
+
+async function connectDemo() {
+  const sim = new SimWatch(onData);
+  link = { send: async t => sim.receive(t), close: async () => sim.stop() };
+  await afterConnect("the demo");
+}
+
+function disconnected(why) {
+  link = null; waiting = []; streaming = false;
+  for (const el of document.querySelectorAll(".tab")) el.classList.add("hide");
+  $("tabs").classList.add("hide"); $("pinRow").classList.add("hide"); $("hint").classList.remove("hide");
+  $("btnDisconnect").disabled = true;
+  setStatus(why || "Not connected", !!why);
+}
+
+async function afterConnect(how) {
+  $("btnDisconnect").disabled = false;
+  setStatus("Connecting by " + how + " …");
+  info = await send({ cmd: "info" }, 6000);
+  setStatus("Connected to “" + info.name + "” by " + how);
+  $("hint").classList.add("hide");
+  if (info.locked) { $("pinRow").classList.remove("hide"); return; }
+  await openWatch();
+}
+
+async function openWatch() {
+  $("pinRow").classList.add("hide");
+  $("tabs").classList.remove("hide");
+  showInfo(info);
+  const cfg = await loadSettings();
+  showTab("home");
+  // First time this computer has seen this watch: offer the quick setup.
+  if (!remember("setup:" + info.name)) openQuick(cfg);
+}
+
+// ------------------------------------------------------------- personalising
+// Small per-computer memory. Can be blocked (private windows); everything works without it.
+function remember(key, value) {
+  try {
+    if (value === undefined) return localStorage.getItem("ws:" + key);
+    localStorage.setItem("ws:" + key, value);
+  } catch (e) { return null; }
+}
+
+const ACCENTS = { green: ["#0b6e4f", "#4cc79a", "#06281c"], blue: ["#1f5fbf", "#7fb0ff", "#0a1f40"], purple: ["#6a3fb5", "#b99cff", "#22124a"],
+  orange: ["#b5530b", "#ffb37a", "#3a1a04"], red: ["#a3231b", "#ff8a80", "#3d0b08"], teal: ["#0f6e7a", "#6fd3df", "#04282d"] };
+
+function applyConfig() {
+  const root = document.documentElement;
+  if (CONFIG.theme === "light" || CONFIG.theme === "dark") root.dataset.theme = CONFIG.theme;
+  const a = ACCENTS[CONFIG.accent] || ACCENTS.green;
+  const dark = CONFIG.theme === "dark" || (CONFIG.theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+  root.style.setProperty("--accent", dark ? a[1] : a[0]);
+  root.style.setProperty("--on-accent", dark ? a[2] : "#fff");
+  if (CONFIG.forName) {
+    document.title = "Watch Studio - " + CONFIG.forName;
+    $("tagline").textContent = "Made for " + CONFIG.forName + ". Set up, personalise and extend your watch.";
+  }
+  if (CONFIG.message && !remember("welcomeClosed")) {
+    $("welcomeTitle").textContent = CONFIG.forName ? "For " + CONFIG.forName : "Welcome";
+    $("welcomeText").textContent = CONFIG.message + (CONFIG.from ? "\n\n- " + CONFIG.from : "");
+    $("welcome").classList.remove("hide");
+  }
+}
+
+// Picks the time-zone list entry that gives the same offset as this computer today.
+function guessZone() {
+  const name = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  const byCity = { "Asia/Bangkok": "<+07>-7", "Asia/Jakarta": "<+07>-7", "Asia/Ho_Chi_Minh": "<+07>-7", "Asia/Tokyo": "JST-9", "Asia/Seoul": "JST-9",
+    "Asia/Singapore": "<+08>-8", "Asia/Shanghai": "<+08>-8", "Asia/Kolkata": "IST-5:30", "Europe/London": "GMT0BST,M3.5.0/1,M10.5.0",
+    "Europe/Paris": "CET-1CEST,M3.5.0,M10.5.0/3", "Europe/Berlin": "CET-1CEST,M3.5.0,M10.5.0/3", "America/New_York": "EST5EDT,M3.2.0,M11.1.0",
+    "America/Chicago": "CST6CDT,M3.2.0,M11.1.0", "America/Denver": "MST7MDT,M3.2.0,M11.1.0", "America/Los_Angeles": "PST8PDT,M3.2.0,M11.1.0",
+    "Australia/Sydney": "AEST-10AEDT,M10.1.0,M4.1.0/3", "UTC": "UTC0" };
+  if (byCity[name]) return byCity[name];
+  // Not in the list: a fixed offset is right except across daylight-saving changes.
+  const m = -new Date().getTimezoneOffset(), sign = m >= 0 ? "-" : "+", h = Math.floor(Math.abs(m) / 60), mm = Math.abs(m) % 60;
+  return "<" + (m >= 0 ? "+" : "-") + String(h).padStart(2, "0") + (mm ? String(mm).padStart(2, "0") : "") + ">" + sign + h + (mm ? ":" + mm : "");
+}
+
+function openQuick(cfg) {
+  cfg = cfg || {};
+  $("qName").value = cfg.name || CONFIG.forName || "";
+  $("qHello").value = cfg.hello || "";
+  $("qHelloSeg").innerHTML = segHtml($("qHello").value);
+  const guess = guessZone();
+  $("qTz").innerHTML = "";
+  const choices = ZONES.filter(z => z[0]);
+  if (!choices.some(z => z[0] === guess)) choices.unshift([guess, "This computer's zone (" + guess + ")"]);
+  for (const z of choices) { const o = document.createElement("option"); o.value = z[0]; o.textContent = z[1]; $("qTz").appendChild(o); }
+  $("qTz").value = guess;
+  $("quick").classList.remove("hide");
+}
+
+async function finishQuick() {
+  const cfg = { tz: $("qTz").value };
+  if ($("qName").value.trim()) cfg.name = $("qName").value.trim();
+  cfg.hello = $("qHello").value;
+  await ok(send({ cmd: "set", cfg }));
+  if ($("qSsid").value.trim()) await ok(send({ cmd: "wifi_add", ssid: $("qSsid").value.trim(), pass: $("qPass").value }));
+  if ($("qTime").checked) await ok(send({ cmd: "time", epoch: Math.round(Date.now() / 1000) }));
+  if (cfg.hello) await send({ cmd: "show", text: cfg.hello });
+  $("qPass").value = "";
+  await refreshInfo();
+  await loadSettings();
+  remember("setup:" + info.name, "1");
+  $("quick").classList.add("hide");
+}
+
+function showTab(name) {
+  for (const el of document.querySelectorAll(".tab")) el.classList.toggle("hide", el.id !== "tab-" + name);
+  for (const b of $("tabs").children) b.classList.toggle("on", b.dataset.tab === name);
+  if (name === "apps") run(loadApps);
+  if (name === "files") run(loadFiles);
+}
+
+// ------------------------------------------------------------- watch + wifi
+function showInfo(i) {
+  const rows = [["Name", esc(i.name)], ["Firmware", esc(i.fw)],
+    ["Battery", i.battery_pct + " %  (" + (i.battery_mv / 1000).toFixed(2) + " V)" + (i.charging ? ", charging" : "")],
+    ["Watch time", i.time_valid ? new Date(i.time * 1000).toLocaleString() : "not set"],
+    ["Last network sync", i.last_sync ? new Date(i.last_sync * 1000).toLocaleString() : "never"],
+    ["Clock chip", i.rtc ? "fitted" : "not found"], ["Environment pack", i.env ? "plugged in" : "not found"],
+    ["Custom apps", i.apps ?? 0], ["Group members in range", i.peers]];
+  $("info").innerHTML = rows.map(r => "<tr><th>" + r[0] + "</th><td>" + r[1] + "</td></tr>").join("");
+}
+async function refreshInfo() { info = await send({ cmd: "info" }); showInfo(info); }
+function esc(s) { return String(s).replace(/[&<>"']/g, c => "&#" + c.charCodeAt(0) + ";"); }
+
+function drawChips() {
+  $("views").innerHTML = "";
+  const order = views.concat(Object.keys(VIEWS).filter(v => !views.includes(v)));
+  for (const v of order) {
+    const el = document.createElement("span");
+    const n = views.indexOf(v);
+    el.className = "chip" + (n >= 0 ? " on" : "");
+    el.textContent = (n >= 0 ? (n + 1) + ". " : "") + VIEWS[v];
+    el.onclick = () => { if (n >= 0) views.splice(n, 1); else views.push(v); drawChips(); };
+    $("views").appendChild(el);
+  }
+  $("days").innerHTML = "";
+  ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].forEach((name, bit) => {
+    const el = document.createElement("span");
+    el.className = "chip" + (days & (1 << bit) ? " on" : "");
+    el.textContent = name;
+    el.onclick = () => { days ^= 1 << bit; drawChips(); };
+    $("days").appendChild(el);
+  });
+}
+
+function fillForm(cfg) {
+  for (const k of TEXT.concat(NUMS)) if (k in cfg) $(k).value = cfg[k];
+  for (const k of BOOLS) if (k in cfg) $(k).checked = !!cfg[k];
+  views = (cfg.views || []).filter(v => v in VIEWS);
+  days = cfg.alert_days ?? 0x3E;
+  $("alerts").value = (cfg.alerts || []).join(" ");
+  $("tzPick").value = ZONES.some(z => z[0] === cfg.tz) ? cfg.tz : "";
+  $("pinSet").value = "";
+  $("pinSet").placeholder = cfg.pin_set ? "set — type to change" : "none";
+  $("helloSeg").innerHTML = segHtml($("hello").value);
+  if (cfg.wifi) {
+    $("wifiList").innerHTML = cfg.wifi.length
+      ? cfg.wifi.map(w => "<tr><td>" + esc(w.ssid) + "</td><td class='r'><button class='small' data-ssid=\"" + esc(w.ssid) + "\">Forget</button></td></tr>").join("")
+      : "<tr><td><small>No networks saved yet.</small></td></tr>";
+    for (const b of $("wifiList").querySelectorAll("button")) b.onclick = () => run(async () => { await ok(send({ cmd: "wifi_del", ssid: b.dataset.ssid })); await loadSettings(); });
+  }
+  drawChips();
+}
+
+function readForm() {
+  const cfg = {};
+  for (const k of TEXT) cfg[k] = $(k).value;
+  for (const k of NUMS) if ($(k).value !== "") cfg[k] = Number($(k).value);
+  for (const k of BOOLS) cfg[k] = $(k).checked;
+  cfg.views = views;
+  cfg.alert_days = days;
+  cfg.alerts = $("alerts").value.split(/[\s,;]+/).filter(Boolean);
+  return cfg;
+}
+async function loadSettings() { const r = await ok(send({ cmd: "get" })); fillForm(r.cfg); return r.cfg; }
+
+// ------------------------------------------------------------------- files
+async function listDir(path) { const r = await send({ cmd: "fs_list", path }); return r.ok ? r.files : []; }
+async function readFile(path) {
+  let text = "", r;
+  do { r = await ok(send({ cmd: "fs_read", path, offset: new TextEncoder().encode(text).length })); text += r.data; } while (!r.eof);
+  return text;
+}
+async function writeFile(path, text) {
+  // Pieces small enough for the watch's line buffer even when every character needs escaping.
+  const size = 240;
+  if (text.length === 0) return ok(send({ cmd: "fs_write", path, data: "", append: false }));
+  for (let i = 0; i < text.length; i += size) await ok(send({ cmd: "fs_write", path, data: text.slice(i, i + size), append: i > 0 }));
+}
+async function allFiles() {
+  const out = [];
+  for (const f of await listDir("/")) {
+    if (!f.dir) { out.push({ path: "/" + f.name, size: f.size }); continue; }
+    for (const g of await listDir("/" + f.name)) if (!g.dir) out.push({ path: "/" + f.name + "/" + g.name, size: g.size });
+  }
+  return out.sort((a, b) => a.path.localeCompare(b.path));
+}
+async function loadFiles() {
+  const fs = await ok(send({ cmd: "fs_info" }));
+  $("fsMeter").value = fs.used / fs.total;
+  $("fsText").textContent = Math.round(fs.used / 1024) + " kB used of " + Math.round(fs.total / 1024) + " kB";
+  const files = await allFiles();
+  $("fileList").innerHTML = files.length ? files.map(f => "<tr><td>" + esc(f.path) + "</td><td>" + f.size + " bytes</td><td class='r'>" +
+    "<button class='small' data-open=\"" + esc(f.path) + "\">Open</button> <button class='small' data-del=\"" + esc(f.path) + "\">Delete</button></td></tr>").join("")
+    : "<tr><td><small>No files yet.</small></td></tr>";
+  for (const b of $("fileList").querySelectorAll("[data-open]")) b.onclick = () => run(() => openFile(b.dataset.open));
+  for (const b of $("fileList").querySelectorAll("[data-del]")) b.onclick = () => { if (confirm("Delete " + b.dataset.del + " from the watch?")) run(async () => { await ok(send({ cmd: "fs_delete", path: b.dataset.del })); await loadFiles(); }); };
+}
+let openPath = "";
+async function openFile(path) {
+  openPath = path;
+  $("fileViewName").textContent = path;
+  $("fileViewText").value = await readFile(path);
+  $("fileView").classList.remove("hide");
+}
+function download(name, text, type) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: type || "text/plain" }));
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+// -------------------------------------------------------------------- apps
+let appEditing = null;      // { kind, path }
+async function loadApps() {
+  const files = (await listDir("/apps")).filter(f => f.name.endsWith(".json")).sort((a, b) => a.name.localeCompare(b.name));
+  const rows = [];
+  for (const f of files) {
+    let app = null;
+    try { app = JSON.parse(await readFile("/apps/" + f.name)); } catch (e) {}
+    const kind = app && APP_KINDS[app.type] ? APP_KINDS[app.type][0] : "Not a valid app";
+    rows.push("<tr><td>" + segHtml(app?.title || "bAd") + "</td><td><b>" + esc(f.name.replace(/\.json$/, "")) + "</b><br><small>" + esc(kind) + (app ? " — " + esc(describe(app)) : "") + "</small></td>" +
+      "<td class='r'><button class='small' data-edit=\"" + esc(f.name) + "\">Edit</button> <button class='small' data-del=\"" + esc(f.name) + "\">Delete</button></td></tr>");
+  }
+  $("appList").innerHTML = rows.length ? rows.join("") : "<tr><td><small>No apps yet. Make one below.</small></td></tr>";
+  for (const b of $("appList").querySelectorAll("[data-edit]")) b.onclick = () => run(async () => editApp(JSON.parse(await readFile("/apps/" + b.dataset.edit)), b.dataset.edit.replace(/\.json$/, "")));
+  for (const b of $("appList").querySelectorAll("[data-del]")) b.onclick = () => { if (confirm("Delete this app from the watch?")) run(async () => { await ok(send({ cmd: "fs_delete", path: "/apps/" + b.dataset.del })); await loadApps(); }); };
+}
+function describe(app) {
+  if (app.type === "sequence") return (app.steps || []).length + " steps, " + Math.round((app.steps || []).reduce((t, s) => t + (s.s || 0), 0) / 60) + " min" + (app.repeat ? ", repeating" : "");
+  if (app.type === "picker") return (app.items || []).length ? (app.items.length + " names") : ("1 to " + (app.max || 6));
+  if (app.type === "countdown") return "to " + app.date;
+  if (app.type === "message") return "“" + (app.text || "") + "”";
+  return "";
+}
+function addStepRow(label = "", seconds = 60) {
+  const row = document.createElement("div");
+  row.className = "step";
+  row.innerHTML = '<input type="text" maxlength="4" placeholder="label" value="' + esc(label) + '"><div class="row" style="gap:4px"><input type="number" min="0" max="1080" style="max-width:80px" value="' + Math.floor(seconds / 60) + '"><small>min</small>' +
+    '<input type="number" min="0" max="59" style="max-width:70px" value="' + (seconds % 60) + '"><small>s</small></div><span></span><button class="small">Remove</button>';
+  const [lab, min, sec] = row.querySelectorAll("input");
+  const paint = () => { row.children[2].innerHTML = segHtml(lab.value); checkApp(); };
+  lab.oninput = paint; min.oninput = sec.oninput = checkApp;
+  row.querySelector("button").onclick = () => { row.remove(); checkApp(); };
+  $("steps").appendChild(row);
+  paint();
+}
+function editApp(app, fileName) {
+  const kind = app.type;
+  appEditing = { kind };
+  $("appEdTitle").textContent = APP_KINDS[kind][0];
+  $("appEdHelp").textContent = APP_KINDS[kind][1];
+  $("appFile").value = fileName || "";
+  $("appTitle").value = app.title || "";
+  for (const k of ["Sequence", "Picker", "Countdown", "Message"]) $("ed" + k).classList.toggle("hide", k.toLowerCase() !== kind);
+  if (kind === "sequence") {
+    $("steps").innerHTML = "";
+    for (const s of app.steps || [{ label: "", s: 60 }]) addStepRow(s.label || "", s.s || 60);
+    $("seqRepeat").checked = !!app.repeat;
+  } else if (kind === "picker") {
+    $("pickItems").value = (app.items || []).join("\n");
+    $("pickMax").value = app.max || 28;
+    $("pickNoRepeat").checked = !!app.no_repeat;
+  } else if (kind === "countdown") {
+    $("cdDate").value = app.date || "";
+  } else {
+    $("msgText").value = app.text || "";
+  }
+  $("appEditor").classList.remove("hide");
+  checkApp();
+  $("appEditor").scrollIntoView({ behavior: "smooth" });
+}
+function buildApp() {
+  const kind = appEditing.kind, app = { type: kind, title: $("appTitle").value };
+  if (kind === "sequence") {
+    app.steps = [...$("steps").children].map(r => { const [l, m, s] = r.querySelectorAll("input"); return { label: l.value, s: Number(m.value) * 60 + Number(s.value) }; });
+    app.repeat = $("seqRepeat").checked;
+  } else if (kind === "picker") {
+    app.items = $("pickItems").value.split("\n").map(s => s.trim()).filter(Boolean);
+    if (!app.items.length) { delete app.items; app.max = Number($("pickMax").value); }
+    app.no_repeat = $("pickNoRepeat").checked;
+  } else if (kind === "countdown") {
+    app.date = $("cdDate").value;
+  } else {
+    app.text = $("msgText").value;
+  }
+  return app;
+}
+function checkApp() {
+  if (!appEditing) return [];
+  const app = buildApp(), problems = [];
+  $("appTitleSeg").innerHTML = segHtml(app.title);
+  let shown = app.title;
+  if (app.type === "sequence") {
+    if (!app.steps.length) problems.push("Add at least one step.");
+    if (app.steps.length > 32) problems.push("At most 32 steps.");
+    if (app.steps.some(s => s.s < 1)) problems.push("Every step needs a time.");
+    shown += app.steps.map(s => s.label).join("");
+  } else if (app.type === "picker") {
+    const items = app.items || [];
+    if (items.length > 32) problems.push("At most 32 names.");
+    if (items.some(s => s.length > 4)) problems.push("Names longer than 4 characters will be cut: " + items.filter(s => s.length > 4).join(", "));
+    $("pickPreview").innerHTML = items.slice(0, 8).map(segHtml).join(" ");
+    shown += items.join("");
+  } else if (app.type === "countdown") {
+    if (!app.date) problems.push("Choose a date.");
+  } else {
+    if (!app.text) problems.push("Type a message.");
+    $("msgPreview").innerHTML = segHtml(app.text.slice(0, 4)) + " " + segHtml(app.text.slice(4, 8)) + " " + segHtml(app.text.slice(8, 12));
+    shown += app.text;
+  }
+  if (!/^[A-Za-z0-9-]{1,20}$/.test($("appFile").value)) problems.push("Give it a file name: letters, digits and dashes only.");
+  const bad = unshowable(shown);
+  if (bad.length) problems.push("The display cannot draw: " + bad.join(" ") + "  (they will show as blanks)");
+  $("appWarn").textContent = problems.join("  ");
+  return problems;
+}
+
+// --------------------------------------------------------------------- lab
+let streaming = false, recording = false, recorded = [], tiles = {};
+const FIELDS = { temp_c: ["Temperature", "°C"], humidity: ["Humidity", "%"], hpa: ["Air pressure", "hPa"], light_mv: ["Light", "mV"], batt_mv: ["Battery", "mV"] };
+function onEvent(msg) {
+  if (msg.ev === "btn") {
+    const el = $("btnLog");
+    el.textContent = (el.textContent === "—" ? "" : el.textContent) + new Date().toLocaleTimeString() + "  " + msg.b.toUpperCase() + " " + msg.t + "\n";
+    el.scrollTop = el.scrollHeight;
+  } else if (msg.ev === "data") {
+    for (const key in FIELDS) {
+      if (!(key in msg)) continue;
+      if (!tiles[key]) {
+        const t = document.createElement("div");
+        t.className = "tile";
+        t.innerHTML = "<span>" + FIELDS[key][0] + "</span><b></b><span>" + FIELDS[key][1] + "</span>";
+        $("tiles").appendChild(t);
+        tiles[key] = t.querySelector("b");
+      }
+      tiles[key].textContent = msg[key];
+    }
+    if (recording) { recorded.push(msg); $("labCount").textContent = recorded.length + " readings recorded"; }
+  }
+}
+
+// ------------------------------------------------------------------ backup
+async function makeBackup() {
+  const cfg = (await ok(send({ cmd: "get" }))).cfg;
+  delete cfg.wifi; delete cfg.pin_set;
+  const files = {};
+  for (const f of await allFiles()) files[f.path] = await readFile(f.path);
+  return { watch_backup: 1, made: new Date().toISOString(), name: cfg.name, cfg, files };
+}
+async function restoreBackup(b) {
+  if (!b.watch_backup || !b.cfg) throw new Error("that is not a watch backup file");
+  await ok(send({ cmd: "set", cfg: b.cfg }));
+  for (const path in b.files || {}) await writeFile(path, b.files[path]);
+  await loadSettings();
+  return Object.keys(b.files || {}).length;
+}
+
+// ----------------------------------------------------------- the demo watch
+// A stand-in that answers the same commands, so the app can be explored (and
+// tested) with no hardware. It keeps its state for as long as the page is open.
+class SimWatch {
+  constructor(emit) {
+    this.emit = emit;
+    this.cfg = { name: "Demo", hello: "HI", tz: "<+07>-7", h24: true, awake_s: 5, auto_bright: true, bright_min: 20, bright_max: 255, haptic: true,
+      views: ["time", "date", "battery", "stopwatch", "timer"], wifi: [{ ssid: "Staffroom" }], time_src: "ntp", ntp: "pool.ntp.org", time_url: "", time_key: "",
+      resync_h: 168, usb_awake: true, pin_set: false, mesh: false, mesh_ch: 1, mesh_group: "class", timer_s: 300, dice: 6, alerts: ["08:30", "09:20"],
+      alert_days: 62, alert_warn_min: 5, log_min: 0, fahrenheit: false, tune_a4: 440, bpm: 100 };
+    this.files = { "/apps/10-lab.json": JSON.stringify({ type: "sequence", title: "LAb1", repeat: false, steps: [{ label: "StAn", s: 120 }, { label: "rInS", s: 30 }, { label: "drY", s: 60 }] }),
+                   "/apps/20-pick.json": JSON.stringify({ type: "picker", title: "PICk", items: ["AnnA", "bEn", "CArL", "dAnA"], no_repeat: true }) };
+    this.timer = null;
+  }
+  stop() { clearInterval(this.timer); }
+  receive(text) { for (const line of text.split("\n")) if (line.trim()) setTimeout(() => this.emit(JSON.stringify(this.handle(JSON.parse(line))) + "\n"), 30); return Promise.resolve(); }
+  handle(q) {
+    const c = this.cfg, r = { ok: true };
+    switch (q.cmd) {
+      case "info": return { ok: true, fw: "2.1.0-demo", name: c.name, mac: "DE:M0:00:00:00:01", battery_mv: 3980, battery_pct: 74, charging: false, rtc: true,
+        time: Math.round(Date.now() / 1000), time_valid: true, last_sync: Math.round(Date.now() / 1000) - 7200, usb: true, peers: 2, env: true,
+        apps: Object.keys(this.files).filter(p => p.startsWith("/apps/")).length, locked: false };
+      case "get": r.cfg = JSON.parse(JSON.stringify(c)); return r;
+      case "set": for (const k in q.cfg || {}) if (k !== "wifi" && k !== "pin") c[k] = q.cfg[k]; if ("pin" in (q.cfg || {})) c.pin_set = !!q.cfg.pin; return r;
+      case "wifi_add": if (!q.ssid) return { ok: false, err: "need ssid" }; c.wifi = c.wifi.filter(w => w.ssid !== q.ssid).concat({ ssid: q.ssid }).slice(0, 5); return r;
+      case "wifi_del": c.wifi = c.wifi.filter(w => w.ssid !== q.ssid); return r;
+      case "wifi_scan": r.networks = [{ ssid: "Staffroom", rssi: -48, open: false }, { ssid: "School-Guest", rssi: -67, open: true }, { ssid: "Lab-2G", rssi: -71, open: false }]; return r;
+      case "env": return { ok: true, temp_c: (24 + Math.random()).toFixed(2), humidity: (55 + Math.random() * 2).toFixed(1), hpa: "1009.4", light_mv: 1200 };
+      case "log_get": r.total = 6; r.from = q.from || 0; r.rows = [];
+        for (let i = r.from; i < 6; i++) r.rows.push([Math.round(Date.now() / 1000) - (6 - i) * 900, (23.5 + i * 0.2).toFixed(1), (58 - i).toFixed(1), "1009." + i, 900 + i * 60]); return r;
+      case "fs_info": r.total = 192512; r.used = 8192 + Object.values(this.files).reduce((t, s) => t + s.length, 0); r.apps = 2; r.max_apps = 8; return r;
+      case "fs_list": {
+        const path = (q.path || "/").replace(/\/$/, "") + "/", seen = {};
+        r.files = [];
+        for (const p in this.files) {
+          if (!p.startsWith(path)) continue;
+          const rest = p.slice(path.length), cut = rest.indexOf("/");
+          if (cut < 0) r.files.push({ name: rest, size: this.files[p].length, dir: false });
+          else if (!seen[rest.slice(0, cut)]) { seen[rest.slice(0, cut)] = 1; r.files.push({ name: rest.slice(0, cut), size: 0, dir: true }); }
+        }
+        return r;
+      }
+      case "fs_read": { const s = this.files[q.path]; if (s === undefined) return { ok: false, err: "no such file" };
+        const off = q.offset || 0; r.data = s.slice(off, off + 400); r.size = s.length; r.eof = off + 400 >= s.length; return r; }
+      case "fs_write": this.files[q.path] = (q.append ? this.files[q.path] || "" : "") + (q.data || ""); return r;
+      case "fs_delete": if (!(q.path in this.files)) return { ok: false, err: "no such file" }; delete this.files[q.path]; return r;
+      case "i2c_scan": r.found = [0x57, 0x68, 0x76]; return r;
+      case "stream": clearInterval(this.timer);
+        if (q.ms) this.timer = setInterval(() => {
+          const t = Date.now() / 1000;
+          this.emit(JSON.stringify({ ev: "data", t: Math.round(t), temp_c: (24 + Math.sin(t / 20)).toFixed(2), humidity: (55 + 3 * Math.cos(t / 30)).toFixed(1), hpa: "1009.4", light_mv: Math.round(1200 + 300 * Math.sin(t / 7)), batt_mv: 3980 }) + "\n");
+          if (Math.random() < 0.08) this.emit('{"ev":"btn","b":"set","t":"short"}\n');
+        }, q.ms);
+        r.ms = q.ms || 0; return r;
+      case "auth": case "sync": case "time": case "buzz": case "show": case "log_clear": case "reboot": case "factory_reset": case "mesh_send": return r;
+      default: return { ok: false, err: "unknown cmd" };
+    }
+  }
+}
+
+// ------------------------------------------------------------------ wiring
+$("ver").textContent = "Studio " + STUDIO_VERSION;
+applyConfig();
+$("btnWelcomeClose").onclick = () => { $("welcome").classList.add("hide"); remember("welcomeClosed", "1"); };
+$("qHello").oninput = () => { $("qHelloSeg").innerHTML = segHtml($("qHello").value); };
+$("btnQuickOpen").onclick = () => run(async () => openQuick(await loadSettings()));
+$("btnQuickDone").onclick = () => run(finishQuick);
+$("btnQuickSkip").onclick = () => { if (info) remember("setup:" + info.name, "1"); $("quick").classList.add("hide"); };
+if (!navigator.serial) $("btnUsb").disabled = true;
+if (!navigator.bluetooth) $("btnBle").disabled = true;
+if (!navigator.serial && !navigator.bluetooth) $("unsupported").classList.remove("hide");
+for (const z of ZONES) { const o = document.createElement("option"); o.value = z[0]; o.textContent = z[1]; $("tzPick").appendChild(o); }
+$("alphabet").innerHTML = "0123456789AbCcdEFGHhIiJLnOoPqrStUuY-_".match(/.{1,4}/g).map(g => segHtml(g) + " <code>" + g + "</code>").join(" &nbsp; ");
+for (const b of $("tabs").children) b.onclick = () => showTab(b.dataset.tab);
+$("tzPick").onchange = () => { if ($("tzPick").value) $("tz").value = $("tzPick").value; };
+$("hello").oninput = () => { $("helloSeg").innerHTML = segHtml($("hello").value); };
+$("btnUsb").onclick = () => run(connectUsb);
+$("btnBle").onclick = () => run(connectBle);
+$("btnDemo").onclick = () => run(connectDemo);
+$("btnDisconnect").onclick = () => run(async () => { if (link) await link.close(); disconnected(); });
+$("btnPin").onclick = () => run(async () => { await ok(send({ cmd: "auth", pin: $("pin").value })); await openWatch(); });
+$("btnReload").onclick = () => run(loadSettings);
+$("btnSave").onclick = () => run(async () => {
+  const cfg = readForm();
+  if ($("pinSet").value !== "") cfg.pin = $("pinSet").value;
+  await ok(send({ cmd: "set", cfg }));
+  await loadSettings();
+  await refreshInfo();
+});
+$("btnWifiAdd").onclick = () => run(async () => { await ok(send({ cmd: "wifi_add", ssid: $("ssid").value, pass: $("pass").value })); $("pass").value = ""; $("ssid").value = ""; await loadSettings(); });
+$("btnScan").onclick = () => run(async () => {
+  const r = await ok(send({ cmd: "wifi_scan" }, 20000));
+  $("scanList").innerHTML = r.networks.map(n => "<option value=\"" + esc(n.ssid) + "\">" + n.rssi + " dBm</option>").join("");
+  $("ssid").focus();
+});
+$("btnSync").onclick = () => run(async () => { await ok(send({ cmd: "sync" }, 40000)); await refreshInfo(); });
+$("btnTimePc").onclick = () => run(async () => { await ok(send({ cmd: "time", epoch: Math.round(Date.now() / 1000) })); await refreshInfo(); });
+$("btnMesh").onclick = () => run(() => ok(send({ cmd: "mesh_send", text: $("meshText").value })));
+$("btnMeshBuzz").onclick = () => run(() => ok(send({ cmd: "mesh_send" })));
+$("btnBuzz").onclick = () => run(() => ok(send({ cmd: "buzz", ms: 300 })));
+$("btnShow").onclick = () => run(() => ok(send({ cmd: "show", text: $("showText").value })));
+
+for (const b of document.querySelectorAll("[data-new]")) b.onclick = () => editApp({ type: b.dataset.new, title: "" }, "");
+for (const id of ["appFile", "appTitle", "pickItems", "pickMax", "cdDate", "msgText"]) $(id).oninput = checkApp;
+$("btnAddStep").onclick = () => addStepRow();
+$("btnAppCancel").onclick = () => { appEditing = null; $("appEditor").classList.add("hide"); };
+$("btnAppSave").onclick = () => run(async () => {
+  const blocking = checkApp().filter(p => !p.startsWith("The display cannot") && !p.startsWith("Names longer"));
+  if (blocking.length) throw new Error(blocking[0]);
+  await writeFile("/apps/" + $("appFile").value + ".json", JSON.stringify(buildApp()));
+  appEditing = null;
+  $("appEditor").classList.add("hide");
+  await loadApps();
+});
+
+$("btnFilesRefresh").onclick = () => run(loadFiles);
+$("btnUpload").onclick = () => $("upFile").click();
+$("upFile").onchange = () => run(async () => {
+  const f = $("upFile").files[0];
+  if (!f) return;
+  if (f.size > 60000) throw new Error("that file is too big for the watch (60 kB at most)");
+  const text = await f.text();
+  if (/[\u0000-\u0008\u000E-\u001F]/.test(text)) throw new Error("that does not look like a text file");
+  await writeFile($("upDir").value + f.name.replace(/[^A-Za-z0-9._-]/g, "_"), text);
+  $("upFile").value = "";
+  await loadFiles();
+});
+$("btnFileSave").onclick = () => run(async () => { await writeFile(openPath, $("fileViewText").value); await loadFiles(); });
+$("btnFileDownload").onclick = () => download(openPath.split("/").pop(), $("fileViewText").value);
+$("btnFileClose").onclick = () => $("fileView").classList.add("hide");
+
+$("btnStream").onclick = () => run(async () => {
+  streaming = !streaming;
+  await ok(send({ cmd: "stream", ms: streaming ? Number($("labRate").value) : 0 }));
+  $("btnStream").textContent = streaming ? "Stop" : "Start";
+  $("btnRecord").disabled = !streaming;
+  if (!streaming) { recording = false; $("btnRecord").textContent = "Record"; }
+});
+$("btnRecord").onclick = () => {
+  recording = !recording;
+  if (recording) { recorded = []; $("labCount").textContent = "recording…"; }
+  $("btnRecord").textContent = recording ? "Stop recording" : "Record";
+  $("btnCsv").disabled = recording || !recorded.length;
+};
+$("btnCsv").onclick = () => {
+  const keys = Object.keys(FIELDS).filter(k => recorded.some(r => k in r));
+  download("watch-live.csv", "time,unix_time," + keys.join(",") + "\n" + recorded.map(r => [new Date(r.t * 1000).toISOString(), r.t].concat(keys.map(k => r[k] ?? "")).join(",")).join("\n") + "\n", "text/csv");
+};
+$("btnEnv").onclick = () => run(async () => {
+  const r = await send({ cmd: "env" });
+  $("envLine").textContent = r.ok ? r.temp_c + " °C,  " + (r.humidity ?? "—") + " % humidity,  " + r.hpa + " hPa,  light " + r.light_mv + " mV" : r.err;
+});
+$("btnLog").onclick = () => run(async () => {
+  let rows = [], total = 1;
+  while (rows.length < total) {
+    const r = await ok(send({ cmd: "log_get", from: rows.length }));
+    total = r.total;
+    if (!r.rows.length) break;
+    rows = rows.concat(r.rows);
+  }
+  download("watch-log.csv", "time,unix_time,temperature_c,humidity_pct,pressure_hpa,light_mv\n" +
+    rows.map(r => [new Date(r[0] * 1000).toISOString()].concat(r.map(v => v ?? "")).join(",")).join("\n") + "\n", "text/csv");
+});
+$("btnLogClear").onclick = () => { if (confirm("Erase the samples stored on the watch?")) run(() => ok(send({ cmd: "log_clear" }))); };
+$("btnI2c").onclick = () => run(async () => {
+  const r = await ok(send({ cmd: "i2c_scan" }));
+  $("i2cList").innerHTML = r.found.length
+    ? "<tr><th>Address</th><th>Probably</th></tr>" + r.found.map(a => "<tr><td>0x" + a.toString(16).toUpperCase().padStart(2, "0") + "</td><td>" + (I2C_NAMES[a] || "unknown device") + "</td></tr>").join("")
+    : "<tr><td><small>Nothing answered. Check the pack is the right way round (dot to the notch).</small></td></tr>";
+});
+
+$("btnBackup").onclick = () => run(async () => {
+  const b = await makeBackup();
+  download("watch-" + (b.name || "backup").replace(/[^A-Za-z0-9-]/g, "_") + ".json", JSON.stringify(b, null, 2), "application/json");
+  $("backupLine").textContent = "Saved settings and " + Object.keys(b.files).length + " file(s).";
+});
+$("btnRestore").onclick = () => $("restoreFile").click();
+$("restoreFile").onchange = () => run(async () => {
+  const f = $("restoreFile").files[0];
+  if (!f) return;
+  const n = await restoreBackup(JSON.parse(await f.text()));
+  $("restoreFile").value = "";
+  $("backupLine").textContent = "Restored settings and " + n + " file(s) from " + f.name + ".";
+});
+$("btnReboot").onclick = () => run(() => ok(send({ cmd: "reboot" })));
+$("btnFactory").onclick = () => { if (confirm("Erase every setting and saved Wi-Fi network on the watch?")) run(() => ok(send({ cmd: "factory_reset" }))); };
+$("btnRaw").onclick = () => run(async () => { await send(JSON.parse($("raw").value || '{"cmd":"info"}')); });
+drawChips();
+
+// Installable and usable offline when served from a web address (not when opened as a file).
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>

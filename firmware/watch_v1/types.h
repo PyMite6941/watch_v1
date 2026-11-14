@@ -23,7 +23,8 @@ enum View {
   VIEW_TEMP, VIEW_HUMIDITY, VIEW_PRESSURE,      // need the environment pack (BME280)
   VIEW_TUNER,                                   // needs the sound pack (microphone)
   VIEW_METRONOME,
-  VIEW_COUNT
+  VIEW_COUNT,
+  VIEW_APP = 200                                // a custom app from /apps (see apps.h); never stored in settings
 };
 
 struct WifiNet {
@@ -65,6 +66,7 @@ struct Settings {
   bool     fahrenheit;
   uint16_t tune_a4;             // tuner reference pitch, Hz
   uint16_t bpm;                 // metronome
+  char     hello[5];            // four characters shown when the watch is switched on ("" = nothing)
 };
 
 extern Settings settings;
@@ -80,5 +82,14 @@ void     setClock(time_t utc);      // sets the system clock and the DS3231
 void     keepAwake();
 void     buzzPattern(uint8_t count, uint16_t onMs, uint16_t offMs);
 bool     usbConnected();
+void     linkEvent(const char *json);   // sends an event line to a listening computer, if any
+
+#include <sys/time.h>
+static inline int64_t nowMs() {     // wall-clock milliseconds; keeps counting through deep sleep
+  struct timeval tv;
+  gettimeofday(&tv, nullptr);
+  return (int64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
+}
+
 extern bool   rtcPresent;
 extern time_t lastSyncEpoch;

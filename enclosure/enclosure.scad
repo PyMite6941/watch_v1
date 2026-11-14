@@ -3,7 +3,7 @@
  *
  * Two printed parts, no supports needed:
  *   base - open box with four PCB posts, two USB openings and strap lugs. Print as modelled.
- *          Right-hand wall: the SuperMini's USB-C (data, firmware, add-ons).
+ *          Right-hand wall: the SuperMini's USB-C (data and firmware).
  *          Left-hand wall:  the TP4056 charger board's own USB socket (charging only).
  *   lid  - top plate with display window, button/LED/LDR holes, the accessory-socket opening and four bosses
  *          that clamp the PCB. Print UPSIDE DOWN (outer face on the bed) - the
@@ -32,8 +32,9 @@ button_centers = [[7.75, 34.65], [50.25, 34.65]];
 led_center = [29, 28.5];
 ldr_center = [14.5, 27.7];
 usb_center_y = 15.62;          // centre of the SuperMini on the right-hand edge
-accessory_center = [45.74, 2.67];  // J4, the 2x3 accessory socket
-accessory_opening = [8.6, 6.0];    // 0 width = no opening
+accessory_center = [45.74, 2.7];   // J4, the 2x3 accessory socket
+accessory_opening = [8.6, 6.2];    // 0 width = no opening. Tall enough to join the display window: no thin sliver between them
+accessory_pin1_notch_d = 2.0;      // round notch marking the socket's pin 1 corner
 
 /* [Heights] */
 below_pcb = 10.0;              // room under the PCB: SuperMini + USB-C, battery, charger (which sits partly under U3)
@@ -172,11 +173,18 @@ module lid() {
         for (b = button_centers) translate(concat(at(b), [z_wall - 1])) cylinder(d = button_hole_d, h = lid_t + 2);
         translate(concat(at(led_center), [z_wall - 1])) cylinder(d = led_hole_d, h = lid_t + 2);
         if (ldr_hole_d > 0) translate(concat(at(ldr_center), [z_wall - 1])) cylinder(d = ldr_hole_d, h = lid_t + 2);
-        // accessory socket: through the plate, and through the lip where the socket body touches it
-        if (accessory_opening[0] > 0)
-            translate([at(accessory_center)[0] - accessory_opening[0] / 2,
-                       at(accessory_center)[1] - accessory_opening[1] / 2, z_wall - lip_h - 1])
-                cube([accessory_opening[0], accessory_opening[1] + 2, lip_h + lid_t + 2]);
+        // accessory socket
+        if (accessory_opening[0] > 0) {
+            ax = at(accessory_center)[0] - accessory_opening[0] / 2;
+            ay = at(accessory_center)[1] - accessory_opening[1] / 2;
+            // through the plate
+            translate([ax, ay, z_wall - 1]) cube([accessory_opening[0], accessory_opening[1], lid_t + 2]);
+            // relief in the lip, which the socket body would otherwise hit
+            translate([ax, ay, z_wall - lip_h - 1]) cube([accessory_opening[0], accessory_opening[1] + 3, lip_h + 1]);
+            // round notch at the PIN 1 corner (top-left seen from the front), so a pack
+            // cannot be read the wrong way round. Pin 1 = GND.
+            translate([ax, ay + accessory_opening[1], z_wall - 1]) cylinder(d = accessory_pin1_notch_d, h = lid_t + 2);
+        }
     }
 }
 

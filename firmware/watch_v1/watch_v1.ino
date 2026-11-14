@@ -9,6 +9,7 @@
  *   mesh.h        watch-to-watch messages (ESP-NOW)
  *   env.h         environment sensor (BME280) and the sample log
  *   tuner.h       instrument tuner (microphone on the accessory socket)
+ *   apps.h        files on the watch, and custom apps made from /apps/*.json
  *   link.h        configuration commands over USB and Bluetooth
  *   watch_v1.ino  this file: display, buttons, screens, sleep
  *
@@ -21,7 +22,7 @@
  * Buttons : MODE short   next screen
  *           MODE long    set the clock by hand
  *           SET          depends on the screen - see docs/USER_GUIDE.md
- *           both, 2 s    link mode: Bluetooth on for the configurator
+ *           both, 2 s    link mode: Bluetooth on for Watch Studio
  *
  * Build   : Arduino core "esp32" 3.x, board "ESP32C3 Dev Module",
  *           USB CDC On Boot = Enabled, Partition Scheme = "Minimal SPIFFS".
@@ -44,6 +45,7 @@
 #include "mesh.h"
 #include "env.h"
 #include "tuner.h"
+#include "apps.h"
 #include "link.h"
 
 // ------------------------------------------------------------------ glyphs
@@ -102,12 +104,6 @@ RTC_DATA_ATTR static uint16_t tally          = 0;     // counter
 RTC_DATA_ATTR static uint8_t  lastRoll       = 0;     // dice
 RTC_DATA_ATTR static uint32_t lastBellMinute = 0;     // so a bell rings once
 RTC_DATA_ATTR static uint32_t lastWarnMinute = 0;
-
-static int64_t nowMs() {
-  struct timeval tv;
-  gettimeofday(&tv, nullptr);
-  return (int64_t)tv.tv_sec * 1000 + tv.tv_usec / 1000;
-}
 
 // --------------------------------------------------------------- display mux
 static volatile uint8_t frame[4]  = {0, 0, 0, 0};  // segment pattern per digit
@@ -297,6 +293,7 @@ void setClock(time_t utc) {
   int64_t shift = ((int64_t)utc - (int64_t)time(nullptr)) * 1000;
   if (swRunning) swStartMs += shift;
   if (timerEndMs) timerEndMs += shift;
+  if (seqApp >= 0) seqEndMs += shift;
   if (logNextEpoch) logNextEpoch += shift / 1000;
   setSystemTime(utc);
   if (rtcPresent) rtcWrite(utc);
@@ -418,10 +415,61 @@ static uint32_t envReadAt = 0;
 static Pitch    pitchNow = {};
 static uint32_t pitchAt = 0;
 static uint32_t rollUntil = 0;
+static uint32_t msgStart = 0;                // custom "message" app: when the scroll began
 
 void keepAwake() { lastActivity = millis(); }
 
-static uint8_t view() { return settings.views[viewIndex < settings.views_n ? viewIndex : 0]; }
+// MODE steps through the built-in screens chosen in settings, then the custom apps.
+static uint8_t totalViews() { return settings.views_n + appCount; }
+static int8_t  appIndex() { return viewIndex >= settings.views_n ? (int8_t)(viewIndex - settings.views_n) : -1; }
+static uint8_t view() {
+  if (viewIndex >= totalViews()) viewIndex = 0;
+  return viewIndex < settings.views_n ? settings.views[viewIndex] : (uint8_t)VIEW_APP;
+}
+
+// Shows the loaded "message" app's text sliding across the four digits.
+static bool renderMessage(uint32_t ms) {
+  int len = strlen(app.text);
+  int step = (ms - msgStart) / 320;
+  if (step > len + 4) { showString(app.title); return false; }
+  char win[5] = "    ";
+  for (int i = 0; i < 4; i++) {
+    int at = step - 4 + i;
+    if (at >= 0 && at < len) win[i] = app.text[at];
+  }
+  showString(win);
+  return true;
+}
+
+static void renderApp(uint32_t ms, bool blink) {
+  int8_t idx = appIndex();
+  appLoad(idx);
+  switch (app.type) {
+    case APP_SEQUENCE:
+      if (seqApp == idx) showDuration((seqEndMs - nowMs() + 999) / 1000, blink);
+      else showString(app.title);
+      break;
+    case APP_PICKER:
+      if (ms < rollUntil) showNumber(1 + esp_random() % 99);                 // tumbling
+      else if (pickApp == idx && pickLast >= 0) {
+        if (app.n && pickLast < app.n && app.items[pickLast].label[0]) showString(app.items[pickLast].label);
+        else showNumber(pickLast + 1);
+      } else showString(app.title);
+      break;
+    case APP_COUNTDOWN: {
+      long left = (long)(app.date - time(nullptr));
+      if (!timeValid()) showString("----");
+      else if (left <= 0) showString("donE");
+      else if (left >= 86400) showNumber((left + 86399) / 86400, 'd');
+      else showNumberPair(left / 3600, (left / 60) % 60, blink);
+      break;
+    }
+    case APP_MESSAGE:
+      if (renderMessage(ms)) keepAwake();
+      break;
+    default: showString(app.title);
+  }
+}
 
 static int64_t stopwatchMs() { return swHeldMs + (swRunning ? nowMs() - swStartMs : 0); }
 
@@ -505,6 +553,7 @@ static void renderView() {
   }
   ledOverride = 0xFF;
   switch (v) {
+    case VIEW_APP: renderApp(ms, blink); break;
     case VIEW_TIME: {
       uint8_t hour = settings.h24 ? t.tm_hour : (t.tm_hour % 12 ? t.tm_hour % 12 : 12);
       showNumberPair(hour, t.tm_min, blink, false, false);
@@ -653,6 +702,21 @@ static void onSet(Event e) {
   static const uint16_t TIMER_PRESETS[] = { 60, 120, 180, 300, 600, 900, 1200, 1500, 1800, 2700, 3600 };
   static const uint16_t BPM_PRESETS[] = { 60, 72, 80, 90, 100, 120, 140, 160 };
   switch (view()) {
+    case VIEW_APP: {
+      int8_t idx = appIndex();
+      appLoad(idx);
+      if (app.type == APP_SEQUENCE) {
+        if (e == EV_LONG) seqStop();
+        else if (seqApp == idx) seqEndMs = nowMs();          // skip to the next step
+        else seqStart(idx);
+      } else if (app.type == APP_PICKER) {
+        if (!pickNext(idx)) buzzPattern(2, 80, 80);          // list used up: everyone has had a turn
+        rollUntil = now + 500;
+      } else if (app.type == APP_MESSAGE) {
+        msgStart = now;
+      }
+      break;
+    }
     case VIEW_STOPWATCH:
       if (e == EV_SHORT) {
         if (swRunning) { swHeldMs += nowMs() - swStartMs; swRunning = false; }
@@ -715,6 +779,7 @@ static void goToSleep() {
   time_t now = time(nullptr);
   sooner(secondsToNextBell(true));
   if (timerEndMs) sooner((long)((timerEndMs - nowMs()) / 1000) + 1);
+  if (seqApp >= 0) sooner((long)((seqEndMs - nowMs()) / 1000) + 1);
   if (settings.log_min && logNextEpoch) sooner((long)(logNextEpoch - now));
   uint32_t interval = rtcPresent ? settings.resync_h * 3600UL : RESYNC_S_NO_RTC;
   if (settings.wifi_n && interval) {
@@ -749,17 +814,18 @@ void setup() {
   time_t t;
   if (rtcPresent && rtcRead(t)) setSystemTime(t);   // DS3231 is the source of truth
   envBegin();
+  fsBegin();
   if (settings.log_min && !logNextEpoch) logNextEpoch = time(nullptr) + (time_t)settings.log_min * 60;
 
   esp_sleep_wakeup_cause_t cause = esp_sleep_get_wakeup_cause();
   Serial.printf("Watch V1 fw %s, wake cause %d, rtc %d, env %d, time valid %d\n",
                 FW_VERSION, (int)cause, rtcPresent, envAddr != 0, timeValid());
 
-  viewIndex = savedView < settings.views_n ? savedView : 0;
+  viewIndex = savedView < totalViews() ? savedView : 0;
 
   if (cause == ESP_SLEEP_WAKEUP_TIMER) {    // woke by ourselves: do the chore, stay dark unless it is for the wearer
     setBrightness(0);
-    bool forWearer = bellCheck() | timerCheck();
+    bool forWearer = bellCheck() | timerCheck() | seqCheck();
     if (settings.log_min && logNextEpoch && time(nullptr) >= logNextEpoch) {
       delay(60);                            // let the light sensor and BME280 settle
       logSample();
@@ -774,6 +840,7 @@ void setup() {
   if (cause != ESP_SLEEP_WAKEUP_GPIO && cause != ESP_SLEEP_WAKEUP_TIMER) {   // power-on or reset
     if (!timeValid() && settings.wifi_n) doSync();
     viewIndex = 0;
+    if (settings.hello[0]) showText(settings.hello, 1800);     // the owner's greeting
   }
   if (batteryMilliVolts() < VBAT_EMPTY_MV && !isCharging()) showText(" Lo ", 700);
   lastActivity = millis();
@@ -788,9 +855,15 @@ void loop() {
     lastActivity = now;
     overlayUntil = 0;
     if (settings.haptic) buzz(em == EV_LONG || es == EV_LONG ? 60 : 25);
+    if (streamMs) {                                           // tell a listening computer which button it was
+      char msg[64];
+      snprintf(msg, sizeof(msg), "{\"ev\":\"btn\",\"b\":\"%s\",\"t\":\"%s\"}",
+               em != EV_NONE ? "mode" : "set", (em == EV_LONG || es == EV_LONG) ? "long" : "short");
+      linkEvent(msg);
+    }
   }
 
-  // Both buttons held for 2 s: link mode (Bluetooth on for the configurator).
+  // Both buttons held for 2 s: link mode (Bluetooth on for Watch Studio).
   if (btnMode.down && btnSet.down && !btnMode.ignore && !btnSet.ignore &&
       now - max(btnMode.downAt, btnSet.downAt) > 2000) {
     btnMode.ignore = btnSet.ignore = true;
@@ -814,7 +887,8 @@ void loop() {
     if (now - lastActivity > SET_TIMEOUT_MS) setMode = false;          // cancel
   } else {
     if (em == EV_SHORT) {
-      viewIndex = (viewIndex + 1) % settings.views_n;
+      viewIndex = (viewIndex + 1) % totalViews();
+      msgStart = now;
       metroOn = false;
       pitchNow.ok = false;
     }
@@ -828,6 +902,7 @@ void loop() {
     lastSecond = now;
     bellCheck();
     timerCheck();
+    seqCheck();
     if (settings.log_min && logNextEpoch && time(nullptr) >= logNextEpoch) logSample();
   }
   if (metroOn && (int32_t)(now - metroNext) >= 0) {
@@ -844,6 +919,7 @@ void loop() {
   bool usbHold = settings.usb_awake && usbConnected();
   usbLoop();
   bleLoop();
+  streamLoop();
   meshLoop(linkMode || usbHold || view() == VIEW_MESH);
   if (rebootWanted) { delay(200); ESP.restart(); }
 
@@ -870,7 +946,8 @@ void loop() {
   // Sleep when nothing needs the display.
   uint8_t v = view();
   bool appRunning = (v == VIEW_STOPWATCH && swRunning) || (v == VIEW_TIMER && timerEndMs) ||
-                    v == VIEW_MESH || v == VIEW_TUNER || (v == VIEW_METRONOME && metroOn);
+                    v == VIEW_MESH || v == VIEW_TUNER || (v == VIEW_METRONOME && metroOn) ||
+                    (v == VIEW_APP && seqApp >= 0 && seqApp == appIndex());
   bool busy = setMode || ledActive() || btnMode.down || btnSet.down || patLeft || now < overlayUntil ||
               (auxBits & AUX_HAPTIC);
   uint32_t idle = now - lastActivity;

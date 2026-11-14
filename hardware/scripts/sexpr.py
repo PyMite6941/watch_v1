@@ -56,7 +56,7 @@ def dump(node, indent=0):
     if isinstance(node, Sym):
         return str(node)
     if isinstance(node, str):
-        return '"' + node.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\n") + '"'
+        return '"' + node.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n") + '"'
     if isinstance(node, float):
         s = f"{node:.4f}".rstrip("0").rstrip(".")
         return s if s not in ("-0", "") else "0"

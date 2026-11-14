@@ -74,11 +74,41 @@
 						(type background)
 					)
 				)
+				(rectangle
+					(start -3.81 12.7)
+					(end 3.81 8.89)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
 				(text "USB-C"
-					(at 0 10.16 0)
+					(at 0 10.795 0)
 					(effects
 						(font
 							(size 1.27 1.27)
+						)
+					)
+				)
+				(circle
+					(center -11.43 11.43)
+					(radius 0.508)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(text "seen from the component side"
+					(at 0 -11.43 0)
+					(effects
+						(font
+							(size 1 1)
 						)
 					)
 				)
@@ -7778,7 +7808,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 203.2 139.7 0)
+		(at 208.28 139.7 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7787,7 +7817,7 @@
 		(uuid "820ffe97-20f3-5e2a-ba4b-4e382a188bf4")
 		(property "Reference"
 			"R10"
-			(at 205.232 139.7 90)
+			(at 210.312 139.7 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7796,7 +7826,7 @@
 		)
 		(property "Value"
 			"1k"
-			(at 203.2 139.7 90)
+			(at 208.28 139.7 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7805,7 +7835,7 @@
 		)
 		(property "Footprint"
 			"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
-			(at 201.422 139.7 90)
+			(at 206.502 139.7 90)
 			(hide yes)
 			(effects
 				(font
@@ -7815,7 +7845,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 203.2 139.7 0)
+			(at 208.28 139.7 0)
 			(hide yes)
 			(effects
 				(font
@@ -7825,7 +7855,7 @@
 		)
 		(property "Description"
 			"Resistor"
-			(at 203.2 139.7 0)
+			(at 208.28 139.7 0)
 			(hide yes)
 			(effects
 				(font
@@ -7850,8 +7880,8 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 135.89)
-			(xy 203.2 130.81)
+			(xy 208.28 135.89)
+			(xy 208.28 130.81)
 		)
 		(stroke
 			(width 0)
@@ -7860,7 +7890,7 @@
 		(uuid "2da9ec86-aea0-562d-820d-d24be0cda898")
 	)
 	(label "DIG2_DRV"
-		(at 203.2 130.81 90)
+		(at 208.28 130.81 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7871,8 +7901,8 @@
 	)
 	(wire
 		(pts
-			(xy 203.2 143.51)
-			(xy 203.2 148.59)
+			(xy 208.28 143.51)
+			(xy 208.28 148.59)
 		)
 		(stroke
 			(width 0)
@@ -7881,7 +7911,7 @@
 		(uuid "a7dc4829-1d41-5797-b497-67b66a213394")
 	)
 	(label "DIG2_BASE"
-		(at 203.2 148.59 270)
+		(at 208.28 148.59 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7892,7 +7922,7 @@
 	)
 	(symbol
 		(lib_id "Transistor_BJT:Q_NPN_EBC")
-		(at 203.2 172.72 0)
+		(at 208.28 172.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7901,7 +7931,7 @@
 		(uuid "cfeb3a39-a24a-5791-921f-8b41bb3961d6")
 		(property "Reference"
 			"Q2"
-			(at 208.28 171.45 0)
+			(at 213.36 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7911,7 +7941,7 @@
 		)
 		(property "Value"
 			"2N2222"
-			(at 208.28 173.99 0)
+			(at 213.36 173.99 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7921,7 +7951,7 @@
 		)
 		(property "Footprint"
 			"Package_TO_SOT_THT:TO-92_Inline"
-			(at 208.28 170.18 0)
+			(at 213.36 170.18 0)
 			(hide yes)
 			(effects
 				(font
@@ -7931,7 +7961,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 203.2 172.72 0)
+			(at 208.28 172.72 0)
 			(hide yes)
 			(effects
 				(font
@@ -7941,7 +7971,7 @@
 		)
 		(property "Description"
 			"NPN transistor, emitter/base/collector"
-			(at 203.2 172.72 0)
+			(at 208.28 172.72 0)
 			(hide yes)
 			(effects
 				(font
@@ -7969,8 +7999,8 @@
 	)
 	(wire
 		(pts
-			(xy 205.74 177.8)
-			(xy 205.74 182.88)
+			(xy 210.82 177.8)
+			(xy 210.82 182.88)
 		)
 		(stroke
 			(width 0)
@@ -7979,7 +8009,7 @@
 		(uuid "03d7a9f7-e826-5cd2-9b3d-99c1d6f20230")
 	)
 	(label "GND"
-		(at 205.74 182.88 270)
+		(at 210.82 182.88 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -7990,8 +8020,8 @@
 	)
 	(wire
 		(pts
+			(xy 203.2 172.72)
 			(xy 198.12 172.72)
-			(xy 193.04 172.72)
 		)
 		(stroke
 			(width 0)
@@ -8000,7 +8030,7 @@
 		(uuid "990b2280-ec64-5ab9-99ff-4618c98812e6")
 	)
 	(label "DIG2_BASE"
-		(at 193.04 172.72 180)
+		(at 198.12 172.72 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8011,8 +8041,8 @@
 	)
 	(wire
 		(pts
-			(xy 205.74 167.64)
-			(xy 205.74 162.56)
+			(xy 210.82 167.64)
+			(xy 210.82 162.56)
 		)
 		(stroke
 			(width 0)
@@ -8021,7 +8051,7 @@
 		(uuid "cd216ad3-7b16-53f5-b03c-cd38dd2a102d")
 	)
 	(label "DIG2"
-		(at 205.74 162.56 90)
+		(at 210.82 162.56 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8032,7 +8062,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 228.6 139.7 0)
+		(at 238.76 139.7 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8041,7 +8071,7 @@
 		(uuid "a2f8b805-3d64-55ed-845a-b2bcfe60ca1b")
 		(property "Reference"
 			"R11"
-			(at 230.632 139.7 90)
+			(at 240.792 139.7 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8050,7 +8080,7 @@
 		)
 		(property "Value"
 			"1k"
-			(at 228.6 139.7 90)
+			(at 238.76 139.7 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8059,7 +8089,7 @@
 		)
 		(property "Footprint"
 			"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
-			(at 226.822 139.7 90)
+			(at 236.982 139.7 90)
 			(hide yes)
 			(effects
 				(font
@@ -8069,7 +8099,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 228.6 139.7 0)
+			(at 238.76 139.7 0)
 			(hide yes)
 			(effects
 				(font
@@ -8079,7 +8109,7 @@
 		)
 		(property "Description"
 			"Resistor"
-			(at 228.6 139.7 0)
+			(at 238.76 139.7 0)
 			(hide yes)
 			(effects
 				(font
@@ -8104,8 +8134,8 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 135.89)
-			(xy 228.6 130.81)
+			(xy 238.76 135.89)
+			(xy 238.76 130.81)
 		)
 		(stroke
 			(width 0)
@@ -8114,7 +8144,7 @@
 		(uuid "d6b9aecc-d8e6-5989-b1ea-dc50755b2766")
 	)
 	(label "DIG3_DRV"
-		(at 228.6 130.81 90)
+		(at 238.76 130.81 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8125,8 +8155,8 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 143.51)
-			(xy 228.6 148.59)
+			(xy 238.76 143.51)
+			(xy 238.76 148.59)
 		)
 		(stroke
 			(width 0)
@@ -8135,7 +8165,7 @@
 		(uuid "3c16ab60-4503-53ce-a61e-91ecdc86fef5")
 	)
 	(label "DIG3_BASE"
-		(at 228.6 148.59 270)
+		(at 238.76 148.59 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8146,7 +8176,7 @@
 	)
 	(symbol
 		(lib_id "Transistor_BJT:Q_NPN_EBC")
-		(at 228.6 172.72 0)
+		(at 238.76 172.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8155,7 +8185,7 @@
 		(uuid "81270652-1e5e-5d30-af1b-b5f376a39323")
 		(property "Reference"
 			"Q3"
-			(at 233.68 171.45 0)
+			(at 243.84 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8165,7 +8195,7 @@
 		)
 		(property "Value"
 			"2N2222"
-			(at 233.68 173.99 0)
+			(at 243.84 173.99 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8175,7 +8205,7 @@
 		)
 		(property "Footprint"
 			"Package_TO_SOT_THT:TO-92_Inline"
-			(at 233.68 170.18 0)
+			(at 243.84 170.18 0)
 			(hide yes)
 			(effects
 				(font
@@ -8185,7 +8215,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 228.6 172.72 0)
+			(at 238.76 172.72 0)
 			(hide yes)
 			(effects
 				(font
@@ -8195,7 +8225,7 @@
 		)
 		(property "Description"
 			"NPN transistor, emitter/base/collector"
-			(at 228.6 172.72 0)
+			(at 238.76 172.72 0)
 			(hide yes)
 			(effects
 				(font
@@ -8223,8 +8253,8 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 177.8)
-			(xy 231.14 182.88)
+			(xy 241.3 177.8)
+			(xy 241.3 182.88)
 		)
 		(stroke
 			(width 0)
@@ -8233,7 +8263,7 @@
 		(uuid "c0ddfbe6-0dc1-5000-84e1-8975b7dbf890")
 	)
 	(label "GND"
-		(at 231.14 182.88 270)
+		(at 241.3 182.88 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8244,8 +8274,8 @@
 	)
 	(wire
 		(pts
-			(xy 223.52 172.72)
-			(xy 218.44 172.72)
+			(xy 233.68 172.72)
+			(xy 228.6 172.72)
 		)
 		(stroke
 			(width 0)
@@ -8254,7 +8284,7 @@
 		(uuid "959ca6a0-bb2e-5de2-a3d8-a00220803bee")
 	)
 	(label "DIG3_BASE"
-		(at 218.44 172.72 180)
+		(at 228.6 172.72 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8265,8 +8295,8 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 167.64)
-			(xy 231.14 162.56)
+			(xy 241.3 167.64)
+			(xy 241.3 162.56)
 		)
 		(stroke
 			(width 0)
@@ -8275,7 +8305,7 @@
 		(uuid "7ba1679b-f5c0-5c55-9a9b-35b87a6cb54a")
 	)
 	(label "DIG3"
-		(at 231.14 162.56 90)
+		(at 241.3 162.56 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8286,7 +8316,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 254 139.7 0)
+		(at 269.24 139.7 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8295,7 +8325,7 @@
 		(uuid "e5c6ed6f-205e-5d4e-8987-d12d46746bcc")
 		(property "Reference"
 			"R12"
-			(at 256.032 139.7 90)
+			(at 271.272 139.7 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8304,7 +8334,7 @@
 		)
 		(property "Value"
 			"1k"
-			(at 254 139.7 90)
+			(at 269.24 139.7 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8313,7 +8343,7 @@
 		)
 		(property "Footprint"
 			"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
-			(at 252.222 139.7 90)
+			(at 267.462 139.7 90)
 			(hide yes)
 			(effects
 				(font
@@ -8323,7 +8353,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 254 139.7 0)
+			(at 269.24 139.7 0)
 			(hide yes)
 			(effects
 				(font
@@ -8333,7 +8363,7 @@
 		)
 		(property "Description"
 			"Resistor"
-			(at 254 139.7 0)
+			(at 269.24 139.7 0)
 			(hide yes)
 			(effects
 				(font
@@ -8358,8 +8388,8 @@
 	)
 	(wire
 		(pts
-			(xy 254 135.89)
-			(xy 254 130.81)
+			(xy 269.24 135.89)
+			(xy 269.24 130.81)
 		)
 		(stroke
 			(width 0)
@@ -8368,7 +8398,7 @@
 		(uuid "e1443a5f-2d25-5cbb-97fd-192a14d20906")
 	)
 	(label "DIG4_DRV"
-		(at 254 130.81 90)
+		(at 269.24 130.81 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8379,8 +8409,8 @@
 	)
 	(wire
 		(pts
-			(xy 254 143.51)
-			(xy 254 148.59)
+			(xy 269.24 143.51)
+			(xy 269.24 148.59)
 		)
 		(stroke
 			(width 0)
@@ -8389,7 +8419,7 @@
 		(uuid "88be2aa7-abd7-5f83-974b-e5671736298c")
 	)
 	(label "DIG4_BASE"
-		(at 254 148.59 270)
+		(at 269.24 148.59 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8400,7 +8430,7 @@
 	)
 	(symbol
 		(lib_id "Transistor_BJT:Q_NPN_EBC")
-		(at 254 172.72 0)
+		(at 269.24 172.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8409,7 +8439,7 @@
 		(uuid "150d7372-7622-57cd-bb27-6038e6b17e57")
 		(property "Reference"
 			"Q4"
-			(at 259.08 171.45 0)
+			(at 274.32 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8419,7 +8449,7 @@
 		)
 		(property "Value"
 			"2N2222"
-			(at 259.08 173.99 0)
+			(at 274.32 173.99 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8429,7 +8459,7 @@
 		)
 		(property "Footprint"
 			"Package_TO_SOT_THT:TO-92_Inline"
-			(at 259.08 170.18 0)
+			(at 274.32 170.18 0)
 			(hide yes)
 			(effects
 				(font
@@ -8439,7 +8469,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 254 172.72 0)
+			(at 269.24 172.72 0)
 			(hide yes)
 			(effects
 				(font
@@ -8449,7 +8479,7 @@
 		)
 		(property "Description"
 			"NPN transistor, emitter/base/collector"
-			(at 254 172.72 0)
+			(at 269.24 172.72 0)
 			(hide yes)
 			(effects
 				(font
@@ -8477,8 +8507,8 @@
 	)
 	(wire
 		(pts
-			(xy 256.54 177.8)
-			(xy 256.54 182.88)
+			(xy 271.78 177.8)
+			(xy 271.78 182.88)
 		)
 		(stroke
 			(width 0)
@@ -8487,7 +8517,7 @@
 		(uuid "bb008c21-5805-5ce7-bb06-eff2b8d4cd21")
 	)
 	(label "GND"
-		(at 256.54 182.88 270)
+		(at 271.78 182.88 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8498,8 +8528,8 @@
 	)
 	(wire
 		(pts
-			(xy 248.92 172.72)
-			(xy 243.84 172.72)
+			(xy 264.16 172.72)
+			(xy 259.08 172.72)
 		)
 		(stroke
 			(width 0)
@@ -8508,7 +8538,7 @@
 		(uuid "d7bf863b-861a-536a-b096-53c4296dc473")
 	)
 	(label "DIG4_BASE"
-		(at 243.84 172.72 180)
+		(at 259.08 172.72 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8519,8 +8549,8 @@
 	)
 	(wire
 		(pts
-			(xy 256.54 167.64)
-			(xy 256.54 162.56)
+			(xy 271.78 167.64)
+			(xy 271.78 162.56)
 		)
 		(stroke
 			(width 0)
@@ -8529,7 +8559,7 @@
 		(uuid "0959a594-c0be-5146-b781-ab3e80e86b54")
 	)
 	(label "DIG4"
-		(at 256.54 162.56 90)
+		(at 271.78 162.56 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8540,7 +8570,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 284.48 139.7 0)
+		(at 299.72 139.7 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8549,7 +8579,7 @@
 		(uuid "00173867-8df8-5898-b4c0-723e4a328699")
 		(property "Reference"
 			"R13"
-			(at 286.512 139.7 90)
+			(at 301.752 139.7 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8558,7 +8588,7 @@
 		)
 		(property "Value"
 			"1k"
-			(at 284.48 139.7 90)
+			(at 299.72 139.7 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8567,7 +8597,7 @@
 		)
 		(property "Footprint"
 			"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
-			(at 282.702 139.7 90)
+			(at 297.942 139.7 90)
 			(hide yes)
 			(effects
 				(font
@@ -8577,7 +8607,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 284.48 139.7 0)
+			(at 299.72 139.7 0)
 			(hide yes)
 			(effects
 				(font
@@ -8587,7 +8617,7 @@
 		)
 		(property "Description"
 			"Resistor"
-			(at 284.48 139.7 0)
+			(at 299.72 139.7 0)
 			(hide yes)
 			(effects
 				(font
@@ -8612,8 +8642,8 @@
 	)
 	(wire
 		(pts
-			(xy 284.48 135.89)
-			(xy 284.48 130.81)
+			(xy 299.72 135.89)
+			(xy 299.72 130.81)
 		)
 		(stroke
 			(width 0)
@@ -8622,7 +8652,7 @@
 		(uuid "7d189f44-3a08-5a7e-8754-b96bb1f86213")
 	)
 	(label "HAPTIC_DRV"
-		(at 284.48 130.81 90)
+		(at 299.72 130.81 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8633,8 +8663,8 @@
 	)
 	(wire
 		(pts
-			(xy 284.48 143.51)
-			(xy 284.48 148.59)
+			(xy 299.72 143.51)
+			(xy 299.72 148.59)
 		)
 		(stroke
 			(width 0)
@@ -8643,7 +8673,7 @@
 		(uuid "e8676546-1a83-5f83-b558-6240b3698f04")
 	)
 	(label "HAPTIC_BASE"
-		(at 284.48 148.59 270)
+		(at 299.72 148.59 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8654,7 +8684,7 @@
 	)
 	(symbol
 		(lib_id "Transistor_BJT:Q_NPN_EBC")
-		(at 284.48 172.72 0)
+		(at 299.72 172.72 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8663,7 +8693,7 @@
 		(uuid "f30539b1-7178-52ed-8095-51058e21f05c")
 		(property "Reference"
 			"Q5"
-			(at 289.56 171.45 0)
+			(at 304.8 171.45 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8673,7 +8703,7 @@
 		)
 		(property "Value"
 			"2N2222"
-			(at 289.56 173.99 0)
+			(at 304.8 173.99 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8683,7 +8713,7 @@
 		)
 		(property "Footprint"
 			"Package_TO_SOT_THT:TO-92_Inline"
-			(at 289.56 170.18 0)
+			(at 304.8 170.18 0)
 			(hide yes)
 			(effects
 				(font
@@ -8693,7 +8723,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 284.48 172.72 0)
+			(at 299.72 172.72 0)
 			(hide yes)
 			(effects
 				(font
@@ -8703,7 +8733,7 @@
 		)
 		(property "Description"
 			"NPN transistor, emitter/base/collector"
-			(at 284.48 172.72 0)
+			(at 299.72 172.72 0)
 			(hide yes)
 			(effects
 				(font
@@ -8731,8 +8761,8 @@
 	)
 	(wire
 		(pts
-			(xy 287.02 177.8)
-			(xy 287.02 182.88)
+			(xy 302.26 177.8)
+			(xy 302.26 182.88)
 		)
 		(stroke
 			(width 0)
@@ -8741,7 +8771,7 @@
 		(uuid "d0aa470e-d90c-5989-bebf-e92a0aa54729")
 	)
 	(label "GND"
-		(at 287.02 182.88 270)
+		(at 302.26 182.88 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8752,8 +8782,8 @@
 	)
 	(wire
 		(pts
-			(xy 279.4 172.72)
-			(xy 274.32 172.72)
+			(xy 294.64 172.72)
+			(xy 289.56 172.72)
 		)
 		(stroke
 			(width 0)
@@ -8762,7 +8792,7 @@
 		(uuid "b1cb4d97-fab6-53d8-910b-846315c5a163")
 	)
 	(label "HAPTIC_BASE"
-		(at 274.32 172.72 180)
+		(at 289.56 172.72 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8773,8 +8803,8 @@
 	)
 	(wire
 		(pts
-			(xy 287.02 167.64)
-			(xy 287.02 162.56)
+			(xy 302.26 167.64)
+			(xy 302.26 162.56)
 		)
 		(stroke
 			(width 0)
@@ -8783,7 +8813,7 @@
 		(uuid "90b74e98-8b74-5df3-9ff1-ecb8b73ade99")
 	)
 	(label "MOTOR_N"
-		(at 287.02 162.56 90)
+		(at 302.26 162.56 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8794,7 +8824,7 @@
 	)
 	(symbol
 		(lib_id "Device:D")
-		(at 317.5 162.56 0)
+		(at 320.04 177.8 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8803,7 +8833,7 @@
 		(uuid "f744fafc-2560-5104-aa5e-9a49924b2de1")
 		(property "Reference"
 			"D2"
-			(at 317.5 160.02 0)
+			(at 320.04 175.26 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8812,7 +8842,7 @@
 		)
 		(property "Value"
 			"1N4148"
-			(at 317.5 165.1 0)
+			(at 320.04 180.34 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8821,7 +8851,7 @@
 		)
 		(property "Footprint"
 			"Diode_THT:D_DO-35_SOD27_P2.54mm_Vertical_AnodeUp"
-			(at 317.5 162.56 0)
+			(at 320.04 177.8 0)
 			(hide yes)
 			(effects
 				(font
@@ -8831,7 +8861,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 317.5 162.56 0)
+			(at 320.04 177.8 0)
 			(hide yes)
 			(effects
 				(font
@@ -8841,7 +8871,7 @@
 		)
 		(property "Description"
 			"Diode"
-			(at 317.5 162.56 0)
+			(at 320.04 177.8 0)
 			(hide yes)
 			(effects
 				(font
@@ -8866,8 +8896,8 @@
 	)
 	(wire
 		(pts
-			(xy 313.69 162.56)
-			(xy 308.61 162.56)
+			(xy 316.23 177.8)
+			(xy 311.15 177.8)
 		)
 		(stroke
 			(width 0)
@@ -8876,7 +8906,7 @@
 		(uuid "6517c2b5-4a5b-54d4-af63-e6a392cfd32a")
 	)
 	(label "+3V3"
-		(at 308.61 162.56 180)
+		(at 311.15 177.8 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -8887,8 +8917,8 @@
 	)
 	(wire
 		(pts
-			(xy 321.31 162.56)
-			(xy 326.39 162.56)
+			(xy 323.85 177.8)
+			(xy 328.93 177.8)
 		)
 		(stroke
 			(width 0)
@@ -8897,7 +8927,7 @@
 		(uuid "7bc59a23-4a77-5566-9452-d41085548894")
 	)
 	(label "MOTOR_N"
-		(at 326.39 162.56 0)
+		(at 328.93 177.8 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10331,7 +10361,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 111.76 220.98 0)
+		(at 119.38 220.98 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10340,7 +10370,7 @@
 		(uuid "b55a6191-2286-541e-825a-d29580c79267")
 		(property "Reference"
 			"R20"
-			(at 113.792 220.98 90)
+			(at 121.412 220.98 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10349,7 +10379,7 @@
 		)
 		(property "Value"
 			"10k"
-			(at 111.76 220.98 90)
+			(at 119.38 220.98 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10358,7 +10388,7 @@
 		)
 		(property "Footprint"
 			"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
-			(at 109.982 220.98 90)
+			(at 117.602 220.98 90)
 			(hide yes)
 			(effects
 				(font
@@ -10368,7 +10398,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 111.76 220.98 0)
+			(at 119.38 220.98 0)
 			(hide yes)
 			(effects
 				(font
@@ -10378,7 +10408,7 @@
 		)
 		(property "Description"
 			"Resistor"
-			(at 111.76 220.98 0)
+			(at 119.38 220.98 0)
 			(hide yes)
 			(effects
 				(font
@@ -10403,8 +10433,8 @@
 	)
 	(wire
 		(pts
-			(xy 111.76 217.17)
-			(xy 111.76 212.09)
+			(xy 119.38 217.17)
+			(xy 119.38 212.09)
 		)
 		(stroke
 			(width 0)
@@ -10413,7 +10443,7 @@
 		(uuid "68f0939d-d13b-5059-a90a-5cb952c1db98")
 	)
 	(label "LDR_SENSE"
-		(at 111.76 212.09 90)
+		(at 119.38 212.09 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10424,8 +10454,8 @@
 	)
 	(wire
 		(pts
-			(xy 111.76 224.79)
-			(xy 111.76 229.87)
+			(xy 119.38 224.79)
+			(xy 119.38 229.87)
 		)
 		(stroke
 			(width 0)
@@ -10434,7 +10464,7 @@
 		(uuid "c797675d-05f3-579c-bd0e-337497cbe300")
 	)
 	(label "GND"
-		(at 111.76 229.87 270)
+		(at 119.38 229.87 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10697,7 +10727,7 @@
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_02x03_Odd_Even")
-		(at 309.88 259.08 0)
+		(at 381 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10706,7 +10736,7 @@
 		(uuid "1c4b5dda-d339-54f4-909a-38b6b439114f")
 		(property "Reference"
 			"J4"
-			(at 311.15 254 0)
+			(at 382.27 152.4 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10715,7 +10745,7 @@
 		)
 		(property "Value"
 			"ACCESSORY 2x3 socket"
-			(at 311.15 264.16 0)
+			(at 382.27 162.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10724,7 +10754,7 @@
 		)
 		(property "Footprint"
 			"Connector_PinSocket_2.54mm:PinSocket_2x03_P2.54mm_Vertical"
-			(at 309.88 259.08 0)
+			(at 381 157.48 0)
 			(hide yes)
 			(effects
 				(font
@@ -10734,7 +10764,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 309.88 259.08 0)
+			(at 381 157.48 0)
 			(hide yes)
 			(effects
 				(font
@@ -10744,7 +10774,7 @@
 		)
 		(property "Description"
 			"Generic connector, double row, 02x03, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"
-			(at 309.88 259.08 0)
+			(at 381 157.48 0)
 			(hide yes)
 			(effects
 				(font
@@ -10781,8 +10811,8 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 256.54)
-			(xy 299.72 256.54)
+			(xy 375.92 154.94)
+			(xy 370.84 154.94)
 		)
 		(stroke
 			(width 0)
@@ -10791,7 +10821,7 @@
 		(uuid "30877e57-eac5-545f-b83c-9e5847f5dcfb")
 	)
 	(label "GND"
-		(at 299.72 256.54 180)
+		(at 370.84 154.94 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10802,8 +10832,8 @@
 	)
 	(wire
 		(pts
-			(xy 317.5 256.54)
-			(xy 322.58 256.54)
+			(xy 388.62 154.94)
+			(xy 393.7 154.94)
 		)
 		(stroke
 			(width 0)
@@ -10812,7 +10842,7 @@
 		(uuid "cbcfa70f-1152-573a-96d7-03367001cdfd")
 	)
 	(label "+3V3"
-		(at 322.58 256.54 0)
+		(at 393.7 154.94 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10823,8 +10853,8 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 259.08)
-			(xy 299.72 259.08)
+			(xy 375.92 157.48)
+			(xy 370.84 157.48)
 		)
 		(stroke
 			(width 0)
@@ -10833,7 +10863,7 @@
 		(uuid "f8b2480b-264b-5559-a6c4-a2e61e010a65")
 	)
 	(label "SDA"
-		(at 299.72 259.08 180)
+		(at 370.84 157.48 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10844,8 +10874,8 @@
 	)
 	(wire
 		(pts
-			(xy 317.5 259.08)
-			(xy 322.58 259.08)
+			(xy 388.62 157.48)
+			(xy 393.7 157.48)
 		)
 		(stroke
 			(width 0)
@@ -10854,7 +10884,7 @@
 		(uuid "dc56bf77-fe00-59ef-9891-d33c96201926")
 	)
 	(label "SCL"
-		(at 322.58 259.08 0)
+		(at 393.7 157.48 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10865,8 +10895,8 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 261.62)
-			(xy 299.72 261.62)
+			(xy 375.92 160.02)
+			(xy 370.84 160.02)
 		)
 		(stroke
 			(width 0)
@@ -10875,7 +10905,7 @@
 		(uuid "285677ec-a475-5f95-8778-338f7ec27ffe")
 	)
 	(label "LDR_PWR"
-		(at 299.72 261.62 180)
+		(at 370.84 160.02 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10886,8 +10916,8 @@
 	)
 	(wire
 		(pts
-			(xy 317.5 261.62)
-			(xy 322.58 261.62)
+			(xy 388.62 160.02)
+			(xy 393.7 160.02)
 		)
 		(stroke
 			(width 0)
@@ -10896,7 +10926,7 @@
 		(uuid "dc34037d-c52b-5ed4-b62d-8aa36a4f10a8")
 	)
 	(label "AIN"
-		(at 322.58 261.62 0)
+		(at 393.7 160.02 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10907,7 +10937,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 350.52 259.08 0)
+		(at 370.84 185.42 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10916,7 +10946,7 @@
 		(uuid "8d89b976-dfa5-5ce5-8132-4c0cae492357")
 		(property "Reference"
 			"C4"
-			(at 351.155 256.54 0)
+			(at 371.475 182.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10926,7 +10956,7 @@
 		)
 		(property "Value"
 			"100nF"
-			(at 351.155 261.62 0)
+			(at 371.475 187.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10936,7 +10966,7 @@
 		)
 		(property "Footprint"
 			"Capacitor_THT:C_Disc_D3.0mm_W1.6mm_P2.50mm"
-			(at 351.4852 262.89 0)
+			(at 371.8052 189.23 0)
 			(hide yes)
 			(effects
 				(font
@@ -10946,7 +10976,7 @@
 		)
 		(property "Datasheet"
 			""
-			(at 350.52 259.08 0)
+			(at 370.84 185.42 0)
 			(hide yes)
 			(effects
 				(font
@@ -10956,7 +10986,7 @@
 		)
 		(property "Description"
 			"Unpolarized capacitor"
-			(at 350.52 259.08 0)
+			(at 370.84 185.42 0)
 			(hide yes)
 			(effects
 				(font
@@ -10981,8 +11011,8 @@
 	)
 	(wire
 		(pts
-			(xy 350.52 255.27)
-			(xy 350.52 250.19)
+			(xy 370.84 181.61)
+			(xy 370.84 176.53)
 		)
 		(stroke
 			(width 0)
@@ -10991,7 +11021,7 @@
 		(uuid "000ff6ae-40b7-5561-96f2-349454a62b5f")
 	)
 	(label "AIN"
-		(at 350.52 250.19 90)
+		(at 370.84 176.53 90)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11002,8 +11032,8 @@
 	)
 	(wire
 		(pts
-			(xy 350.52 262.89)
-			(xy 350.52 267.97)
+			(xy 370.84 189.23)
+			(xy 370.84 194.31)
 		)
 		(stroke
 			(width 0)
@@ -11012,7 +11042,7 @@
 		(uuid "e63d776b-6442-573a-9fc8-b13977d5b04a")
 	)
 	(label "VBAT_SENSE"
-		(at 350.52 267.97 270)
+		(at 370.84 194.31 270)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11020,6 +11050,234 @@
 			(justify right bottom)
 		)
 		(uuid "74f832dd-f3fd-5b77-90b8-401a629845e4")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 383.54 185.42 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "515aac8e-05ab-5c72-a95e-067506b14220")
+		(property "Reference"
+			"R22"
+			(at 385.572 185.42 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value"
+			"4.7k"
+			(at 383.54 185.42 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint"
+			"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
+			(at 381.762 185.42 90)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet"
+			""
+			(at 383.54 185.42 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description"
+			"Resistor"
+			(at 383.54 185.42 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b0b4d8db-62b7-5d0a-a314-58579ccc5ad3")
+		)
+		(pin "2"
+			(uuid "e8c36227-5831-5db4-a714-aaeb2fbe5905")
+		)
+		(instances
+			(project "watch_v1"
+				(path "/b89ba3e0-ada4-5587-b332-21aef0246bab"
+					(reference "R22")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 383.54 181.61)
+			(xy 383.54 176.53)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d142d980-f713-5f07-ac3e-0ad1eacf6bb5")
+	)
+	(label "+3V3"
+		(at 383.54 176.53 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "7df143bd-eda8-5dcb-b74c-c862b5a81eea")
+	)
+	(wire
+		(pts
+			(xy 383.54 189.23)
+			(xy 383.54 194.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2d151334-5ace-5d0c-a54f-eae7e74c901c")
+	)
+	(label "SDA"
+		(at 383.54 194.31 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "36284c61-2de9-5d05-a7fe-c2f3b610d177")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 396.24 185.42 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "52e5a518-e4fa-5939-a110-76fd609f2d05")
+		(property "Reference"
+			"R23"
+			(at 398.272 185.42 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value"
+			"4.7k"
+			(at 396.24 185.42 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint"
+			"Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P2.54mm_Vertical"
+			(at 394.462 185.42 90)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet"
+			""
+			(at 396.24 185.42 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description"
+			"Resistor"
+			(at 396.24 185.42 0)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "fb696dc9-5752-56ee-9a70-15f3375a048d")
+		)
+		(pin "2"
+			(uuid "3fadc6d8-4468-59b8-9477-d2418c521f5b")
+		)
+		(instances
+			(project "watch_v1"
+				(path "/b89ba3e0-ada4-5587-b332-21aef0246bab"
+					(reference "R23")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 396.24 181.61)
+			(xy 396.24 176.53)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2b8ade82-478c-5585-8a53-6fe914976912")
+	)
+	(label "+3V3"
+		(at 396.24 176.53 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "bd22575d-4c58-5e3e-8f61-8b60ef26e252")
+	)
+	(wire
+		(pts
+			(xy 396.24 189.23)
+			(xy 396.24 194.31)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "98906b85-c169-571b-95e8-31e800abc00b")
+	)
+	(label "SCL"
+		(at 396.24 194.31 270)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "36f5e292-5865-5c04-83c9-e88909279833")
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x05")
@@ -11938,9 +12196,9 @@
 		)
 		(uuid "c70fee04-7380-5203-96bb-55ff8801b8d5")
 	)
-	(text "Accessory port (I2C + switched power + analogue in)"
+	(text "Accessory port"
 		(exclude_from_sim no)
-		(at 294.64 246.38 0)
+		(at 363.22 142.24 0)
 		(effects
 			(font
 				(size 2 2)
@@ -11948,7 +12206,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "a9a5b3f5-2921-5675-9603-fac2e99fcacc")
+		(uuid "6ae7cee7-2e10-5f9d-bb14-edc02dc67251")
 	)
 	(text "DS3231 RTC module"
 		(exclude_from_sim no)
@@ -11964,7 +12222,7 @@
 	)
 	(text "Haptic motor"
 		(exclude_from_sim no)
-		(at 279.4 127 0)
+		(at 289.56 127 0)
 		(effects
 			(font
 				(size 2 2)
@@ -11997,6 +12255,83 @@
 			(justify left bottom)
 		)
 		(uuid "6b351c1c-ab86-59fe-8812-521133ddecd3")
+	)
+	(text "U1 pin numbers are the SuperMini's pads, seen from its\ncomponent side with USB-C at the top: pads 1-8 run DOWN\nthe left edge, pads 9-16 run UP the right edge (counted\nlike a DIP chip). Pad 1 = GPIO5 (the square pad on the\nPCB), pad 16 = 5V. It is soldered to the BACK of the PCB,\ncomponents facing away from the board, USB-C at the\nboard's right-hand edge."
+		(exclude_from_sim no)
+		(at 30.48 111.76 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "b4b87158-117d-5b08-89c7-7369b9401366")
+	)
+	(text "U2, U3 (DIP-16): hold the chip with the notch at the top. Pin 1 is top-left, next to the notch\n(often also marked with a dot). Count DOWN the left side 1-8, then UP the right side 9-16."
+		(exclude_from_sim no)
+		(at 116.84 109.22 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "3b58e936-575f-5eef-a6f6-8201068a1275")
+	)
+	(text "DS1 seen from the front with the decimal points at the bottom:\npins 1-6 run left to right along the BOTTOM edge, pins 7-12 run right to left along the TOP edge.\nTop row, left to right:     12 DIG1   11 A   10 F   9 DIG2   8 DIG3   7 B\nBottom row, left to right:   1 E   2 D   3 DP   4 C   5 G   6 DIG4"
+		(exclude_from_sim no)
+		(at 294.64 109.22 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "59452282-5429-5e5c-a792-fe157c37b26b")
+	)
+	(text "Q1-Q5 (TO-92): flat face towards you, legs pointing down: left = E (1), middle = B (2), right = C (3).\nPN2222A and 2N3904 are E-B-C. BC547 is C-B-E and must not be used without turning it round."
+		(exclude_from_sim no)
+		(at 172.72 198.12 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "02c414d0-8455-54aa-ab0d-dcb2dd2fda62")
+	)
+	(text "D3: common cathode. The longest leg is K (2).\nLeg order: R (1), K (2), G (3), B (4)."
+		(exclude_from_sim no)
+		(at 172.72 241.3 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "db38af46-8fdc-55bc-b126-08289dbda52d")
+	)
+	(text "D1, D2: the band printed on the body is the cathode (K, pin 1)."
+		(exclude_from_sim no)
+		(at 279.4 241.3 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "238e98e5-c3e8-54fb-b4f5-8786ae7f0d40")
+	)
+	(text "J4 from the front, board top edge up:\ntop:    1 GND  3 SDA  5 AUX (3.3 V, awake)\nbottom: 2 3V3  4 SCL  6 AIN (audio in)"
+		(exclude_from_sim no)
+		(at 363.22 144.78 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "28bfaaac-9213-57a8-a331-483b19c08276")
 	)
 	(text "Pins with the same label are connected. Generated from hardware/scripts/design.py - edit that and regenerate."
 		(exclude_from_sim no)

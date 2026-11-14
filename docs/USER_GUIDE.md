@@ -10,9 +10,17 @@ This watch was built by hand for you. It is see-through on purpose: everything i
 |---|---|---|
 | **MODE** (left) | Next screen | Set the clock by hand |
 | **SET** (right) | Depends on the screen — see below | Depends on the screen |
-| **Both together, 2 seconds** | | Link mode: turns Bluetooth on so the setup page can connect. Shows `LInk`. |
+| **Both together, 2 seconds** | | Link mode: turns Bluetooth on so Watch Studio can connect. Shows `LInk`. |
 
 The first press that wakes the watch only wakes it; it does not count as a command.
+
+## Watch Studio, the app on your computer
+
+Your watch came with a small app for Windows or Mac, **Watch Studio**. Install it from the zip with the watch (the `READ ME.txt` inside says how — about a minute, and it takes almost no space). Open it from the Start menu, with **Ctrl + Alt + W**, or on a Mac with Cmd-Space → "watch".
+
+With it you can choose which screens the watch shows, set bells and the time zone, add Wi-Fi so the watch keeps perfect time, make your own little apps for it (a lab step timer, a random name picker, a countdown to exam day), record its sensors to a spreadsheet, and back everything up. Press *Try the demo watch* to explore without the watch.
+
+Connect with a data cable in the **right-hand** USB-C socket, or by Bluetooth (hold both buttons for 2 seconds). Removing the app: Settings → Apps on Windows, or drag it to the Bin on a Mac. The watch keeps all its settings either way.
 
 ## Screens
 
@@ -72,7 +80,7 @@ You normally never need to: the watch sets itself over Wi-Fi. Without Wi-Fi:
 
 Use the **charging socket on the left-hand side**. The charger board's own light shows through the case: one colour while charging, another when full (usually red, then blue or green). A full charge takes about two hours.
 
-The USB-C socket on the **right-hand side** is for the computer — setup, new firmware, add-ons. It runs the watch while plugged in but does not charge the battery.
+The USB-C socket on the **right-hand side** is for the computer — setup and new firmware. It runs the watch while plugged in but does not charge the battery.
 
 ## What the display is telling you
 

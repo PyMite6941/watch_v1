@@ -29,8 +29,10 @@ fp-info-cache
 tutorials.md
 todo.md
 future-todo.md
+circuit-research.md
 # Local Wi-Fi seed for the firmware
 secrets.h
 # Python caches and generated fabrication output
 __pycache__/
 hardware/fab/gerbers/
+dist/

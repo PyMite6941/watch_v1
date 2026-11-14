@@ -1,16 +1,29 @@
 # Setting up a watch
 
-Every watch keeps its own settings in its flash memory. You change them from a web page; nothing needs to be compiled.
+Every watch keeps its own settings in its flash memory. You change them with **Watch Studio**, the companion app; nothing needs to be compiled.
 
-## The configurator
+## Watch Studio
 
-1. Open [`tools/configurator/index.html`](../tools/configurator/index.html) in **Chrome or Edge on a computer** (double-click the file — it works offline). Firefox and Safari cannot talk to USB or Bluetooth devices.
-2. Connect one of two ways:
+Watch Studio is a small desktop app for Windows and macOS (about 0.1 MB installed). It opens in its own window from the Start menu, Spotlight, Launchpad, the Dock or a keyboard shortcut. How it is installed, customised and removed: [`installer/README.md`](../installer/README.md). The short version for the person receiving the watch is in the `READ ME.txt` inside each installer zip.
+
+1. Install it: unzip `WatchStudio-Windows.zip` and double-click `Setup.cmd`, or unzip `WatchStudio-macOS.zip` and right-click `Setup Watch Studio.command` → Open. (No installer to hand? Opening [`app/index.html`](../app/index.html) in Chrome or Edge gives the same app in a browser tab.)
+2. Connect one of three ways:
    - **USB** — plug a *data* cable into the USB-C socket on the watch's right-hand side, press a watch button to wake it, click *Connect by USB* and pick the port (it is listed as "USB JTAG/serial debug unit"). While it is plugged into a computer the watch stays awake.
    - **Bluetooth** — hold both watch buttons for 2 seconds until it shows `LInk`, click *Connect by Bluetooth* and pick `Watch-<name>`. Link mode ends 3 minutes after the last command.
-3. Add Wi-Fi networks, choose screens, fill in the rest, and press **Save settings to the watch**.
+   - **Demo** — a pretend watch inside the app, to try everything without one.
+3. The first time a computer meets a watch, **Quick setup** asks for four things — name, greeting, time zone (guessed from the computer), a Wi-Fi network — and sets the clock from the computer. Everything else is on the tabs:
 
-*Export to file* / *Import from file* copy one watch's settings to another — set one up, export, then import and save on each of the others. Wi-Fi passwords and the PIN are not exported.
+| Tab | What it is for |
+|---|---|
+| Watch | Battery, time, sync, Wi-Fi networks, test buzz, show text, Quick setup again |
+| Settings | Screens and their order, name and greeting, time zone, brightness, timers, bells, time source, mesh group, PIN |
+| Apps | Make extra screens without programming: step timers, random pickers, countdowns, scrolling messages (`/apps/*.json`, see `firmware/watch_v1/apps.h`) |
+| Files | The watch's own small file space (about 190 kB): upload, edit, download, delete |
+| Lab | Live sensor readings, record to CSV, download the sample log, I²C scan of whatever is in the accessory socket |
+| Backup | Save settings and files to one `.json` file; restore it onto this or another watch. Wi-Fi passwords and the PIN are not included |
+| Console | Type raw commands (below) and see the traffic |
+
+To give several watches the same set-up: set one up, *Backup*, then *Restore* that file onto each of the others.
 
 ### Wi-Fi
 
@@ -27,6 +40,7 @@ Anyone near a watch in link mode could connect by Bluetooth. Set a PIN and Bluet
 | Key | Meaning | Range / default |
 |---|---|---|
 | `name` | Watch name: Bluetooth name, and what other watches see | 16 characters / `Watch` |
+| `hello` | Greeting shown for a moment when the watch wakes from being switched off (seven-segment letters) | 4 characters / empty |
 | `tz` | Time zone as a POSIX string | `<+07>-7` (Bangkok) |
 | `h24` | 24-hour clock | `true` |
 | `awake_s` | Seconds the display stays on after a press | 3–60 / 5 |
@@ -71,14 +85,14 @@ Without any network, a watch gets the time from the buttons, from *Set time from
 Watches with the same `mesh_group` and `mesh_ch` talk directly by radio (ESP-NOW): no router, no pairing, roughly classroom-to-corridor range.
 
 - The **mesh** screen shows how many group members are in range; SET buzzes them all.
-- From the configurator you can send four characters to every watch in the group.
+- From Watch Studio (Settings → mesh) you can send four characters to every watch in the group.
 - A watch that does not know the time copies it from one that does.
 
 Limits, stated plainly:
 
 - A sleeping watch hears nothing. The radio is on only while the mesh screen is showing (up to 2 minutes), in link mode, or while plugged into a computer. A buzz reaches the watches that are awake and listening at that moment.
 - Messages go to every awake watch in range that has the same group name. The group name keeps other groups' traffic out; it is not encryption, so do not send anything private.
-- This is one-hop broadcast, not a routed mesh network. A true always-on mesh (ESP-WIFI-MESH, painlessMesh) needs the radio on all the time, which would empty this battery in about two hours — it is only realistic on USB power. See [`TODO.md`](../TODO.md).
+- This is one-hop broadcast, not a routed mesh network. A true always-on mesh (ESP-WIFI-MESH, painlessMesh) needs the radio on all the time, which would empty this battery in about two hours — it is only realistic on USB power. It is on the project to-do list.
 
 ## The command protocol
 
@@ -87,7 +101,7 @@ For scripts, other tools, or curiosity. The same commands work over USB and Blue
 - **USB**: serial port, 115200 baud. **Bluetooth**: Nordic UART service `6E400001-B5A3-F393-E0A9-E50E24DCCA9E`; write to `…0002`, replies arrive as notifications on `…0003` in 20-byte pieces.
 - Send one JSON object per line. The watch answers with one JSON object per line: `{"ok":true,…}` or `{"ok":false,"err":"…"}`.
 - Add any `"id"` and it is echoed in the reply.
-- Lines that do not start with `{` are debug chatter; ignore them.
+- Lines that do not start with `{` are debug chatter; ignore them. Lines with an `"ev"` field are events (live data, button presses), not replies.
 
 | Command | Fields | Does |
 |---|---|---|
@@ -106,6 +120,15 @@ For scripts, other tools, or curiosity. The same commands work over USB and Blue
 | `buzz` | `ms` | Vibrate |
 | `show` | `text`, `ms` | Show four characters |
 | `mesh_send` | `text` | Send four characters to the group; without `text`, a buzz |
+| `fs_info` | | File space `total` and `used` in bytes, number of `apps` |
+| `fs_list` | `path` | `files`: `[{name, size, dir}]` in that folder |
+| `fs_read` | `path`, `offset` | Up to a few hundred bytes from `offset`: `data`, `size`, `eof` |
+| `fs_write` | `path`, `data`, `append` | Write (or with `append`, add to) a file. Send big files in pieces |
+| `fs_delete` | `path` | Delete a file |
+| `i2c_scan` | | `found`: addresses answering on the accessory socket's I²C bus |
+| `i2c_read` | `addr`, `reg`, `len` | Read `len` (1–32) bytes, after writing register `reg` if given: `data` |
+| `i2c_write` | `addr`, `data` | Write a list of bytes |
+| `stream` | `ms` | Send `{"ev":"data",…}` lines every `ms` (100–60000; 0 stops) with sensor and battery readings. While streaming, button presses arrive as `{"ev":"btn","b":"mode"/"set","t":"short"/"long"}` |
 | `reboot` | | Restart |
 | `factory_reset` | | Erase all settings and restart |
 
@@ -113,7 +136,7 @@ Example session:
 
 ```
 > {"cmd":"info"}
-< {"ok":true,"fw":"2.0.0","name":"Watch","battery_pct":87,"time_valid":true,...}
+< {"ok":true,"fw":"2.1.0","name":"Watch","battery_pct":87,"time_valid":true,...}
 > {"cmd":"wifi_add","ssid":"Staffroom","pass":"correct horse"}
 < {"ok":true}
 > {"cmd":"set","cfg":{"name":"Ms Rivera","views":["time","period","timer","temp"],"alerts":["08:30","09:25"]}}

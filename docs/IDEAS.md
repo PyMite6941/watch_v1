@@ -2,7 +2,7 @@
 
 A menu for deciding how to set up each teacher's watch, and where the project could go next.
 
-- ✅ **Ready** — in firmware 2.0.0; just turn the screen on in the configurator.
+- ✅ **Ready** — in firmware 2.0.0; just turn the screen on in Watch Studio.
 - 🔌 **Needs a pack** — in the firmware, plus a plug-in board ([ADDONS.md](ADDONS.md)).
 - 💡 **Idea** — not built. Each notes what it would take.
 
@@ -101,7 +101,7 @@ What the hardware gives you to work with: four digits, one RGB light, a vibratio
 | Physics / chemistry | time, period, stopwatch, timer, pressure, tuner | Both packs |
 | Music | time, tuner, metronome, timer, period | Sound pack |
 
-Save each as a file with the configurator's *Export* so a set-up can be restored or shared.
+Save each as a file with Watch Studio's *Backup* so a set-up can be restored or shared.
 
 ## Choosing what to build next
 
@@ -114,4 +114,4 @@ Roughly in order of value for effort — all firmware-only, no new parts:
 5. Fast logging mode (maths, physics)
 6. Binary / hex clock (computer science)
 
-These are tracked in [`TODO.md`](../TODO.md).
+These are tracked on the project to-do list.
