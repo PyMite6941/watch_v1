@@ -28,7 +28,7 @@ The list of what is left is kept outside the repository.
 | You want to… | Read |
 |---|---|
 | Use a finished watch | [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) |
-| Install the app | [`installer/README.md`](installer/README.md) |
+| Install the app | Download from [Releases](https://github.com/PyMite6941/watch_v1/releases) — details in [`installer/README.md`](installer/README.md) |
 | Set one up (Wi-Fi, screens, bells, custom apps) | [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) |
 | Build one | [`docs/BUILD_GUIDE.md`](docs/BUILD_GUIDE.md), parts in [`docs/BOM.md`](docs/BOM.md) |
 | Order boards and cases | [`docs/ORDERING.md`](docs/ORDERING.md) |
