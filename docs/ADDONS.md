@@ -2,6 +2,8 @@
 
 Hardware is added through the **accessory socket** on the watch face. A plug-in board for it is called a *pack*.
 
+The **Pack Base**, one small board that every pack can be built on, and the plan for making packs cheaply are in [hardware/addons/](../hardware/addons/README.md). The perfboard instructions below still work if you would rather not order boards.
+
 The two USB sockets are not for add-ons: the one on the left only charges, and the USB-C on the right is for a computer (setup and firmware).
 
 ## The accessory socket
