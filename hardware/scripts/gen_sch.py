@@ -67,7 +67,12 @@ def supermini_symbol():
          [S("rectangle"), [S("start"), -12.7, 12.7], [S("end"), 12.7, -12.7],
           [S("stroke"), [S("width"), 0.254], [S("type"), S("default")]],
           [S("fill"), [S("type"), S("background")]]],
-         [S("text"), "USB-C", [S("at"), 0, 10.16, 0], font()]],
+         [S("rectangle"), [S("start"), -3.81, 12.7], [S("end"), 3.81, 8.89],
+          [S("stroke"), [S("width"), 0.254], [S("type"), S("default")]], [S("fill"), [S("type"), S("none")]]],
+         [S("text"), "USB-C", [S("at"), 0, 10.795, 0], font()],
+         [S("circle"), [S("center"), -11.43, 11.43], [S("radius"), 0.508],
+          [S("stroke"), [S("width"), 0.254], [S("type"), S("default")]], [S("fill"), [S("type"), S("outline")]]],
+         [S("text"), "seen from the component side", [S("at"), 0, -11.43, 0], font(1.0)]],
         [S("symbol"), name + "_1_1"] + pins,
     ]
 
@@ -98,6 +103,22 @@ def load_lib_symbol(lib_id):
     return node
 
 
+def pin_names(lib_id):
+    """{pin number: pin name} for a library symbol."""
+    out = {}
+    for sub in find(load_lib_symbol(lib_id), "symbol"):
+        for p in find(sub, "pin"):
+            out[first(p, "number")[1]] = first(p, "name")[1]
+    return out
+
+
+def symbol_field(lib_id, name):
+    for p in find(load_lib_symbol(lib_id), "property"):
+        if p[1] == name:
+            return p[2]
+    return ""
+
+
 def symbol_pins(node):
     """{number: (x, y, angle, unit)} in symbol coordinates (y up)."""
     out = {}
@@ -113,19 +134,19 @@ def symbol_pins(node):
 POS = {
     "U1": (63.5, 88.9), "U2": (139.7, 71.12), "U3": (139.7, 152.4),
     "DS1": (330.2, 71.12),
-    "R13": (284.48, 139.7), "Q5": (284.48, 172.72), "D2": (317.5, 162.56), "J3": (350.52, 162.56),
+    "R13": (299.72, 139.7), "Q5": (299.72, 172.72), "D2": (320.04, 177.8), "J3": (350.52, 162.56),
     "D3": (187.96, 220.98), "R14": (223.52, 220.98), "R15": (236.22, 220.98), "R16": (248.92, 220.98),
     "R17": (101.6, 152.4), "SW1": (48.26, 157.48), "SW2": (48.26, 177.8),
     "R18": (48.26, 220.98), "R19": (60.96, 220.98), "C3": (73.66, 220.98),
-    "R21": (99.06, 220.98), "R20": (111.76, 220.98),
+    "R21": (99.06, 220.98), "R20": (119.38, 220.98),
     "C1": (137.16, 220.98), "C2": (149.86, 220.98),
-    "D1": (294.64, 220.98), "J2": (335.28, 220.98), "J1": (259.08, 259.08), "J4": (309.88, 259.08), "C4": (350.52, 259.08),
+    "D1": (294.64, 220.98), "J2": (335.28, 220.98), "J1": (259.08, 259.08), "J4": (381.0, 157.48), "C4": (370.84, 185.42), "R22": (383.54, 185.42), "R23": (396.24, 185.42),
 }
 for i in range(8):
     POS[f"R{i + 1}"] = (182.88 + 10.16 * i, 71.12)
 for i in range(4):
-    POS[f"R{9 + i}"] = (177.8 + 25.4 * i, 139.7)
-    POS[f"Q{1 + i}"] = (177.8 + 25.4 * i, 172.72)
+    POS[f"R{9 + i}"] = (177.8 + 30.48 * i, 139.7)
+    POS[f"Q{1 + i}"] = (177.8 + 30.48 * i, 172.72)
     POS[f"H{i + 1}"] = (182.88 + 12.7 * i, 259.08)
 
 TITLES = [
@@ -139,11 +160,42 @@ TITLES = [
     (127.0, 205.74, "Decoupling"),
     (172.72, 205.74, "RGB LED"),
     (279.4, 205.74, "Power: Li-Po -> D1 -> 5V pin. TP4056 module (own USB port) on J2"),
-    (294.64, 246.38, "Accessory port (I2C + switched power + analogue in)"),
+    (363.22, 142.24, "Accessory port"),
     (243.84, 246.38, "DS3231 RTC module"),
-    (279.4, 127.0, "Haptic motor"),
+    (289.56, 127.0, "Haptic motor"),
     (30.48, 256.54, "Power flags (ERC only)"),
     (172.72, 248.92, "Mounting holes"),
+]
+
+# How to find pin 1 on the real parts. Shown on the sheet next to each block.
+NOTES = [
+    (30.48, 111.76,
+     "U1 pin numbers are the SuperMini's pads, seen from its\n"
+     "component side with USB-C at the top: pads 1-8 run DOWN\n"
+     "the left edge, pads 9-16 run UP the right edge (counted\n"
+     "like a DIP chip). Pad 1 = GPIO5 (the square pad on the\n"
+     "PCB), pad 16 = 5V. It is soldered to the BACK of the PCB,\n"
+     "components facing away from the board, USB-C at the\n"
+     "board's right-hand edge."),
+    (116.84, 109.22,
+     "U2, U3 (DIP-16): hold the chip with the notch at the top. Pin 1 is top-left, next to the notch\n"
+     "(often also marked with a dot). Count DOWN the left side 1-8, then UP the right side 9-16."),
+    (294.64, 109.22,
+     "DS1 seen from the front with the decimal points at the bottom:\n"
+     "pins 1-6 run left to right along the BOTTOM edge, pins 7-12 run right to left along the TOP edge.\n"
+     "Top row, left to right:     12 DIG1   11 A   10 F   9 DIG2   8 DIG3   7 B\n"
+     "Bottom row, left to right:   1 E   2 D   3 DP   4 C   5 G   6 DIG4"),
+    (172.72, 198.12,
+     "Q1-Q5 (TO-92): flat face towards you, legs pointing down: left = E (1), middle = B (2), right = C (3).\n"
+     "PN2222A and 2N3904 are E-B-C. BC547 is C-B-E and must not be used without turning it round."),
+    (172.72, 241.3,
+     "D3: common cathode. The longest leg is K (2).\nLeg order: R (1), K (2), G (3), B (4)."),
+    (279.4, 241.3,
+     "D1, D2: the band printed on the body is the cathode (K, pin 1)."),
+    (363.22, 144.78,
+     "J4 from the front, board top edge up:\n"
+     "top:    1 GND  3 SDA  5 AUX (3.3 V, awake)\n"
+     "bottom: 2 3V3  4 SCL  6 AIN (audio in)"),
 ]
 
 OUT_DIR_VEC = {0: (-1, 0), 180: (1, 0), 90: (0, 1), 270: (0, -1)}  # sheet direction away from body
@@ -221,6 +273,10 @@ def build():
                [S("justify"), S("left"), S("bottom")]]
         items.append([S("text"), text, [S("exclude_from_sim"), S("no")], [S("at"), x, y, 0], eff,
                       [S("uuid"), uid("text", text)]])
+    for x, y, text in NOTES:
+        items.append([S("text"), text, [S("exclude_from_sim"), S("no")], [S("at"), x, y, 0],
+                      [S("effects"), [S("font"), [S("size"), 1.27, 1.27]], [S("justify"), S("left"), S("top")]],
+                      [S("uuid"), uid("note", text[:24])]])
     note = "Pins with the same label are connected. Generated from hardware/scripts/design.py - edit that and regenerate."
     items.append([S("text"), note, [S("exclude_from_sim"), S("no")], [S("at"), 30.48, 38.1, 0],
                   [S("effects"), [S("font"), [S("size"), 1.5, 1.5]], [S("justify"), S("left"), S("bottom")]],

@@ -24,7 +24,7 @@ import sys
 import pcbnew
 
 from design import PARTS, SUPERMINI_PINS, nets
-from gen_sch import uid
+from gen_sch import pin_names, symbol_field, uid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.abspath(os.path.join(HERE, "..", "kicad"))
@@ -50,7 +50,9 @@ PLACE = {
     "J1": (BOT, 0, 24.0, 10.42),
     "J4": (TOP, 90, 43.2, 1.4),           # accessory socket, reached through the lid
     "C4": (TOP, 90, 51.4, 1.8),
-    "C1": (TOP, 0, 7.5, 3.0),
+    "C1": (TOP, 0, 6.8, 3.0),
+    "R22": (TOP, 270, 11.95, 1.8),        # I2C pull-ups, in line with R1-R8
+    "R23": (TOP, 270, 15.05, 1.8),
     # --- strip below the display, top side (row A: sensors, LED, small parts)
     "C2": (TOP, 0, 3.0, 27.0),
     "C3": (TOP, 0, 8.0, 27.0),
@@ -88,9 +90,16 @@ SILK = [  # (text, x, y, side, size)
     ("3V3", 27.3, 10.42, BOT, 0.8), ("SDA", 27.3, 12.96, BOT, 0.8), ("SCL", 27.3, 15.5, BOT, 0.8),
     ("NC", 27.3, 18.04, BOT, 0.8), ("GND", 27.3, 20.58, BOT, 0.8),
     ("ACCESSORY", 45.74, 6.2, BOT, 0.8),
+    ("1", 41.3, 1.4, TOP, 0.8),                               # accessory socket pin 1
+    ("RKGB", 29.0, 32.0, TOP, 0.8),                           # RGB LED legs, left to right
+    ("12", 21.0, 7.88, TOP, 0.8), ("7", 36.9, 7.88, TOP, 0.8),      # display corner pins
+    ("1", 21.2, 23.12, TOP, 0.8), ("6", 36.9, 23.12, TOP, 0.8),
+    ("DP THIS EDGE", 29.0, 21.3, TOP, 0.8),                   # which way up the display goes
     ("USB-C THIS END >", 46.8, 15.6, BOT, 0.9),
     ("BATTERY SIDE", 29, 36.5, BOT, 1.0),
 ]
+for i in range(5):                                             # transistor legs, flat face towards the bottom edge
+    SILK.append(("EBC", 15.27 + 5.5 * i, 41.6, TOP, 0.8))
 
 
 def mm(v):
@@ -197,6 +206,14 @@ def build():
         ds.m_NetSettings.SetNetclassPatternAssignment("/" + n, "Power")
 
     netinfo = {}
+    for p in PARTS:                                           # pads left open on purpose get the name eeschema gives them
+        for num, net in p["pins"].items():
+            if net is None:
+                pin = pin_names(p["symbol"]).get(num, "~")
+                name = f"unconnected-({p['ref']}-{pin}-Pad{num})" if pin not in ("~", "") else f"unconnected-({p['ref']}-Pad{num})"
+                ni = pcbnew.NETINFO_ITEM(board, name)
+                board.Add(ni)
+                netinfo[(p["ref"], num)] = ni
     for name in sorted(nets()):
         ni = pcbnew.NETINFO_ITEM(board, "/" + name)       # root-sheet label -> "/NAME", as eeschema names it
         board.Add(ni)
@@ -222,6 +239,10 @@ def build():
             net = p["pins"].get(pad.GetNumber())
             if net:
                 pad.SetNet(netinfo[net])
+            elif (ref, pad.GetNumber()) in netinfo:
+                pad.SetNet(netinfo[(ref, pad.GetNumber())])
+        for field in ("Description", "Datasheet"):            # keep the board's part data equal to the schematic's
+            fp.SetField(field, symbol_field(p["symbol"], field))
         if ref.startswith("H"):
             fp.Reference().SetVisible(False)
         fps[ref] = fp
@@ -236,7 +257,17 @@ def build():
         seg.SetWidth(mm(0.1))
         board.Add(seg)
 
-    for text, x, y, side, size in SILK:
+    # Corner pin numbers for the two DIP chips, printed on the side they are soldered to.
+    silk = list(SILK)
+    for ref, rows in (("U2", "both"), ("U3", "outer")):
+        ys = sorted({round(pad_xy(fps[ref], n)[1], 2) for n in ("1", "8", "9", "16")})
+        for n in ("1", "8", "9", "16"):
+            x, y = pad_xy(fps[ref], n)
+            top_row = abs(y - ys[0]) < 0.01
+            if ref == "U3" and top_row:
+                continue                                      # no room between the chips; U3's other row is labelled
+            silk.append((n, x, y - 1.45 if top_row else y + (1.19 if ref == "U2" else 1.45), BOT, 0.8))
+    for text, x, y, side, size in silk:
         t = pcbnew.PCB_TEXT(board)
         t.SetText(text)
         t.SetPosition(pt(x, y))
@@ -306,14 +337,14 @@ def add_routes(board, pads_path):
     return f"routed: {len(routes['tracks'])} track segments, {len(routes['vias'])} vias"
 
 
-def dump_pads(board, path):
+def dump_pads(board, path):  # unconnected pads are written with an empty net
     """Pad geometry for route.py, in board-relative millimetres."""
     pads = []
     for fp in sorted(board.GetFootprints(), key=lambda f: f.GetReference()):
         for pad in fp.Pads():
             box = pad.GetBoundingBox()
             pads.append(dict(
-                ref=fp.GetReference(), num=pad.GetNumber(), net=pad.GetNetname().lstrip("/"),
+                ref=fp.GetReference(), num=pad.GetNumber(), net="" if pad.GetNetname().startswith("unconnected-") else pad.GetNetname().lstrip("/"),
                 x=round(pcbnew.ToMM(pad.GetPosition().x) - OX, 4), y=round(pcbnew.ToMM(pad.GetPosition().y) - OY, 4),
                 w=round(pcbnew.ToMM(box.GetWidth()), 4), h=round(pcbnew.ToMM(box.GetHeight()), 4),
                 drill=round(pcbnew.ToMM(pad.GetDrillSize().x), 4),

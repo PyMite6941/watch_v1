@@ -47,17 +47,17 @@ Work lowest parts first so the board lies flat.
 
 | Step | Side | Parts | Watch out for |
 |---|---|---|---|
-| 1 | Back | U2, U3 (74HC595) | Notch matches the printed outline. Solder directly, no sockets — there is no height for them. Trim the legs flush on the front; the display sits over them. |
-| 2 | Back | U1 (SuperMini) | USB-C towards the right edge ("USB-C THIS END"). Use the pin headers that came with it, plastic spacer against the PCB, and trim flush on the front. |
-| 3 | Front | Resistors R1–R21 | Standing up. Values are in [BOM.md](BOM.md); read the colour bands or measure each one. |
+| 1 | Back | U2, U3 (74HC595) | Notch matches the notch in the printed outline; the corner numbers 1, 8, 9, 16 printed beside the pads must match the chip (pin 1 is next to the notch). Solder directly, no sockets — there is no height for them. Trim the legs flush on the front; the display sits over them. |
+| 2 | Back | U1 (SuperMini) | Components and USB socket facing **away** from the PCB, USB-C towards the right edge ("USB-C THIS END"). The board prints each pad's name (5V, GND, 3V3, 4, 3 …): check they match the names printed on the SuperMini before soldering. Use the pin headers that came with it, plastic spacer against the PCB, and trim flush on the front. |
+| 3 | Front | Resistors R1–R23 | Standing up. Values are in [BOM.md](BOM.md); read the colour bands or measure each one. |
 | 4 | Front | Diodes D1, D2 | The band (cathode) matches the printed band. |
 | 5 | Front | Capacitors C1–C4 | Either way round. |
-| 6 | Front | Transistors Q1–Q5 | Flat side matches the outline. |
-| 7 | Front | LDR R21, RGB LED D3 | LED: longest leg in the hole marked for the cathode. Leave the LED and LDR standing about 8 mm tall so they reach the lid. |
+| 6 | Front | Transistors Q1–Q5 | Flat side matches the outline (flat faces the bottom edge). `EBC` is printed under each one: emitter, base, collector, left to right. |
+| 7 | Front | LDR R21, RGB LED D3 | `RKGB` is printed under the LED: red, cathode, green, blue, left to right — the longest leg goes in the second hole (K). Leave the LED and LDR standing about 8 mm tall so they reach the lid. |
 | 8 | Front | Switches SW1, SW2 | They click in. |
-| 9 | Front | J4 accessory socket | Hold it square while tacking one pin. |
+| 9 | Front | J4 accessory socket | Hold it square while tacking one pin. Pin 1 is the square pad, with a `1` printed beside it. |
 | 10 | — | **Stop and test** (section 4) | |
-| 11 | Front | DS1 display | Decimal points at the bottom. Sit it on a 2 mm spacer (two matchsticks) so it clears the joints beneath, solder two opposite corners, check it is level, then the rest. Once it is in, the parts under it cannot be reworked. |
+| 11 | Front | DS1 display | Decimal points at the bottom, on the edge printed `DP THIS EDGE`; the corner pins are numbered 1, 6, 7, 12 on the board. Sit it on a 2 mm spacer (two matchsticks) so it clears the joints beneath, solder two opposite corners, check it is level, then the rest. Once it is in, the parts under it cannot be reworked. |
 
 Wires:
 
@@ -81,7 +81,7 @@ Then solder the display, connect the charger board, and unplug USB: the watch sh
 
 ## 5. Set it up
 
-[CONFIGURATION.md](CONFIGURATION.md): open the configurator, connect by USB, add Wi-Fi, choose the screens for this teacher, save. Press *Sync time now*; the watch shows `SYnC` then `On`.
+[CONFIGURATION.md](CONFIGURATION.md): open Watch Studio, connect by USB, go through Quick setup, choose the screens for this teacher, save. Press *Sync time over Wi-Fi*; the watch shows `SYnC` then `On`.
 
 ## 6. Case
 

@@ -2,7 +2,7 @@
 // line out. The same commands work over
 //   - USB:       the SuperMini's USB-C port shows up as a serial port (115200)
 //   - Bluetooth: Nordic UART service, while the watch is in link mode
-// The full command list is in docs/CONFIGURATION.md; tools/configurator is a
+// The full command list is in docs/CONFIGURATION.md; app/ (Watch Studio) is a
 // ready-made web page that speaks it.
 #pragma once
 #include <ArduinoJson.h>
@@ -15,12 +15,19 @@
 #include "timesource.h"
 #include "mesh.h"
 #include "env.h"
+#include "apps.h"
 
 #define NUS_SERVICE "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 #define NUS_RX      "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"   // computer -> watch
 #define NUS_TX      "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"   // watch -> computer
 
 static bool rebootWanted = false;
+
+// Live data: while streamMs > 0 the watch sends an {"ev":"data",...} line that
+// often, plus {"ev":"btn",...} for button presses, to whoever asked.
+static uint32_t streamMs = 0, streamLast = 0;
+static bool     streamBle = false;
+static bool     linkViaBle = false;      // which transport the command being handled came from
 
 // ------------------------------------------------------------------ commands
 // `trusted` is false for Bluetooth until the PIN (if one is set) has been given.
@@ -56,6 +63,8 @@ static String linkHandle(const String &line, bool &trusted) {
     out["last_sync"] = (uint32_t)lastSyncEpoch;
     out["usb"] = usbConnected();
     out["peers"] = meshPeerCount();
+    out["env"] = envAddr != 0;
+    out["apps"] = appCount;
     out["locked"] = !trusted;
   } else if (!trusted) {
     out["err"] = "locked: send {\"cmd\":\"auth\",\"pin\":\"...\"} first";
@@ -150,6 +159,105 @@ static String linkHandle(const String &line, bool &trusted) {
   } else if (!strcmp(cmd, "log_clear")) {
     logClear();
     out["ok"] = true;
+  } else if (!strcmp(cmd, "fs_info")) {
+    out["ok"] = fsReady;
+    out["total"] = (uint32_t)LittleFS.totalBytes();
+    out["used"] = (uint32_t)LittleFS.usedBytes();
+    out["apps"] = appCount;
+    out["max_apps"] = MAX_APPS;
+  } else if (!strcmp(cmd, "fs_list")) {
+    const char *path = in["path"] | "/";
+    File dir = fsPathOk(path) ? LittleFS.open(path) : File();
+    if (dir && dir.isDirectory()) {
+      JsonArray files = out["files"].to<JsonArray>();
+      for (File f = dir.openNextFile(); f; f = dir.openNextFile()) {
+        JsonObject o = files.add<JsonObject>();
+        o["name"] = String(f.name());
+        o["size"] = (uint32_t)f.size();
+        o["dir"] = f.isDirectory();
+      }
+      out["ok"] = true;
+    } else {
+      out["err"] = "no such folder";
+    }
+  } else if (!strcmp(cmd, "fs_read")) {
+    // Text files, read in pieces: ask again with "offset" until "eof" is true.
+    const char *path = in["path"] | "";
+    File f = fsPathOk(path) ? LittleFS.open(path, "r") : File();
+    if (f && !f.isDirectory()) {
+      uint32_t offset = in["offset"] | 0u;
+      f.seek(offset);
+      char buf[401];
+      size_t n = f.readBytes(buf, 400);
+      buf[n] = 0;
+      out["ok"] = true;
+      out["data"] = buf;
+      out["size"] = (uint32_t)f.size();
+      out["eof"] = offset + n >= f.size();
+    } else {
+      out["err"] = "no such file";
+    }
+  } else if (!strcmp(cmd, "fs_write")) {
+    // "append": false starts the file afresh; send the rest with "append": true.
+    const char *path = in["path"] | "";
+    const char *data = in["data"] | "";
+    if (!fsPathOk(path) || !fsReady) {
+      out["err"] = "bad path";
+    } else if (LittleFS.totalBytes() - LittleFS.usedBytes() < strlen(data) + 8192) {
+      out["err"] = "the watch's storage is full";
+    } else {
+      File f = LittleFS.open(path, (in["append"] | false) ? "a" : "w", true);
+      if (f && f.print(data) == strlen(data)) {
+        f.close();
+        out["ok"] = true;
+        if (!strncmp(path, "/apps/", 6)) appsScan();
+      } else {
+        out["err"] = "write failed";
+      }
+    }
+  } else if (!strcmp(cmd, "fs_delete")) {
+    const char *path = in["path"] | "";
+    out["ok"] = fsPathOk(path) && LittleFS.remove(path);
+    if (out["ok"]) appsScan(); else out["err"] = "no such file";
+  } else if (!strcmp(cmd, "i2c_scan")) {
+    // Which addresses answer on the accessory socket's I2C bus.
+    JsonArray found = out["found"].to<JsonArray>();
+    for (uint8_t addr = 8; addr < 120; addr++) {
+      Wire.beginTransmission(addr);
+      if (Wire.endTransmission() == 0) found.add(addr);
+    }
+    out["ok"] = true;
+  } else if (!strcmp(cmd, "i2c_write")) {
+    // Raw bytes to a device: {"addr":118,"data":[244,37]}
+    Wire.beginTransmission((uint8_t)(in["addr"] | 0));
+    for (JsonVariantConst v : in["data"].as<JsonArrayConst>()) Wire.write((uint8_t)v.as<int>());
+    out["ok"] = Wire.endTransmission() == 0;
+    if (!out["ok"]) out["err"] = "no answer from that address";
+  } else if (!strcmp(cmd, "i2c_read")) {
+    // Read bytes, optionally after selecting a register: {"addr":118,"reg":208,"len":1}
+    uint8_t addr = in["addr"] | 0;
+    uint8_t len = constrain((int)(in["len"] | 1), 1, 32);
+    bool ok = true;
+    if (in["reg"].is<int>()) {
+      Wire.beginTransmission(addr);
+      Wire.write((uint8_t)in["reg"].as<int>());
+      ok = Wire.endTransmission(false) == 0;
+    }
+    if (ok && Wire.requestFrom(addr, len) == len) {
+      JsonArray data = out["data"].to<JsonArray>();
+      for (uint8_t i = 0; i < len; i++) data.add(Wire.read());
+      out["ok"] = true;
+    } else {
+      out["err"] = "no answer from that address";
+    }
+  } else if (!strcmp(cmd, "stream")) {
+    // {"cmd":"stream","ms":500} starts live data, "ms":0 stops it.
+    uint32_t ms = in["ms"] | 0u;
+    streamMs = ms ? constrain(ms, 100u, 60000u) : 0;
+    streamBle = linkViaBle;
+    streamLast = 0;
+    out["ok"] = true;
+    out["ms"] = streamMs;
   } else if (!strcmp(cmd, "reboot")) {
     rebootWanted = true;
     out["ok"] = true;
@@ -172,9 +280,10 @@ static void usbLoop() {
   while (Serial.available()) {
     char c = Serial.read();
     if (c == '\n' || c == '\r') {
+      linkViaBle = false;
       if (usbLine.length() && usbLine[0] == '{') Serial.println(linkHandle(usbLine, usbTrusted));
       usbLine = "";
-    } else if (usbLine.length() < 1024) {
+    } else if (usbLine.length() < 2048) {
       usbLine += c;
     }
   }
@@ -212,7 +321,7 @@ class LinkRxCallbacks : public BLECharacteristicCallbacks {
           portEXIT_CRITICAL(&bleLock);
         }
         bleBuf = "";
-      } else if (bleBuf.length() < 1024) {
+      } else if (bleBuf.length() < 2048) {
         bleBuf += ch;
       }
     }
@@ -239,13 +348,8 @@ static void bleStart() {
   bleRunning = true;
 }
 
-static void bleLoop() {
-  if (!bleRunning || !bleHasLine) return;
-  portENTER_CRITICAL(&bleLock);
-  String line = blePending;
-  bleHasLine = false;
-  portEXIT_CRITICAL(&bleLock);
-  String reply = linkHandle(line, bleTrusted) + "\n";
+static void bleSend(const String &text) {
+  String reply = text + "\n";
   // Notifications carry 20 bytes unless a bigger MTU was negotiated; stay safe.
   for (size_t i = 0; i < reply.length() && bleConnected; i += 20) {
     String part = reply.substring(i, i + 20);
@@ -253,4 +357,44 @@ static void bleLoop() {
     bleTx->notify();
     delay(8);
   }
+}
+
+static void bleLoop() {
+  if (!bleRunning || !bleHasLine) return;
+  portENTER_CRITICAL(&bleLock);
+  String line = blePending;
+  bleHasLine = false;
+  portEXIT_CRITICAL(&bleLock);
+  linkViaBle = true;
+  bleSend(linkHandle(line, bleTrusted));
+}
+
+// ------------------------------------------------------------- live data out
+void linkEvent(const char *json) {
+  if (!streamMs) return;
+  if (streamBle) bleSend(json); else Serial.println(json);
+}
+
+static void streamLoop() {
+  if (!streamMs) return;
+  if (streamBle && !bleConnected) { streamMs = 0; return; }
+  uint32_t now = millis();
+  if (streamLast && now - streamLast < streamMs) return;
+  streamLast = now ? now : 1;
+  keepAwake();                                  // a watch that is being watched stays awake
+  JsonDocument doc;
+  doc["ev"] = "data";
+  doc["t"] = (uint32_t)time(nullptr);
+  doc["ms"] = now;
+  EnvReading r = envRead();
+  if (r.ok) {
+    doc["temp_c"] = serialized(String(r.tempC, 2));
+    if (r.hasHumidity) doc["humidity"] = serialized(String(r.humidity, 1));
+    doc["hpa"] = serialized(String(r.hPa, 1));
+  }
+  doc["light_mv"] = analogReadMilliVolts(PIN_LDR_SENSE);
+  doc["batt_mv"] = batteryMilliVolts();
+  String line;
+  serializeJson(doc, line);
+  linkEvent(line.c_str());
 }

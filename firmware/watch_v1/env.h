@@ -7,7 +7,7 @@
 // compensation maths from the Bosch datasheet.
 //
 // The log lives in RTC memory: it survives deep sleep, not a flat battery.
-// Read it out with the "log_get" command (the configurator saves it as CSV).
+// Read it out with the "log_get" command (Watch Studio saves it as CSV).
 #pragma once
 #include <Wire.h>
 #include "types.h"

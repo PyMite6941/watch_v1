@@ -1,6 +1,6 @@
 // Settings: defaults, JSON <-> struct, storage in flash.
 //
-// The JSON form is the public interface - it is what the configurator sends
+// The JSON form is the public interface - it is what Watch Studio sends
 // and what docs/CONFIGURATION.md documents. Unknown keys are ignored and every
 // value is range-checked, so a bad message cannot brick the watch.
 #pragma once
@@ -99,6 +99,7 @@ static void settingsToJson(JsonObject o, bool withSecrets) {
   o["fahrenheit"] = settings.fahrenheit;
   o["tune_a4"] = settings.tune_a4;
   o["bpm"] = settings.bpm;
+  o["hello"] = settings.hello;
 }
 
 static long clampLong(JsonVariantConst v, long lo, long hi) {
@@ -138,6 +139,7 @@ static bool settingsFromJson(JsonObjectConst o, bool withSecrets) {
   BOOL("fahrenheit", fahrenheit)
   NUM("tune_a4", tune_a4, 400, 480)
   NUM("bpm", bpm, 30, 240)
+  STR("hello", hello)
 #undef STR
 #undef BOOL
 #undef NUM

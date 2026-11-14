@@ -98,8 +98,8 @@ part("R20", "Device:R", "10k", R_V, {"1": "LDR_SENSE", "2": "GND"})
 
 # ---- Power. The battery feeds the SuperMini's 5V pin through a Schottky diode.
 # Charging has its OWN port: the TP4056 module's USB socket. The module's input
-# is deliberately NOT tied to VBUS, so the SuperMini's USB-C stays free for data
-# and add-ons, and nothing plugged in there can back-feed the charger.
+# is deliberately NOT tied to VBUS, so the SuperMini's USB-C is for data only
+# and nothing plugged in there can back-feed the charger.
 part("D1", "Device:D_Schottky", "1N5819", "Diode_THT:D_DO-41_SOD81_P2.54mm_Vertical_AnodeUp",
      {"1": "VBUS", "2": "VBAT"})
 part("J2", "Connector_Generic:Conn_01x03", "TP4056 (GND, OUT+, CHRG)",
@@ -117,6 +117,11 @@ part("J4", "Connector_Generic:Conn_02x03_Odd_Even", "ACCESSORY 2x3 socket",
      "Connector_PinSocket_2.54mm:PinSocket_2x03_P2.54mm_Vertical",
      {"1": "GND", "2": "+3V3", "3": "SDA", "4": "SCL", "5": "LDR_PWR", "6": "AIN"})
 part("C4", "Device:C", "100nF", CAP, {"1": "AIN", "2": "VBAT_SENSE"})
+
+# ---- I2C pull-ups. The bus must idle high even when neither the clock module
+# nor a pack (both usually bring their own pull-ups) is fitted.
+part("R22", "Device:R", "4.7k", R_V, {"1": "+3V3", "2": "SDA"})
+part("R23", "Device:R", "4.7k", R_V, {"1": "+3V3", "2": "SCL"})
 
 # ---- Real-time clock module (wire pads).
 part("J1", "Connector_Generic:Conn_01x05", "DS3231 (VCC, SDA, SCL, NC, GND)",

@@ -1,0 +1,11 @@
+{
+  "name": "Watch Studio",
+  "short_name": "Watch Studio",
+  "description": "Set up, personalise and extend a Watch V1.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f5f1",
+  "theme_color": "#0b6e4f",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

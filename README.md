@@ -1,6 +1,6 @@
 # Watch V1
 
-A see-through, build-it-yourself wrist watch made as a gift for STEM teachers. An ESP32-C3 SuperMini drives a four-digit LED display, an RGB LED and a vibration motor inside a clear printed case. Every watch is set up for its owner from a web page — no programming — and takes plug-in **packs** for extra abilities (a weather sensor for biology, a microphone tuner for music).
+A see-through, build-it-yourself wrist watch made as a gift for STEM teachers. An ESP32-C3 SuperMini drives a four-digit LED display, an RGB LED and a vibration motor inside a clear printed case. Every watch is set up for its owner with **Watch Studio**, a tiny desktop app for Windows and macOS — no programming — and takes plug-in **packs** for extra abilities (a weather sensor for biology, a microphone tuner for music).
 
 | | |
 |---|---|
@@ -9,26 +9,27 @@ A see-through, build-it-yourself wrist watch made as a gift for STEM teachers. A
 | Battery | 150 mAh Li-Po, charged through its own USB socket |
 | Radios | Wi-Fi (time sync), Bluetooth LE (setup), ESP-NOW (watch-to-watch) |
 | Controls | Two buttons: MODE and SET |
-| Expansion | 2×3 accessory socket on the face (I²C, switched power, analogue in); USB-C for setup and firmware |
+| Expansion | 2×3 accessory socket on the face (I²C, switched power, analogue in) |
 
 ## Where things stand
 
 | Part | State |
 |---|---|
 | Circuit (`hardware/scripts/design.py`) | Done, revision 5. Schematic generated, electrical rules check passes with 0 findings. |
-| PCB | All 47 parts placed and checked. **Not routed yet** — see [`hardware/README.md`](hardware/README.md). No Gerbers until that is done. |
+| PCB | All 49 parts placed and checked; an automatic audit confirms every connection against the parts' pinouts. **Not routed yet** — see [`hardware/README.md`](hardware/README.md). No Gerbers until that is done. |
 | Enclosure | Modelled; STL files exported in `enclosure/stl/`. Not yet test-printed against a real board. |
-| Firmware 2.0.0 | Complete and compiles for the ESP32-C3. **Not yet run on hardware** — expect a debugging session on the first assembled watch. |
-| Configurator | Written; needs a real watch to be tested end to end. |
+| Firmware 2.1.0 | Complete and compiles for the ESP32-C3 (custom apps, file space, live data, I²C bridge). **Not yet run on hardware** — expect a debugging session on the first assembled watch. |
+| Watch Studio app | Done; tested against its built-in demo watch. Installers for Windows (tested) and macOS (not yet tried on a Mac) in [`installer/`](installer/README.md). Needs a real watch to be tested over USB and Bluetooth. |
 
-[`TODO.md`](TODO.md) is the live list of what is left.
+The list of what is left is kept outside the repository.
 
 ## Start here
 
 | You want to… | Read |
 |---|---|
 | Use a finished watch | [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) |
-| Set one up (Wi-Fi, screens, bells) | [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) |
+| Install the app | [`installer/README.md`](installer/README.md) |
+| Set one up (Wi-Fi, screens, bells, custom apps) | [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) |
 | Build one | [`docs/BUILD_GUIDE.md`](docs/BUILD_GUIDE.md), parts in [`docs/BOM.md`](docs/BOM.md) |
 | Order boards and cases | [`docs/ORDERING.md`](docs/ORDERING.md) |
 | Add sensors or other hardware | [`docs/ADDONS.md`](docs/ADDONS.md) |
@@ -41,6 +42,7 @@ A see-through, build-it-yourself wrist watch made as a gift for STEM teachers. A
 - **Classroom tools**: stopwatch, countdown timer, tally counter, dice, bell schedule with a countdown to the next bell, metronome.
 - **Packs** (plug into the accessory socket): temperature, humidity and air pressure with a sample log you download as a spreadsheet; an instrument tuner.
 - **Watch-to-watch**: watches in the same group can see each other, buzz each other and share the time, with no router.
+- **Custom apps**: step timers, random name pickers, countdowns and messages, made in Watch Studio and stored on the watch.
 - **Personal**: each owner chooses which screens appear and in what order, brightness, time zone, 12/24-hour, bells, and more.
 
 Battery life comes from being asleep: the watch wakes when a button is pressed, shows a screen for a few seconds and sleeps again. It also wakes on its own for a bell, a finished timer, a log sample or a time sync.
@@ -49,7 +51,8 @@ Battery life comes from being asleep: the watch wakes when a button is pressed, 
 
 ```
 firmware/watch_v1/     Arduino sketch (one file per feature; start with watch_v1.ino)
-tools/configurator/    index.html - the setup page (open in Chrome or Edge)
+app/                   Watch Studio, the companion app (one page: index.html)
+installer/             Windows and macOS installers for it; build.py makes dist/*.zip
 hardware/scripts/      design.py is the circuit; the other scripts generate KiCad files from it
 hardware/kicad/        generated KiCad 10 project (schematic, board, libraries)
 enclosure/             OpenSCAD model and exported STL files

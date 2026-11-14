@@ -66,11 +66,41 @@
 					(type background)
 				)
 			)
+			(rectangle
+				(start -3.81 12.7)
+				(end 3.81 8.89)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
 			(text "USB-C"
-				(at 0 10.16 0)
+				(at 0 10.795 0)
 				(effects
 					(font
 						(size 1.27 1.27)
+					)
+				)
+			)
+			(circle
+				(center -11.43 11.43)
+				(radius 0.508)
+				(stroke
+					(width 0.254)
+					(type default)
+				)
+				(fill
+					(type outline)
+				)
+			)
+			(text "seen from the component side"
+				(at 0 -11.43 0)
+				(effects
+					(font
+						(size 1 1)
 					)
 				)
 			)

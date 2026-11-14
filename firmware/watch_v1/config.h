@@ -3,11 +3,11 @@
 // Pins must match hardware/scripts/design.py (the source of the schematic).
 // Everything under "Factory defaults" is only the starting point: each watch
 // keeps its own settings in flash, and the owner changes them from the
-// configurator (tools/configurator/index.html) over USB or Bluetooth.
+// Watch Studio app (app/index.html) over USB or Bluetooth.
 // See docs/CONFIGURATION.md.
 #pragma once
 
-#define FW_VERSION "2.0.0"
+#define FW_VERSION "2.1.0"
 
 // ---------- Pins (ESP32-C3 SuperMini exposes ONLY GPIO0-10, 20, 21) ----------
 #define PIN_VBAT_SENSE 0   // ADC1_CH0, battery through 100k/100k divider; accessory AIN rides on it via C4
@@ -19,8 +19,8 @@
 #define PIN_CHRG       5   // TP4056 CHRG pad (LOW = charging)
 #define PIN_SR_DATA    6   // 74HC595 SER   (U2 pin 14)
 #define PIN_SR_CLK     7   // 74HC595 SRCLK (U2+U3 pin 11)
-#define PIN_SDA        8   // I2C SDA -> DS3231 + add-on header J4 (also the on-board LED)
-#define PIN_SCL        9   // I2C SCL -> DS3231 + add-on header J4 (also the BOOT button)
+#define PIN_SDA        8   // I2C SDA -> DS3231 + accessory socket J4 (also the on-board LED)
+#define PIN_SCL        9   // I2C SCL -> DS3231 + accessory socket J4 (also the BOOT button)
 #define PIN_SR_LATCH   10  // 74HC595 RCLK  (U2+U3 pin 12)
 #define PIN_SR_OE      20  // 74HC595 /OE   (U2+U3 pin 13), 10k pull-up, PWM = brightness
 #define PIN_LDR_PWR    21  // powers the LDR divider and accessory pin AUX_PWR, only while awake
