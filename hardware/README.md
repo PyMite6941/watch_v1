@@ -10,6 +10,7 @@ scripts/check_wiring.py  audits the generated schematic and board against datash
 scripts/route.py       -> kicad/watch_v1.routes.json (any Python 3; experimental autorouter)
 scripts/export_fab.py  -> fab/watch_v1_gerbers.zip   (checks the board first)
 kicad/                 the generated KiCad 10 project - open watch_v1.kicad_pro
+addons/                add-on packs: the Pack Base board (routed, design-rule clean) and the pack plan
 ```
 
 **Edit `design.py`, not the KiCad files** — anything changed by hand in the schematic or in the footprint positions is overwritten the next time the scripts run. Tracks are the exception: see below.

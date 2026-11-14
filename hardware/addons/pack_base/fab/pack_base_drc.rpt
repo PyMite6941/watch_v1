@@ -1,0 +1,66 @@
+** Drc report for pack_base.kicad_pcb **
+** Created on 2026-11-14T22:17:07 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 12 DRC violations **
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(120.0000 mm, 118.6000 mm): Segment on Edge.Cuts
+    @(117.8800 mm, 117.3000 mm): Segment of J3 on F.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(120.0000 mm, 118.6000 mm): Segment on Edge.Cuts
+    @(106.0800 mm, 116.0300 mm): Segment of J1 on B.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(120.0000 mm, 118.6000 mm): Segment on Edge.Cuts
+    @(113.9200 mm, 113.3800 mm): Segment of J1 on B.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(102.3000 mm, 112.8000 mm): Segment of JP1 on F.Silkscreen
+    @(102.2000 mm, 113.4000 mm): PCB text '3' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(102.3000 mm, 112.8000 mm): Segment of JP1 on F.Silkscreen
+    @(102.2000 mm, 113.4000 mm): PCB text '3' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(102.0000 mm, 113.1000 mm): Segment of JP1 on F.Silkscreen
+    @(102.2000 mm, 113.4000 mm): PCB text '3' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(104.9200 mm, 109.5800 mm): Segment of J2 on F.Silkscreen
+    @(106.1900 mm, 109.7500 mm): PCB text 'G' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(103.6500 mm, 109.5800 mm): Segment of J2 on F.Silkscreen
+    @(103.6500 mm, 109.7500 mm): PCB text 'V' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(104.9200 mm, 109.5800 mm): Segment of J2 on F.Silkscreen
+    @(108.7300 mm, 109.7500 mm): PCB text 'CL' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(111.2700 mm, 109.7500 mm): PCB text 'DA' on F.Silkscreen
+    @(104.9200 mm, 109.5800 mm): Segment of J2 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(106.0800 mm, 113.3800 mm): Segment of J1 on B.Silkscreen
+    @(105.9000 mm, 114.7600 mm): PCB text '1' on B.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(110.0000 mm, 112.6000 mm): PCB text 'PIN 1 = LID NOTCH' on B.Silkscreen
+    @(116.5000 mm, 112.2200 mm): PTH pad 3 [GND] of J3
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **

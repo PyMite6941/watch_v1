@@ -36,3 +36,5 @@ secrets.h
 __pycache__/
 hardware/fab/gerbers/
 dist/
+hardware/addons/*/fab/gerbers/
+*-backups/

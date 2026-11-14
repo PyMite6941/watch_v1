@@ -32,7 +32,7 @@ The list of what is left is kept outside the repository.
 | Set one up (Wi-Fi, screens, bells, custom apps) | [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) |
 | Build one | [`docs/BUILD_GUIDE.md`](docs/BUILD_GUIDE.md), parts in [`docs/BOM.md`](docs/BOM.md) |
 | Order boards and cases | [`docs/ORDERING.md`](docs/ORDERING.md) |
-| Add sensors or other hardware | [`docs/ADDONS.md`](docs/ADDONS.md) |
+| Add sensors or other hardware | [`docs/ADDONS.md`](docs/ADDONS.md); pack boards and costs in [`hardware/addons/`](hardware/addons/README.md) |
 | See what it could do for each subject | [`docs/IDEAS.md`](docs/IDEAS.md) |
 | Change the circuit or board | [`hardware/README.md`](hardware/README.md) |
 
@@ -55,6 +55,7 @@ app/                   Watch Studio, the companion app (one page: index.html)
 installer/             Windows and macOS installers for it; build.py makes dist/*.zip
 hardware/scripts/      design.py is the circuit; the other scripts generate KiCad files from it
 hardware/kicad/        generated KiCad 10 project (schematic, board, libraries)
+hardware/addons/       add-on packs: the Pack Base board that every pack is built on
 enclosure/             OpenSCAD model and exported STL files
 docs/                  guides
 ```
