@@ -7,7 +7,7 @@
 // See docs/CONFIGURATION.md.
 #pragma once
 
-#define FW_VERSION "2.1.0"
+#define FW_VERSION "2.2.0"
 
 // ---------- Pins (ESP32-C3 SuperMini exposes ONLY GPIO0-10, 20, 21) ----------
 #define PIN_VBAT_SENSE 0   // ADC1_CH0, battery through 100k/100k divider; accessory AIN rides on it via C4
@@ -45,6 +45,18 @@
 //   "JST-9" Tokyo, "GMT0BST,M3.5.0/1,M10.5.0" London, "EST5EDT,M3.2.0,M11.1.0" New York
 #define DEFAULT_TZ          "UTC0"
 #define DEFAULT_NTP         "pool.ntp.org"
+// The project's time + weather service (https://pymite6941.is-a.bot/api/watch).
+// The time comes from it first and from NTP if it does not answer. It allows
+// about 30 requests a minute in total, which is plenty for a class set of
+// watches syncing weekly and fetching weather hourly. If you build many watches,
+// or your own fork, point these at your own service or set DEFAULT_TIME_SRC "ntp".
+#define SERVICE_URL         "https://pymite6941.is-a.bot/api/watch"
+#define DEFAULT_TIME_SRC    "http"
+#define DEFAULT_TIME_URL    SERVICE_URL
+#define DEFAULT_TIME_KEY    "unix"
+#define DEFAULT_WX_URL      SERVICE_URL
+#define DEFAULT_WX_MIN      60     // weather every hour while the weather screen is in use
+#define WX_MIN_MINUTES      10     // the service only refreshes weather this often
 #define DEFAULT_AWAKE_S     5      // display stays on this long after the last button press
 #define DEFAULT_RESYNC_H    168    // with a DS3231 fitted: weekly is plenty
 #define RESYNC_S_NO_RTC     (3UL * 3600)   // internal clock only: drifts, so every 3 h

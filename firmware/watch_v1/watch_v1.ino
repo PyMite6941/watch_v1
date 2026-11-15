@@ -6,6 +6,7 @@
  *   types.h       shared types, the Settings struct
  *   settings.h    settings <-> JSON <-> flash
  *   timesource.h  Wi-Fi + where the time comes from (NTP or an HTTP API)
+ *   weather.h     weather from the project's web service
  *   mesh.h        watch-to-watch messages (ESP-NOW)
  *   env.h         environment sensor (BME280) and the sample log
  *   tuner.h       instrument tuner (microphone on the accessory socket)
@@ -42,6 +43,7 @@
 #include "types.h"
 #include "settings.h"
 #include "timesource.h"
+#include "weather.h"
 #include "mesh.h"
 #include "env.h"
 #include "tuner.h"
@@ -416,6 +418,9 @@ static Pitch    pitchNow = {};
 static uint32_t pitchAt = 0;
 static uint32_t rollUntil = 0;
 static uint32_t msgStart = 0;                // custom "message" app: when the scroll began
+static uint8_t  wxPage = 0;                  // weather screen: which number is showing
+enum { WX_TEMP, WX_SKY, WX_HIGH, WX_LOW, WX_RAIN, WX_SUNRISE, WX_SUNSET, WX_AIR, WX_PAGES };
+static const char *const WX_LABELS[WX_PAGES] = { nullptr, nullptr, nullptr, nullptr, "rAIn", "rISE", "SEt ", "AQI " };
 
 void keepAwake() { lastActivity = millis(); }
 
@@ -468,6 +473,50 @@ static void renderApp(uint32_t ms, bool blink) {
       if (renderMessage(ms)) keepAwake();
       break;
     default: showString(app.title);
+  }
+}
+
+// Whole degrees, converted if the owner switched units since the last fetch.
+static int wxDegrees(int16_t v) {
+  if (wx.imperial == settings.fahrenheit) return v;
+  return settings.fahrenheit ? (int)lroundf(v * 9.0f / 5 + 32) : (int)lroundf((v - 32) * 5.0f / 9);
+}
+
+static void renderWeather() {
+  if (!wxConfigured()) { showString(" LOC"); return; }     // no place set: Watch Studio > Weather
+  if (!wxFresh()) { showString("----"); return; }          // hold SET to fetch
+  char buf[8];
+  char unit = settings.fahrenheit ? 'F' : 'C';
+  switch (wxPage) {
+    case WX_TEMP: {
+      int t = wxDegrees(wx.temp);
+      if (t >= -9 && t <= 99) snprintf(buf, sizeof(buf), "%2d*%c", t, unit);
+      else snprintf(buf, sizeof(buf), "%3d%c", t, unit);
+      showString(buf);
+      break;
+    }
+    case WX_SKY: showString(wxWord(wx.code)); break;
+    case WX_HIGH: case WX_LOW: {
+      int16_t v = wxPage == WX_HIGH ? wx.high : wx.low;
+      if (v == WX_NONE) { showString("----"); break; }
+      snprintf(buf, sizeof(buf), "%c%3d", wxPage == WX_HIGH ? 'H' : 'L', wxDegrees(v));
+      showString(buf);
+      break;
+    }
+    case WX_RAIN: showNumber(wx.rain > 100 ? 100 : wx.rain, 'r'); break;
+    case WX_SUNRISE: case WX_SUNSET: {
+      int16_t m = wxPage == WX_SUNRISE ? wx.sunrise : wx.sunset;
+      if (m == WX_NONE) { showString("----"); break; }
+      uint8_t h = m / 60;
+      if (!settings.h24) h = h % 12 ? h % 12 : 12;
+      showNumberPair(h, m % 60, true);
+      if (!settings.h24 && h < 10) frame[0] = SEG_BLANK;
+      break;
+    }
+    case WX_AIR:
+      if (wx.aqi == WX_NONE || wx.aqi < 0) showString("----");
+      else showNumber(wx.aqi > 9999 ? 9999 : wx.aqi);
+      break;
   }
 }
 
@@ -630,6 +679,7 @@ static void renderView() {
     case VIEW_METRONOME:
       showNumber(settings.bpm, metroOn ? 0 : 'b');
       break;
+    case VIEW_WEATHER: renderWeather(); break;
   }
 }
 
@@ -754,6 +804,22 @@ static void onSet(Event e) {
     case VIEW_TEMP: case VIEW_HUMIDITY: case VIEW_PRESSURE:
       if (e == EV_LONG) { logSample(); showText(" LOG", 700); }       // take a sample right now
       break;
+    case VIEW_WEATHER:
+      if (e == EV_LONG) {                                            // fetch now
+        if (!wxConfigured() || !settings.wifi_n) { showText(!settings.wifi_n ? "nEt " : " LOC", 1200); break; }
+        meshStop();
+        showString("....");
+        overlayUntil = 0;
+        bool ok = wxFetch();
+        showText(ok ? "  On" : " Err", 800);
+        buzz(ok ? 40 : 200);
+        wxPage = WX_TEMP;
+        keepAwake();
+      } else if (wxFresh()) {
+        wxPage = (wxPage + 1) % WX_PAGES;
+        if (WX_LABELS[wxPage]) showText(WX_LABELS[wxPage], 600);
+      }
+      break;
     case VIEW_DATE:
       if (e == EV_LONG) { doSync(); break; }
       // fall through: short press = LED, like the other clock screens
@@ -765,6 +831,8 @@ static void onSet(Event e) {
 }
 
 // --------------------------------------------------------------------- sleep
+static bool weatherScreenOn() { return memchr(settings.views, VIEW_WEATHER, settings.views_n) != nullptr; }
+
 static void goToSleep() {
   savedView = viewIndex;
   meshStop();
@@ -781,6 +849,7 @@ static void goToSleep() {
   if (timerEndMs) sooner((long)((timerEndMs - nowMs()) / 1000) + 1);
   if (seqApp >= 0) sooner((long)((seqEndMs - nowMs()) / 1000) + 1);
   if (settings.log_min && logNextEpoch) sooner((long)(logNextEpoch - now));
+  if (timeValid() && wxAutoWanted(weatherScreenOn())) sooner(wxNextEpoch > now ? (long)(wxNextEpoch - now) : 60);
   uint32_t interval = rtcPresent ? settings.resync_h * 3600UL : RESYNC_S_NO_RTC;
   if (settings.wifi_n && interval) {
     long left = interval;
@@ -833,6 +902,7 @@ void setup() {
     uint32_t interval = rtcPresent ? settings.resync_h * 3600UL : RESYNC_S_NO_RTC;
     if (!forWearer && settings.wifi_n && interval &&
         (!timeValid() || time(nullptr) - lastSyncEpoch >= (time_t)interval - 5)) timeSync();
+    if (!forWearer && wxAutoWanted(weatherScreenOn()) && timeValid() && time(nullptr) >= wxNextEpoch) wxFetch();
     if (!forWearer) goToSleep();
   }
 
@@ -891,6 +961,7 @@ void loop() {
       msgStart = now;
       metroOn = false;
       pitchNow.ok = false;
+      wxPage = WX_TEMP;
     }
     if (em == EV_LONG) enterSetMode();
     if (es != EV_NONE) onSet(es);

@@ -2,7 +2,7 @@
 
 A menu for deciding how to set up each teacher's watch, and where the project could go next.
 
-- ✅ **Ready** — in firmware 2.1.0; just turn the screen on in Watch Studio.
+- ✅ **Ready** — in firmware 2.2.0; just turn the screen on in Watch Studio.
 - 🔌 **Needs a pack** — in the firmware, plus a plug-in board ([ADDONS.md](ADDONS.md)).
 - 💡 **Idea** — not built. Each notes what it would take.
 

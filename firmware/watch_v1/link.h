@@ -111,6 +111,37 @@ static String linkHandle(const String &line, bool &trusted) {
     out["ok"] = timeSync();
     showText(out["ok"] ? "  On" : " Err", 800);
     if (!out["ok"]) out["err"] = "no saved network in range, or the time server did not answer";
+  } else if (!strcmp(cmd, "weather")) {
+    // The last weather the watch fetched; with "fetch": true, fetch it now first.
+    bool fetched = true;
+    if (in["fetch"] | false) {
+      if (!wxConfigured()) {
+        fetched = false;
+        out["err"] = "set a place first (wx_city, or wx_lat and wx_lon)";
+      } else {
+        meshStop();
+        showText("....", 20000);
+        fetched = wxFetch();
+        showText(fetched ? "  On" : " Err", 800);
+        if (!fetched) out["err"] = "no saved network in range, or the weather service did not answer";
+      }
+    }
+    out["ok"] = fetched;
+    if (wx.at) {
+      out["at"] = (uint32_t)wx.at;
+      out["units"] = wx.imperial ? "imperial" : "metric";
+      out["temp"] = wx.temp;
+      out["feels_like"] = wx.feels;
+      out["code"] = wx.code;
+      out["sky"] = wxWord(wx.code);
+      out["high"] = wx.high;
+      out["low"] = wx.low;
+      out["rain_chance"] = wx.rain;
+      if (wx.sunrise != WX_NONE) out["sunrise_min"] = wx.sunrise;
+      if (wx.sunset != WX_NONE) out["sunset_min"] = wx.sunset;
+      if (wx.aqi != WX_NONE) out["us_aqi"] = wx.aqi;
+    }
+    out["next"] = (uint32_t)wxNextEpoch;
   } else if (!strcmp(cmd, "time")) {
     uint32_t epoch = in["epoch"] | 0u;
     if (epoch > 1735689600u) {

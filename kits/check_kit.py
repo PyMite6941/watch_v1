@@ -23,7 +23,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # firmware/watch_v1/settings.h VIEW_NAMES
-VIEWS = {"time", "seconds", "date", "battery", "stopwatch", "timer", "counter", "dice", "period", "mesh",
+VIEWS = {"time", "seconds", "date", "battery", "stopwatch", "timer", "counter", "dice", "period", "mesh", "weather",
          "temp", "humidity", "pressure", "tuner", "metronome"}
 # firmware/watch_v1/watch_v1.ino glyph(): characters the display can draw
 DRAWABLE = set("0123456789 -_*") | set("AaBbCcDdEeFfGgHhIiJjLlNnOoPpQqRrSsTtUuYy")
