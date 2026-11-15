@@ -38,3 +38,6 @@ hardware/fab/gerbers/
 dist/
 hardware/addons/*/fab/gerbers/
 *-backups/
+
+# kits/computer-science/log_to_sqlite.py output
+watch_log.db

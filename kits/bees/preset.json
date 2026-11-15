@@ -1,0 +1,22 @@
+{
+  "watch_backup": 1,
+  "kit": "bees",
+  "cfg": {
+    "views": [
+      "time",
+      "date",
+      "temp",
+      "humidity",
+      "pressure",
+      "timer",
+      "battery"
+    ],
+    "log_min": 30,
+    "timer_s": 600
+  },
+  "files": {
+    "/apps/10-busy.json": "{\"type\":\"message\",\"title\":\"bEE\",\"text\":\"bUSY AS A bEE\"}",
+    "/apps/20-beeday.json": "{\"type\":\"countdown\",\"title\":\"bdAY\",\"date\":\"2027-05-20\"}",
+    "/apps/30-inspect.json": "{\"type\":\"sequence\",\"title\":\"InSP\",\"repeat\":false,\"steps\":[{\"label\":\"SUIt\",\"s\":120},{\"label\":\"LItE\",\"s\":60},{\"label\":\"OPEn\",\"s\":60},{\"label\":\"CHEC\",\"s\":600},{\"label\":\"CLOS\",\"s\":120}]}"
+  }
+}

@@ -94,7 +94,7 @@ The minimum order is usually 5 boards. For more, choose the factory's own paneli
 | Text display | SSD1306 0.91" OLED | Scan only | $ | Longer messages, labels for readings |
 | Beeper | Passive piezo disc between AUX and GND | Needs firmware to drive AUX as a tone | $ | Audible timer alarms, metronome click, tuning reference. Idea only |
 
-Which pack suits which teacher: see [docs/IDEAS.md](../../docs/IDEAS.md).
+Which pack suits which teacher: see [docs/IDEAS.md](../../docs/IDEAS.md), and the ready-made [kits](../../kits/README.md).
 
 ## Keeping the cost down: recommendations
 

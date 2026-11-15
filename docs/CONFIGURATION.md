@@ -41,7 +41,7 @@ Anyone near a watch in link mode could connect by Bluetooth. Set a PIN and Bluet
 |---|---|---|
 | `name` | Watch name: Bluetooth name, and what other watches see | 16 characters / `Watch` |
 | `hello` | Greeting shown for a moment when the watch wakes from being switched off (seven-segment letters) | 4 characters / empty |
-| `tz` | Time zone as a POSIX string | `<+07>-7` (Bangkok) |
+| `tz` | Time zone as a POSIX string. Quick setup fills it in from the computer's clock; new watches start on `UTC0` | `EST5EDT,M3.2.0,M11.1.0` (US Eastern), `<+07>-7` (UTC+7) |
 | `h24` | 24-hour clock | `true` |
 | `awake_s` | Seconds the display stays on after a press | 3–60 / 5 |
 | `auto_bright` | Brightness follows the light sensor | `true` |

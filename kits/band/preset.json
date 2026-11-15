@@ -1,0 +1,19 @@
+{
+  "watch_backup": 1,
+  "kit": "band",
+  "cfg": {
+    "views": [
+      "time",
+      "tuner",
+      "metronome",
+      "timer",
+      "stopwatch"
+    ],
+    "bpm": 100,
+    "tune_a4": 440
+  },
+  "files": {
+    "/apps/10-warmup.json": "{\"type\":\"sequence\",\"title\":\"UArn\",\"repeat\":false,\"steps\":[{\"label\":\"brth\",\"s\":60},{\"label\":\"LOnG\",\"s\":120},{\"label\":\"SCAL\",\"s\":180},{\"label\":\"tUnE\",\"s\":60}]}",
+    "/apps/20-section.json": "{\"type\":\"picker\",\"title\":\"SECt\",\"no_repeat\":true,\"items\":[\"FLUt\",\"CLAr\",\"ALtO\",\"tEnr\",\"bArI\",\"trPt\",\"HOrn\",\"trbn\",\"tUbA\",\"PErC\"]}"
+  }
+}

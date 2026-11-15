@@ -40,9 +40,10 @@
 
 // ---------- Factory defaults (changeable later without reflashing) ----------
 #define DEFAULT_NAME        "Watch"
-// POSIX TZ string. "<+07>-7" = UTC+7 (Bangkok). Examples:
+// POSIX TZ string. The default is plain UTC; Watch Studio's Quick setup sets the
+// owner's zone from the computer's clock. Examples:
 //   "JST-9" Tokyo, "GMT0BST,M3.5.0/1,M10.5.0" London, "EST5EDT,M3.2.0,M11.1.0" New York
-#define DEFAULT_TZ          "<+07>-7"
+#define DEFAULT_TZ          "UTC0"
 #define DEFAULT_NTP         "pool.ntp.org"
 #define DEFAULT_AWAKE_S     5      // display stays on this long after the last button press
 #define DEFAULT_RESYNC_H    168    // with a DS3231 fitted: weekly is plenty

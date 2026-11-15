@@ -393,10 +393,11 @@ const NUS = { service: "6e400001-b5a3-f393-e0a9-e50e24dcca9e", rx: "6e400002-b5a
 const VIEWS = { time: "Time", seconds: "Seconds", date: "Date", battery: "Battery", stopwatch: "Stopwatch", timer: "Timer",
   counter: "Tally counter", dice: "Dice", period: "Next bell", mesh: "Mesh", temp: "Temperature*", humidity: "Humidity*",
   pressure: "Air pressure*", tuner: "Tuner*", metronome: "Metronome" };
-const ZONES = [["", "custom"], ["<+07>-7", "Bangkok, Jakarta (UTC+7)"], ["JST-9", "Tokyo, Seoul (UTC+9)"], ["<+08>-8", "Singapore, Beijing (UTC+8)"],
-  ["IST-5:30", "India (UTC+5:30)"], ["GMT0BST,M3.5.0/1,M10.5.0", "London"], ["CET-1CEST,M3.5.0,M10.5.0/3", "Paris, Berlin"],
-  ["EST5EDT,M3.2.0,M11.1.0", "New York"], ["CST6CDT,M3.2.0,M11.1.0", "Chicago"], ["MST7MDT,M3.2.0,M11.1.0", "Denver"],
-  ["PST8PDT,M3.2.0,M11.1.0", "Los Angeles"], ["AEST-10AEDT,M10.1.0,M4.1.0/3", "Sydney"], ["UTC0", "UTC"]];
+const ZONES = [["", "custom"], ["PST8PDT,M3.2.0,M11.1.0", "Los Angeles"], ["MST7MDT,M3.2.0,M11.1.0", "Denver"],
+  ["CST6CDT,M3.2.0,M11.1.0", "Chicago"], ["EST5EDT,M3.2.0,M11.1.0", "New York"], ["UTC0", "UTC"],
+  ["GMT0BST,M3.5.0/1,M10.5.0", "London"], ["CET-1CEST,M3.5.0,M10.5.0/3", "Paris, Berlin"], ["IST-5:30", "India (UTC+5:30)"],
+  ["<+07>-7", "Bangkok, Jakarta (UTC+7)"], ["<+08>-8", "Singapore, Beijing (UTC+8)"], ["JST-9", "Tokyo, Seoul (UTC+9)"],
+  ["AEST-10AEDT,M10.1.0,M4.1.0/3", "Sydney"]];
 const TEXT = ["name", "hello", "tz", "ntp", "time_url", "time_key", "mesh_group", "time_src"];
 const NUMS = ["awake_s", "bright_min", "bright_max", "timer_s", "dice", "bpm", "tune_a4", "log_min", "alert_warn_min", "resync_h", "mesh_ch"];
 const BOOLS = ["h24", "auto_bright", "haptic", "fahrenheit", "usb_awake", "mesh"];
@@ -885,7 +886,7 @@ async function restoreBackup(b) {
 class SimWatch {
   constructor(emit) {
     this.emit = emit;
-    this.cfg = { name: "Demo", hello: "HI", tz: "<+07>-7", h24: true, awake_s: 5, auto_bright: true, bright_min: 20, bright_max: 255, haptic: true,
+    this.cfg = { name: "Demo", hello: "HI", tz: guessZone(), h24: true, awake_s: 5, auto_bright: true, bright_min: 20, bright_max: 255, haptic: true,
       views: ["time", "date", "battery", "stopwatch", "timer"], wifi: [{ ssid: "Staffroom" }], time_src: "ntp", ntp: "pool.ntp.org", time_url: "", time_key: "",
       resync_h: 168, usb_awake: true, pin_set: false, mesh: false, mesh_ch: 1, mesh_group: "class", timer_s: 300, dice: 6, alerts: ["08:30", "09:20"],
       alert_days: 62, alert_warn_min: 5, log_min: 0, fahrenheit: false, tune_a4: 440, bpm: 100 };

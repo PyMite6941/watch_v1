@@ -1,0 +1,21 @@
+{
+  "watch_backup": 1,
+  "kit": "computer-science",
+  "cfg": {
+    "views": [
+      "time",
+      "seconds",
+      "date",
+      "counter",
+      "timer",
+      "stopwatch",
+      "dice"
+    ],
+    "timer_s": 300
+  },
+  "files": {
+    "/apps/10-binary.json": "{\"type\":\"message\",\"title\":\"bIn\",\"text\":\"01001000 01001001\"}",
+    "/apps/20-pair.json": "{\"type\":\"sequence\",\"title\":\"PAIr\",\"repeat\":true,\"steps\":[{\"label\":\"dr 1\",\"s\":600},{\"label\":\"dr 2\",\"s\":600}]}",
+    "/apps/30-call.json": "{\"type\":\"picker\",\"title\":\"CALL\",\"max\":30}"
+  }
+}

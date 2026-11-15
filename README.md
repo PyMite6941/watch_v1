@@ -34,6 +34,7 @@ The list of what is left is kept outside the repository.
 | Order boards and cases | [`docs/ORDERING.md`](docs/ORDERING.md) |
 | Add sensors or other hardware | [`docs/ADDONS.md`](docs/ADDONS.md); pack boards and costs in [`hardware/addons/`](hardware/addons/README.md) |
 | See what it could do for each subject | [`docs/IDEAS.md`](docs/IDEAS.md) |
+| Make one for a particular person (biology, computer science, band, calculus, youth group) | [`kits/`](kits/README.md): preset, pack, engraved case and printed stand for each |
 | Change the circuit or board | [`hardware/README.md`](hardware/README.md) |
 
 ## What it does
@@ -56,7 +57,8 @@ installer/             Windows and macOS installers for it; build.py makes dist/
 hardware/scripts/      design.py is the circuit; the other scripts generate KiCad files from it
 hardware/kicad/        generated KiCad 10 project (schematic, board, libraries)
 hardware/addons/       add-on packs: the Pack Base board that every pack is built on
-enclosure/             OpenSCAD model and exported STL files
+enclosure/             OpenSCAD model (case with optional engraving, accessories) and exported STL files
+kits/                  ready-made setups for one person each: preset, pack, case pattern, ideas
 docs/                  guides
 ```
 
