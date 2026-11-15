@@ -18,7 +18,7 @@ A see-through, build-it-yourself wrist watch made as a gift for STEM teachers. A
 | Circuit (`hardware/scripts/design.py`) | Done, revision 5. Schematic generated, electrical rules check passes with 0 findings. |
 | PCB | All 49 parts placed and checked; an automatic audit confirms every connection against the parts' pinouts. **Not routed yet** — see [`hardware/README.md`](hardware/README.md). No Gerbers until that is done. |
 | Enclosure | Modelled; STL files exported in `enclosure/stl/`. Not yet test-printed against a real board. |
-| Firmware 2.1.0 | Complete and compiles for the ESP32-C3 (custom apps, file space, live data, I²C bridge). **Not yet run on hardware** — expect a debugging session on the first assembled watch. |
+| Firmware 2.2.0 | Complete and compiles for the ESP32-C3 (custom apps, file space, live data, I²C bridge, weather). **Not yet run on hardware** — expect a debugging session on the first assembled watch. |
 | Watch Studio app | Done; tested against its built-in demo watch. Installers for Windows (tested) and macOS (not yet tried on a Mac) in [`installer/`](installer/README.md). Needs a real watch to be tested over USB and Bluetooth. |
 
 The list of what is left is kept outside the repository.
@@ -40,6 +40,7 @@ The list of what is left is kept outside the repository.
 ## What it does
 
 - **Clock**: time, seconds, date, battery level. Keeps time with a DS3231 clock chip and corrects itself over Wi-Fi.
+- **Weather** (over Wi-Fi): temperature, sky, high/low, chance of rain, sunrise/sunset and air quality for a place you choose.
 - **Classroom tools**: stopwatch, countdown timer, tally counter, dice, bell schedule with a countdown to the next bell, metronome.
 - **Packs** (plug into the accessory socket): temperature, humidity and air pressure with a sample log you download as a spreadsheet; an instrument tuner.
 - **Watch-to-watch**: watches in the same group can see each other, buzz each other and share the time, with no router.

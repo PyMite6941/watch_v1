@@ -30,7 +30,7 @@ Easier to do before it is soldered down.
    - Partition Scheme: **Minimal SPIFFS (1.9MB APP with OTA/190KB SPIFFS)** — the default scheme is too small for Wi-Fi plus Bluetooth
    - Port: the SuperMini's port
 4. Click *Upload*. If it will not connect: hold the board's **BOOT** button, tap **RST**, release BOOT, upload again.
-5. Open the Serial Monitor at 115200. You should see a line starting `Watch V1 fw 2.1.0`. Type `{"cmd":"info"}` and send; a line of JSON comes back. The processor and firmware are alive.
+5. Open the Serial Monitor at 115200. You should see a line starting `Watch V1 fw 2.2.0`. Type `{"cmd":"info"}` and send; a line of JSON comes back. The processor and firmware are alive.
 
 Command-line alternative:
 

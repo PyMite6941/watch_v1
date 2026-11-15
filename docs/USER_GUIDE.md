@@ -43,8 +43,26 @@ MODE steps through your screens. Which screens you have, and in what order, is c
 | **pressure** ★ | Air pressure in hPa, e.g. `1013` | — | Save a sample |
 | **tuner** ✦ | Note, octave, how far off — see below | — | — |
 | **metronome** | Beats per minute; it taps your wrist on each beat | Start / stop | Next tempo: 60, 72, 80, 90, 100, 120, 140, 160 |
+| **weather** ◆ | `18*C` now; SET steps through the rest — see below | Next: sky, high, low, rain, sunrise, sunset, air | Fetch the weather now |
 
 ★ needs the environment pack, ✦ needs the sound pack ([ADDONS.md](ADDONS.md)). Without the pack these screens show `----` or `tunE`.
+◆ needs Wi-Fi and a place, set in Watch Studio › Weather.
+
+### Reading the weather
+
+Pressing SET on the weather screen goes round these in turn:
+
+| Shows | Means |
+|---|---|
+| `18*C` | Temperature now |
+| `CLr`, `PArt`, `CLdy`, `FOG`, `drIP`, `rAIn`, `SHOr`, `SnO`, `ICE`, `StOr` | Clear, partly cloudy, cloudy, fog, drizzle, rain, showers, snow, freezing rain, thunderstorm |
+| `H 21` / `L 12` | Today's high and low |
+| `rAIn`, then `r 20` | Chance of rain today, % |
+| `rISE`, then `06:32` | Sunrise |
+| `SEt`, then `17:41` | Sunset |
+| `AQI`, then `38` | US air quality index: up to 50 is good, over 100 is unhealthy for sensitive groups, over 150 for everyone |
+
+`----` means no weather in the last 12 hours: hold SET to fetch it. `LOC` means no place is set yet. The watch fetches by itself about every hour, but only while the weather screen is one of your screens.
 
 The stopwatch and timer keep running while the watch sleeps. When the timer ends the watch wakes itself, vibrates four times and shows `End`.
 

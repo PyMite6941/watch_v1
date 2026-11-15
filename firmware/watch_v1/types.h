@@ -23,6 +23,7 @@ enum View {
   VIEW_TEMP, VIEW_HUMIDITY, VIEW_PRESSURE,      // need the environment pack (BME280)
   VIEW_TUNER,                                   // needs the sound pack (microphone)
   VIEW_METRONOME,
+  VIEW_WEATHER,                                 // needs Wi-Fi and a location (weather.h)
   VIEW_COUNT,
   VIEW_APP = 200                                // a custom app from /apps (see apps.h); never stored in settings
 };
@@ -67,6 +68,10 @@ struct Settings {
   uint16_t tune_a4;             // tuner reference pitch, Hz
   uint16_t bpm;                 // metronome
   char     hello[5];            // four characters shown when the watch is switched on ("" = nothing)
+  char     wx_url[128];         // weather service (weather.h); "" = no weather
+  char     wx_city[40];         // where: a city name, or ...
+  float    wx_lat, wx_lon;      // ... coordinates (used when wx_city is empty)
+  uint16_t wx_min;              // minutes between automatic weather fetches (0 = only when asked)
 };
 
 extern Settings settings;

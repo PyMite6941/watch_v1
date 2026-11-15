@@ -47,7 +47,7 @@ Anyone near a watch in link mode could connect by Bluetooth. Set a PIN and Bluet
 | `auto_bright` | Brightness follows the light sensor | `true` |
 | `bright_min`, `bright_max` | Dimmest and brightest level; `bright_max` is the fixed level when `auto_bright` is off | 1–255 / 20, 255 |
 | `haptic` | Vibrate on button presses | `true` |
-| `views` | Screens, in order | list of `time seconds date battery stopwatch timer counter dice period mesh temp humidity pressure tuner metronome` |
+| `views` | Screens, in order | list of `time seconds date battery stopwatch timer counter dice period mesh temp humidity pressure tuner metronome weather` |
 | `timer_s` | Countdown length, seconds | 5–5999 / 300 |
 | `dice` | Dice sides | 2–99 / 6 |
 | `bpm` | Metronome tempo | 30–240 / 100 |
@@ -57,10 +57,14 @@ Anyone near a watch in link mode could connect by Bluetooth. Set a PIN and Bluet
 | `alerts` | Bell times, `"HH:MM"`, at most 16 | empty |
 | `alert_days` | Days the bells ring: add 1 Sun, 2 Mon, 4 Tue, 8 Wed, 16 Thu, 32 Fri, 64 Sat | 62 (Mon–Fri) |
 | `alert_warn_min` | Extra warning buzz this many minutes before each bell | 0–30 / 0 |
-| `time_src` | `ntp` or `http` — see below | `ntp` |
+| `time_src` | `http` or `ntp` — see below | `http` (falls back to NTP) |
 | `ntp` | NTP server | `pool.ntp.org` |
-| `time_url`, `time_key` | For `http`: address, and the JSON field holding Unix time | empty |
+| `time_url`, `time_key` | For `http`: address, and the JSON field holding Unix time | the project's service, `unix` |
 | `resync_h` | Hours between automatic time syncs (0 = never) | 0–2000 / 168 |
+| `wx_city` | Place for the weather, by name. Takes priority over coordinates | up to 39 characters / empty |
+| `wx_lat`, `wx_lon` | Place for the weather, by coordinates (used when `wx_city` is empty; `0, 0` = none) | e.g. `40.71`, `-74.01` |
+| `wx_min` | Minutes between automatic weather fetches, while the weather screen is in use (0 = only when asked) | 0, 10–1440 / 60 |
+| `wx_url` | Weather service | the project's service |
 | `usb_awake` | Stay awake while a computer is connected | `true` |
 | `pin` | Bluetooth PIN (write-only) | up to 8 characters / none |
 | `mesh` | Watch-to-watch messaging on | `false` |
@@ -73,10 +77,31 @@ Battery cost to keep in mind: each bell, log sample and time sync wakes the watc
 
 `time_src` picks the provider.
 
-- **`ntp`** (default) — standard network time from the server in `ntp`.
-- **`http`** — the watch fetches `time_url` and reads Unix time from the JSON field named in `time_key`. Seconds and milliseconds are both understood. Dots reach into nested objects: with `{"data":{"epoch":1767225600}}` use `data.epoch`. HTTPS works, but the watch does not verify the server's certificate (it has no certificate store) — fine for a clock, never send anything secret this way.
+- **`http`** (default) — the watch fetches `time_url` and reads Unix time from the JSON field named in `time_key`. Seconds and milliseconds are both understood. Dots reach into nested objects: with `{"data":{"epoch":1767225600}}` use `data.epoch`. If the address does not answer, the watch falls back to NTP. HTTPS works, but the watch does not verify the server's certificate (it has no certificate store) — fine for a clock and the weather, never send anything secret this way.
+- **`ntp`** — standard network time from the server in `ntp`.
 
-> **Open item.** The exact time/API service this project will use has not been decided yet. The `http` provider above is the general-purpose hook. If the chosen API needs something it cannot do — an API key header, a different response format, a POST — add a provider: one function in `firmware/watch_v1/timesource.h` plus one line in `timeFetch()`.
+### The project's service
+
+New watches use [`https://pymite6941.is-a.bot/api/watch`](https://pymite6941.is-a.bot/api/watch) for the time (field `unix`) and the weather. It answers a plain GET:
+
+| Add to the address | Gives |
+|---|---|
+| nothing | `unix` (seconds), `unix_ms`, `utc` |
+| `include=weather,forecast,sun,air` (or `include=all`) | `weather.temp`, `weather.code`, `forecast[]` (high, low, rain chance), `sun.sunrise`/`sunset`, `air.us_aqi` |
+| `lat=..&lon=..` or `city=London` | where; needed for anything in `include` |
+| `units=imperial` | °F and mph instead of °C and km/h |
+| `days=1` … `7` | forecast length (default 3); the watch asks for 1 |
+| `tz=America/New_York` | `time.clock`, `time.date` in that zone (the watch does its own time zones, so it does not ask) |
+
+`status` is `healthy`, or `degraded` when one of the extras could not be fetched; the time always comes back.
+
+**Limits.** The service refreshes the weather about every 10 minutes and allows about 30 requests a minute in total, shared by every caller. A watch syncs the time weekly and fetches the weather hourly (only while its weather screen is switched on), so a class set is far inside that. On a `429` reply the watch waits the `retry_after` seconds it is given; if the service is down, it retries in 15 minutes and keeps time from its clock chip and NTP.
+
+**Building your own watches from this repository?** The service belongs to this project and its limit is shared. For more than a handful of watches, point `time_url`/`wx_url` at your own service with the same reply format, or set `time_src` to `ntp` (and use no weather). The defaults are in `firmware/watch_v1/config.h`.
+
+**Privacy.** The weather request contains the place you set, to two decimal places (about 1 km), and nothing else about the watch or its owner.
+
+A different API with another format, an API key header or a POST needs its own provider: one function in `firmware/watch_v1/timesource.h` (time) or `weather.h` (weather).
 
 Without any network, a watch gets the time from the buttons, from *Set time from this computer*, or from another watch in its mesh group.
 
@@ -113,6 +138,7 @@ For scripts, other tools, or curiosity. The same commands work over USB and Blue
 | `wifi_del` | `ssid` | Forget a network |
 | `wifi_scan` | | List networks in range |
 | `sync` | | Fetch the time now |
+| `weather` | `fetch` | The last weather fetched: `temp`, `feels_like`, `sky` (as the watch shows it), `code`, `high`, `low`, `rain_chance`, `sunrise_min`/`sunset_min` (minutes after local midnight), `us_aqi`, `units`, `at`, `next`. With `"fetch": true`, fetches it first (a few seconds) |
 | `time` | `epoch` | Set the clock (Unix seconds, UTC) |
 | `env` | | One sensor reading |
 | `log_get` | `from` | Up to 40 log rows from index `from`, plus `total`. Rows are `[unix time, °C, % humidity, hPa, light mV]`; `null` = no reading. |
@@ -136,7 +162,7 @@ Example session:
 
 ```
 > {"cmd":"info"}
-< {"ok":true,"fw":"2.1.0","name":"Watch","battery_pct":87,"time_valid":true,...}
+< {"ok":true,"fw":"2.2.0","name":"Watch","battery_pct":87,"time_valid":true,...}
 > {"cmd":"wifi_add","ssid":"Staffroom","pass":"correct horse"}
 < {"ok":true}
 > {"cmd":"set","cfg":{"name":"Ms Rivera","views":["time","period","timer","temp"],"alerts":["08:30","09:25"]}}

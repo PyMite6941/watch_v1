@@ -16,7 +16,7 @@ Settings settings;
 
 static const char *const VIEW_NAMES[VIEW_COUNT] = {
   "time", "seconds", "date", "battery", "stopwatch", "timer", "counter", "dice", "period", "mesh",
-  "temp", "humidity", "pressure", "tuner", "metronome"
+  "temp", "humidity", "pressure", "tuner", "metronome", "weather"
 };
 
 static void copyStr(char *dst, size_t size, const char *src) {
@@ -36,7 +36,11 @@ static void settingsDefaults() {
   const uint8_t views[] = { VIEW_TIME, VIEW_DATE, VIEW_BATTERY, VIEW_STOPWATCH, VIEW_TIMER };
   memcpy(settings.views, views, sizeof(views));
   settings.views_n = sizeof(views);
-  copyStr(settings.time_src, sizeof(settings.time_src), "ntp");
+  copyStr(settings.time_src, sizeof(settings.time_src), DEFAULT_TIME_SRC);
+  copyStr(settings.time_url, sizeof(settings.time_url), DEFAULT_TIME_URL);
+  copyStr(settings.time_key, sizeof(settings.time_key), DEFAULT_TIME_KEY);
+  copyStr(settings.wx_url, sizeof(settings.wx_url), DEFAULT_WX_URL);
+  settings.wx_min = DEFAULT_WX_MIN;
   copyStr(settings.ntp, sizeof(settings.ntp), DEFAULT_NTP);
   settings.resync_h = DEFAULT_RESYNC_H;
   settings.usb_awake = true;
@@ -100,6 +104,11 @@ static void settingsToJson(JsonObject o, bool withSecrets) {
   o["tune_a4"] = settings.tune_a4;
   o["bpm"] = settings.bpm;
   o["hello"] = settings.hello;
+  o["wx_url"] = settings.wx_url;
+  o["wx_city"] = settings.wx_city;
+  o["wx_lat"] = serialized(String(settings.wx_lat, 4));
+  o["wx_lon"] = serialized(String(settings.wx_lon, 4));
+  o["wx_min"] = settings.wx_min;
 }
 
 static long clampLong(JsonVariantConst v, long lo, long hi) {
@@ -113,6 +122,7 @@ static bool settingsFromJson(JsonObjectConst o, bool withSecrets) {
 #define STR(key, field) if (o[key].is<const char *>()) { copyStr(settings.field, sizeof(settings.field), o[key]); any = true; }
 #define BOOL(key, field) if (o[key].is<bool>()) { settings.field = o[key].as<bool>(); any = true; }
 #define NUM(key, field, lo, hi) if (o[key].is<long>()) { settings.field = clampLong(o[key], lo, hi); any = true; }
+#define FLT(key, field, lo, hi) if (o[key].is<float>()) { settings.field = constrain(o[key].as<float>(), lo, hi); any = true; }
   STR("name", name)
   STR("tz", tz)
   BOOL("h24", h24)
@@ -140,9 +150,19 @@ static bool settingsFromJson(JsonObjectConst o, bool withSecrets) {
   NUM("tune_a4", tune_a4, 400, 480)
   NUM("bpm", bpm, 30, 240)
   STR("hello", hello)
+  STR("wx_url", wx_url)
+  STR("wx_city", wx_city)
+  FLT("wx_lat", wx_lat, -90.0f, 90.0f)
+  FLT("wx_lon", wx_lon, -180.0f, 180.0f)
+  if (o["wx_min"].is<long>()) {                    // 0 = off, otherwise at least WX_MIN_MINUTES
+    long m = clampLong(o["wx_min"], 0, 1440);
+    settings.wx_min = m && m < WX_MIN_MINUTES ? WX_MIN_MINUTES : m;
+    any = true;
+  }
 #undef STR
 #undef BOOL
 #undef NUM
+#undef FLT
   if (settings.bright_min > settings.bright_max) settings.bright_min = settings.bright_max;
 
   if (o["views"].is<JsonArrayConst>()) {

@@ -5,6 +5,8 @@
 //   "http" - GET the URL in "time_url", which must answer with JSON, and read
 //            Unix time (seconds or milliseconds) from the field named by
 //            "time_key". Dots walk into nested objects: "data.epoch".
+//            Falls back to NTP if the API does not answer. The default is the
+//            project's service (config.h SERVICE_URL), field "unix".
 //
 // To add another provider (a school API, a home server, ...), write a function
 // like the two below and add one line to timeFetch(). Nothing else in the
@@ -85,8 +87,9 @@ static bool timeFromHttp(time_t &out) {
   return ok;
 }
 
+// The web API first when chosen, NTP if it does not answer (service down, busy, or blocked).
 static bool timeFetch(time_t &out) {
-  if (strcmp(settings.time_src, "http") == 0) return timeFromHttp(out);
+  if (strcmp(settings.time_src, "http") == 0 && timeFromHttp(out)) return true;
   return timeFromNtp(out);
 }
 

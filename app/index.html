@@ -205,9 +205,25 @@
       </div>
     </section>
     <section>
+      <h2>Weather</h2>
+      <p class="sub">Add the <b>Weather</b> screen above, give a place, and the watch fetches the weather over Wi-Fi every hour or so. On the watch: SET steps through now, sky, high, low, rain chance, sunrise, sunset and air quality; holding SET fetches it now. The place you give is sent to the weather service.</p>
+      <div class="grid">
+        <div><label>Town or city</label><input type="text" id="wx_city" maxlength="39" placeholder="London  (or leave blank and use coordinates)"></div>
+        <div><label>Latitude</label><input type="number" id="wx_lat" step="0.01" min="-90" max="90"></div>
+        <div><label>Longitude</label><input type="number" id="wx_lon" step="0.01" min="-180" max="180"></div>
+        <div><label>Fetch every (minutes, 0 = only when asked; at least 10)</label><input type="number" id="wx_min" min="0" max="1440"></div>
+        <div><label>Weather service</label><input type="text" id="wx_url" placeholder="https://pymite6941.is-a.bot/api/watch"></div>
+      </div>
+      <div class="row">
+        <button id="btnWxHere">Use this computer's location</button>
+        <button id="btnWxFetch">Fetch the weather now</button>
+        <span id="wxNow"></span>
+      </div>
+    </section>
+    <section>
       <h2>Time source</h2>
       <div class="grid">
-        <div><label>Get the time from</label><select id="time_src"><option value="ntp">NTP server (normal)</option><option value="http">A web API (JSON)</option></select></div>
+        <div><label>Get the time from</label><select id="time_src"><option value="ntp">NTP server (normal)</option><option value="http">A web API (JSON), then NTP if it fails</option></select></div>
         <div><label>NTP server</label><input type="text" id="ntp"></div>
         <div><label>API address</label><input type="text" id="time_url" placeholder="https://example.org/api/time"></div>
         <div><label>JSON field with Unix time</label><input type="text" id="time_key" placeholder="unixtime  or  data.epoch"></div>
@@ -392,14 +408,14 @@ const $ = id => document.getElementById(id);
 const NUS = { service: "6e400001-b5a3-f393-e0a9-e50e24dcca9e", rx: "6e400002-b5a3-f393-e0a9-e50e24dcca9e", tx: "6e400003-b5a3-f393-e0a9-e50e24dcca9e" };
 const VIEWS = { time: "Time", seconds: "Seconds", date: "Date", battery: "Battery", stopwatch: "Stopwatch", timer: "Timer",
   counter: "Tally counter", dice: "Dice", period: "Next bell", mesh: "Mesh", temp: "Temperature*", humidity: "Humidity*",
-  pressure: "Air pressure*", tuner: "Tuner*", metronome: "Metronome" };
+  pressure: "Air pressure*", tuner: "Tuner*", metronome: "Metronome", weather: "Weather (Wi-Fi)" };
 const ZONES = [["", "custom"], ["PST8PDT,M3.2.0,M11.1.0", "Los Angeles"], ["MST7MDT,M3.2.0,M11.1.0", "Denver"],
   ["CST6CDT,M3.2.0,M11.1.0", "Chicago"], ["EST5EDT,M3.2.0,M11.1.0", "New York"], ["UTC0", "UTC"],
   ["GMT0BST,M3.5.0/1,M10.5.0", "London"], ["CET-1CEST,M3.5.0,M10.5.0/3", "Paris, Berlin"], ["IST-5:30", "India (UTC+5:30)"],
   ["<+07>-7", "Bangkok, Jakarta (UTC+7)"], ["<+08>-8", "Singapore, Beijing (UTC+8)"], ["JST-9", "Tokyo, Seoul (UTC+9)"],
   ["AEST-10AEDT,M10.1.0,M4.1.0/3", "Sydney"]];
-const TEXT = ["name", "hello", "tz", "ntp", "time_url", "time_key", "mesh_group", "time_src"];
-const NUMS = ["awake_s", "bright_min", "bright_max", "timer_s", "dice", "bpm", "tune_a4", "log_min", "alert_warn_min", "resync_h", "mesh_ch"];
+const TEXT = ["name", "hello", "tz", "ntp", "time_url", "time_key", "mesh_group", "time_src", "wx_url", "wx_city"];
+const NUMS = ["awake_s", "bright_min", "bright_max", "timer_s", "dice", "bpm", "tune_a4", "log_min", "alert_warn_min", "resync_h", "mesh_ch", "wx_lat", "wx_lon", "wx_min"];
 const BOOLS = ["h24", "auto_bright", "haptic", "fahrenheit", "usb_awake", "mesh"];
 const I2C_NAMES = { 0x68: "DS3231 clock (or MPU6050)", 0x57: "clock module memory / MAX30102", 0x76: "BME280 / BMP280", 0x77: "BME280 / BMP280",
   0x3C: "SSD1306 display", 0x23: "BH1750 light", 0x10: "VEML7700 light", 0x62: "SCD40 CO2", 0x29: "VL53L0X distance", 0x18: "LIS3DH motion",
@@ -887,7 +903,7 @@ class SimWatch {
   constructor(emit) {
     this.emit = emit;
     this.cfg = { name: "Demo", hello: "HI", tz: guessZone(), h24: true, awake_s: 5, auto_bright: true, bright_min: 20, bright_max: 255, haptic: true,
-      views: ["time", "date", "battery", "stopwatch", "timer"], wifi: [{ ssid: "Staffroom" }], time_src: "ntp", ntp: "pool.ntp.org", time_url: "", time_key: "",
+      views: ["time", "date", "battery", "stopwatch", "timer"], wifi: [{ ssid: "Staffroom" }], time_src: "http", ntp: "pool.ntp.org", time_url: "https://pymite6941.is-a.bot/api/watch", time_key: "unix", wx_url: "https://pymite6941.is-a.bot/api/watch", wx_city: "", wx_lat: 0, wx_lon: 0, wx_min: 60,
       resync_h: 168, usb_awake: true, pin_set: false, mesh: false, mesh_ch: 1, mesh_group: "class", timer_s: 300, dice: 6, alerts: ["08:30", "09:20"],
       alert_days: 62, alert_warn_min: 5, log_min: 0, fahrenheit: false, tune_a4: 440, bpm: 100 };
     this.files = { "/apps/10-lab.json": JSON.stringify({ type: "sequence", title: "LAb1", repeat: false, steps: [{ label: "StAn", s: 120 }, { label: "rInS", s: 30 }, { label: "drY", s: 60 }] }),
@@ -899,7 +915,7 @@ class SimWatch {
   handle(q) {
     const c = this.cfg, r = { ok: true };
     switch (q.cmd) {
-      case "info": return { ok: true, fw: "2.1.0-demo", name: c.name, mac: "DE:M0:00:00:00:01", battery_mv: 3980, battery_pct: 74, charging: false, rtc: true,
+      case "info": return { ok: true, fw: "2.2.0-demo", name: c.name, mac: "DE:M0:00:00:00:01", battery_mv: 3980, battery_pct: 74, charging: false, rtc: true,
         time: Math.round(Date.now() / 1000), time_valid: true, last_sync: Math.round(Date.now() / 1000) - 7200, usb: true, peers: 2, env: true,
         apps: Object.keys(this.files).filter(p => p.startsWith("/apps/")).length, locked: false };
       case "get": r.cfg = JSON.parse(JSON.stringify(c)); return r;
@@ -907,6 +923,8 @@ class SimWatch {
       case "wifi_add": if (!q.ssid) return { ok: false, err: "need ssid" }; c.wifi = c.wifi.filter(w => w.ssid !== q.ssid).concat({ ssid: q.ssid }).slice(0, 5); return r;
       case "wifi_del": c.wifi = c.wifi.filter(w => w.ssid !== q.ssid); return r;
       case "wifi_scan": r.networks = [{ ssid: "Staffroom", rssi: -48, open: false }, { ssid: "School-Guest", rssi: -67, open: true }, { ssid: "Lab-2G", rssi: -71, open: false }]; return r;
+      case "weather": return { ok: true, at: Math.floor(Date.now() / 1000) - 600, units: c.fahrenheit ? "imperial" : "metric", temp: c.fahrenheit ? 64 : 18, feels_like: c.fahrenheit ? 63 : 17,
+        code: 2, sky: "PArt", high: c.fahrenheit ? 70 : 21, low: c.fahrenheit ? 54 : 12, rain_chance: 20, sunrise_min: 392, sunset_min: 1061, us_aqi: 38, next: Math.floor(Date.now() / 1000) + 3000 };
       case "env": return { ok: true, temp_c: (24 + Math.random()).toFixed(2), humidity: (55 + Math.random() * 2).toFixed(1), hpa: "1009.4", light_mv: 1200 };
       case "log_get": r.total = 6; r.from = q.from || 0; r.rows = [];
         for (let i = r.from; i < 6; i++) r.rows.push([Math.round(Date.now() / 1000) - (6 - i) * 900, (23.5 + i * 0.2).toFixed(1), (58 - i).toFixed(1), "1009." + i, 900 + i * 60]); return r;
@@ -976,6 +994,23 @@ $("btnScan").onclick = () => run(async () => {
   $("ssid").focus();
 });
 $("btnSync").onclick = () => run(async () => { await ok(send({ cmd: "sync" }, 40000)); await refreshInfo(); });
+$("btnWxHere").onclick = () => {
+  if (!navigator.geolocation) { setStatus("This computer cannot share its location: type a town or coordinates instead", true); return; }
+  setStatus("Asking this computer for its location …");
+  navigator.geolocation.getCurrentPosition(p => {
+    $("wx_lat").value = p.coords.latitude.toFixed(2);   // two decimals: about 1 km, plenty for weather
+    $("wx_lon").value = p.coords.longitude.toFixed(2);
+    $("wx_city").value = "";
+    setStatus("Location filled in: press Save settings to send it to the watch");
+  }, e => setStatus("No location (" + e.message + "): type a town or coordinates instead", true), { timeout: 15000 });
+};
+function wxText(w) {
+  if (!w.at) return "No weather on the watch yet.";
+  const u = w.units === "imperial" ? "°F" : "°C", hm = m => m === undefined ? "?" : String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0");
+  return w.temp + u + ", " + w.sky.trim() + ", high " + w.high + u + ", low " + w.low + u + ", rain " + w.rain_chance + "%, sun " + hm(w.sunrise_min) + "–" + hm(w.sunset_min) +
+    (w.us_aqi !== undefined ? ", air " + w.us_aqi : "") + " (fetched " + new Date(w.at * 1000).toLocaleTimeString() + ")";
+}
+$("btnWxFetch").onclick = () => run(async () => { const w = await ok(send({ cmd: "weather", fetch: true }, 40000)); $("wxNow").textContent = wxText(w); });
 $("btnTimePc").onclick = () => run(async () => { await ok(send({ cmd: "time", epoch: Math.round(Date.now() / 1000) })); await refreshInfo(); });
 $("btnMesh").onclick = () => run(() => ok(send({ cmd: "mesh_send", text: $("meshText").value })));
 $("btnMeshBuzz").onclick = () => run(() => ok(send({ cmd: "mesh_send" })));
