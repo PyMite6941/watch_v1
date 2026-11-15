@@ -86,7 +86,7 @@ Then solder the display, connect the charger board, and unplug USB: the watch sh
 ## 6. Case
 
 1. Print `fit_test.stl` first (ten minutes). Check that an M2 screw passes the post, bites in the boss, and that the PCB corner drops onto the post. Adjust `screw_tap_d`, `gap` in `enclosure/enclosure.scad` if not, and re-export.
-2. Print `base.stl` as it is and `lid.stl` as it is (already flipped so the outer face is on the bed). 0.2 mm layers, 3 walls, no supports. In clear PETG, print slow and hot with the fan low for the best transparency.
+2. Print `base.stl` as it is and `lid.stl` as it is (already flipped so the outer face is on the bed). For a personal case, use a patterned lid (`lid_honeycomb.stl`, `lid_binary.stl`, `lid_staff.stl`, `lid_sine.stl`) or set *Personal touches* in `enclosure.scad` (lid pattern, text under the base) and export your own; see [`kits/`](../kits/README.md). 0.2 mm layers, 3 walls, no supports. In clear PETG, print slow and hot with the fan low for the best transparency.
 3. Charger board on the floor between its two rails, USB socket in the left-hand opening; a square of foam tape holds it. Battery in its pocket to the right.
 4. Lower the PCB onto the four posts, wires tucked into the space under the display — not across the battery.
 5. Lid on: buttons, LED, light sensor and accessory socket line up with their openings.

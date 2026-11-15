@@ -43,16 +43,23 @@ writes `hardware/fab/watch_v1_gerbers.zip`. Upload that one file.
 | [PCBWay](https://www.pcbway.com/) | Service, special options | Usually a few dollars more for the same board; good support if a file is questioned. Also prints. |
 | A local board house or university fab lab | Speed, no customs | Worth asking a school or university workshop: a single-evening turnaround beats two weeks of post. |
 
-### Shipping and customs — Thailand
+**Finding a service near you:** [find-a-printer.vercel.app](https://find-a-printer.vercel.app) lists PCB, 3D-printing, CNC and sheet-metal services with ratings gathered from several sources, certifications and contact links. Use it to find a nearby board house or print shop, or to compare the big online ones before ordering.
 
-- Thailand **ended its duty-free allowance for low-value parcels on 1 January 2026**. Previously parcels up to THB 1,500 came in free of duty; now every import is assessed for VAT and duty on its declared value.
-- Expect 7 % VAT plus any duty for the tariff code, collected by the courier before delivery, often with a handling fee. The rate for bare circuit boards was not confirmed in this research — check at the factory's checkout (some offer duty-paid shipping, which removes the surprise) or with Thai Customs.
-- Combine everything into as few parcels as possible: handling fees are per parcel.
-- Typical timing: 2–3 days to make, then 3–5 days by express courier or 1–3 weeks by economy post.
+### Shipping and customs
+
+Rules depend on the country you are shipping to, so check yours before paying:
+
+- **Duty-free allowances for small parcels are shrinking.** Several countries have recently ended or cut the allowance that used to let low-value parcels in free, so even a $5 board order may now be charged VAT or sales tax and duty, often plus a courier handling fee.
+- **Look for duty-paid shipping** at the factory's checkout. It removes the surprise bill on delivery.
+- **Combine everything into as few parcels as possible.** Watch boards, Pack Bases and printed cases from the same company can share one parcel, and handling fees are per parcel.
+- **Typical timing:** 2–3 days to make, then 3–5 days by express courier or 1–3 weeks by economy post.
+- **A local service** found through [find-a-printer.vercel.app](https://find-a-printer.vercel.app) avoids customs entirely.
 
 ## The case
 
 Two printed parts, `base.stl` and `lid.stl`, in `enclosure/stl/`. Print `fit_test.stl` first.
+
+Optional extras in the same folder: lids with an engraved pattern (`lid_honeycomb`, `lid_binary`, `lid_staff`, `lid_sine`), a desk stand (`desk_stand.stl`, about 25 g) and a vented sensor probe case (`probe_sleeve.stl` + `probe_plug.stl`). Which suits whom: [`kits/`](../kits/README.md).
 
 ### Print it yourself, or locally
 
@@ -67,7 +74,7 @@ Any ordinary filament printer can make it: no supports, 0.2 mm layers. About 30 
 |---|---|---|
 | [JLC3DP](https://jlc3dp.com/) | SLA transparent resin (listed as "8001") | No minimum order; advertised from $0.30 per part, a watch case will be a few dollars. Tolerance about ±0.2 mm. Ships with a JLCPCB board order. |
 | [PCBWay](https://www.pcbway.com/) 3D printing | SLA transparent resin (UTR-8100) with **spray varnish** finish | The varnish is what turns frosted resin glass-clear. |
-| A local print shop / makerspace | Clear PETG, or clear resin | No shipping or customs; you can hand over the fit-test piece first. |
+| A local print shop / makerspace | Clear PETG, or clear resin | No shipping or customs; you can hand over the fit-test piece first. Find one on [find-a-printer.vercel.app](https://find-a-printer.vercel.app). |
 
 Resin versus PETG for this watch:
 
@@ -85,7 +92,7 @@ Resin parts come ±0.2 mm; the model has 0.4 mm of clearance around the PCB, so 
 
 ## Parts
 
-For Thailand: the modules and passives are all stocked by local sellers on Shopee and Lazada and by Thai hobby shops, which avoids import handling entirely. Search the exact part names from [BOM.md](BOM.md). Three to check carefully before buying:
+Every part is a common hobby part. Local electronics shops and local online marketplaces usually stock them, which avoids import handling entirely; otherwise AliExpress, LCSC or a national distributor. Search the exact part names from [BOM.md](BOM.md). Three to check carefully before buying:
 
 1. the display is **common cathode**;
 2. the transistors are **E-B-C**;
@@ -117,4 +124,4 @@ Shipping and import handling for the board order will likely exceed the cost of 
 - [Adafruit — clear resin 3D prints with PCBWay](https://learn.adafruit.com/clear-resin-3d-prints-with-pcbway?view=all)
 - [3D Print Beginner — JustWay vs PCBWay vs JLCPCB](https://3dprintbeginner.com/justway-vs-pcbway-vs-jlcpcb-what-to-use/)
 - [All3DP — best cheap 3D printing services](https://all3dp.com/2/best-cheap-3d-printing-services/)
-- [Tilleke & Gibbins — Thailand customs duty changes, end of the THB 1,500 exemption](https://www.tilleke.com/insights/thailand-announces-customs-duty-hikes-for-key-consumer-goods)
+- [find-a-printer — rated PCB, 3D-printing, CNC and sheet-metal services](https://find-a-printer.vercel.app)

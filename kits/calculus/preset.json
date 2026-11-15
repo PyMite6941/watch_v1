@@ -1,0 +1,20 @@
+{
+  "watch_backup": 1,
+  "kit": "calculus",
+  "cfg": {
+    "views": [
+      "time",
+      "date",
+      "pressure",
+      "temp",
+      "stopwatch",
+      "timer"
+    ],
+    "timer_s": 900
+  },
+  "files": {
+    "/apps/10-piday.json": "{\"type\":\"countdown\",\"title\":\"PI\",\"date\":\"2027-03-14\"}",
+    "/apps/20-frq.json": "{\"type\":\"sequence\",\"title\":\"FrQ\",\"repeat\":false,\"steps\":[{\"label\":\"FrQ1\",\"s\":900},{\"label\":\"FrQ2\",\"s\":900},{\"label\":\"FrQ3\",\"s\":900},{\"label\":\"FrQ4\",\"s\":900},{\"label\":\"FrQ5\",\"s\":900},{\"label\":\"FrQ6\",\"s\":900}]}",
+    "/apps/30-call.json": "{\"type\":\"picker\",\"title\":\"CALL\",\"max\":30}"
+  }
+}

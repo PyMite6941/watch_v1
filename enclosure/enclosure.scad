@@ -17,6 +17,11 @@
  *   openscad -D "part=\"lid\""  -o stl/lid.stl  enclosure.scad
  * or in the GUI: set `part` below, press F6, then File > Export > STL.
  *
+ * A personal case: set "Personal touches" below, e.g.
+ *   openscad -D "part=\"lid\"" -D "lid_pattern=\"honeycomb\"" -o stl/lid_honeycomb.stl enclosure.scad
+ *   openscad -D "part=\"base\"" -D "base_text=\"THANK YOU\"" -o my_base.stl enclosure.scad
+ * Ready-made setups for particular people are in ../kits/. Stand and probe case: accessories.scad.
+ *
  * All PCB positions are in the same coordinates as hardware/scripts/gen_pcb.py:
  * millimetres from the board's top-left corner, looking at the display side.
  */
@@ -84,6 +89,17 @@ lug_h = 3.5;
 battery = [23.4, 16, 3];       // length, width, fence height; set height 0 to remove
 battery_corner = [28.6, 25.5]; // top-left corner in PCB coordinates (just right of the charger board)
 
+/* [Personal touches] */
+// Engraved into the lid's outer face, in the strip below the display (clear of every hole).
+lid_pattern = "none";          // [none, honeycomb, binary, staff, sine]
+lid_binary_text = "CS";        // for "binary": each character's 8 bits as long (1) / short (0) bars
+pattern_depth = 0.4;           // 2 layers at 0.2 mm
+// Engraved under the base, readable when the watch is turned over. Empty = none.
+base_text = "";
+base_text2 = "";
+base_text_size = 4.5;
+base_text_depth = 0.5;
+
 $fn = 32;
 
 // ---------------------------------------------------------------- derived
@@ -128,6 +144,7 @@ module base() {
             translate([-1, at([0, charger_center_y])[1] - usb_cutout[0] / 2,
                        max(0.6, floor_t + charger_usb_z - usb_cutout[1] / 2)])
                 cube([wall + 2, usb_cutout[0], usb_cutout[1]]);
+        if (base_text != "") translate([0, 0, -1]) linear_extrude(base_text_depth + 1) base_text_2d();
     }
     // two rails that keep the charger board square to its opening
     if (charger[0] > 0) for (side = [-1, 1])
@@ -185,6 +202,60 @@ module lid() {
             // cannot be read the wrong way round. Pin 1 = GND.
             translate([ax, ay + accessory_opening[1], z_wall - 1]) cylinder(d = accessory_pin1_notch_d, h = lid_t + 2);
         }
+        if (lid_pattern != "none")
+            translate([0, 0, total_h - pattern_depth]) linear_extrude(pattern_depth + 1) lid_pattern_2d();
+    }
+}
+
+// ------------------------------------------------------- personal touches
+// The strip of lid below the display, in model coordinates, minus a ring round each hole.
+band_pcb_y = [display_center[1] + display_size[1] / 2 + window_margin + 1.2, pcb[1] + gap - 0.6];
+band_x = [wall + 1.0, outer[0] - wall - 1.0];
+band_y = [at([0, band_pcb_y[1]])[1], at([0, band_pcb_y[0]])[1]];
+
+module band_area() {
+    difference() {
+        translate([band_x[0], band_y[0]]) square([band_x[1] - band_x[0], band_y[1] - band_y[0]]);
+        for (b = button_centers) translate(at(b)) circle(d = button_hole_d + 2.4);
+        translate(at(led_center)) circle(d = led_hole_d + 2.4);
+        if (ldr_hole_d > 0) translate(at(ldr_center)) circle(d = ldr_hole_d + 2.4);
+    }
+}
+
+module lid_pattern_2d() {
+    w = band_x[1] - band_x[0];
+    h = band_y[1] - band_y[0];
+    intersection() {
+        band_area();
+        if (lid_pattern == "honeycomb") {
+            s = 3.2;                                           // cell size across flats
+            for (i = [-1 : w / (s * 0.866) + 1], j = [-1 : h / s + 1])
+                translate([band_x[0] + i * s * 0.866 * 1.0, band_y[0] + j * s + (i % 2) * s / 2])
+                    difference() { circle(d = s / 0.866 + 0.01, $fn = 6); circle(d = (s - 0.5) / 0.866, $fn = 6); }
+        } else if (lid_pattern == "staff") {
+            for (k = [0 : 4]) translate([band_x[0], band_y[0] + h / 2 + (k - 2) * 1.6 - 0.2]) square([w, 0.4]);
+        } else if (lid_pattern == "sine") {
+            n = 60;
+            for (k = [0 : n - 1]) hull() for (q = [k, k + 1])
+                translate([band_x[0] + q * w / n, band_y[0] + h / 2 + 0.38 * h * sin(q * 720 / n)]) circle(d = 0.6, $fn = 8);
+            translate([band_x[0], band_y[0] + h / 2 - 0.15]) square([w, 0.3]);          // the x-axis
+        } else if (lid_pattern == "binary") {
+            bits = [for (c = lid_binary_text) for (b = [7 : -1 : 0]) floor(ord(c) / pow(2, b)) % 2];
+            pitch = w / max(1, len(bits));
+            for (k = [0 : len(bits) - 1])
+                translate([band_x[0] + (k + 0.5) * pitch - 0.3, band_y[0] + h / 2 - (bits[k] ? 0.35 : 0.15) * h])
+                    square([0.6, (bits[k] ? 0.7 : 0.3) * h]);
+        }
+    }
+}
+
+module base_text_2d() {
+    // Seen from underneath, so mirrored in x to read the right way round.
+    translate([outer[0] / 2, outer[1] / 2]) mirror([1, 0]) {
+        translate([0, base_text2 == "" ? 0 : base_text_size * 0.75])
+            text(base_text, size = base_text_size, halign = "center", valign = "center", font = "Liberation Sans:style=Bold");
+        if (base_text2 != "") translate([0, -base_text_size * 0.75])
+            text(base_text2, size = base_text_size * 0.8, halign = "center", valign = "center", font = "Liberation Sans");
     }
 }
 

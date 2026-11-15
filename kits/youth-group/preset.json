@@ -1,0 +1,21 @@
+{
+  "watch_backup": 1,
+  "kit": "youth-group",
+  "cfg": {
+    "views": [
+      "time",
+      "date",
+      "timer",
+      "stopwatch",
+      "counter",
+      "dice"
+    ],
+    "dice": 6,
+    "timer_s": 300
+  },
+  "files": {
+    "/apps/10-still.json": "{\"type\":\"message\",\"title\":\"bE\",\"text\":\"bE StILL\"}",
+    "/apps/20-groups.json": "{\"type\":\"picker\",\"title\":\"GrUP\",\"max\":4}",
+    "/apps/30-game.json": "{\"type\":\"sequence\",\"title\":\"GAnE\",\"repeat\":true,\"steps\":[{\"label\":\"PLAY\",\"s\":300},{\"label\":\"rESt\",\"s\":60}]}"
+  }
+}
