@@ -29,6 +29,7 @@ The list of what is left is kept outside the repository.
 |---|---|
 | Use a finished watch | [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) |
 | Install the app | Download from [Releases](https://github.com/PyMite6941/watch_v1/releases) — details in [`installer/README.md`](installer/README.md) |
+| Use the app without installing it | Host it on the web with Vercel, or run it as a Java app — [`docs/APP_HOSTING.md`](docs/APP_HOSTING.md) |
 | Set one up (Wi-Fi, screens, bells, custom apps) | [`docs/CONFIGURATION.md`](docs/CONFIGURATION.md) |
 | Build one | [`docs/BUILD_GUIDE.md`](docs/BUILD_GUIDE.md), parts in [`docs/BOM.md`](docs/BOM.md) |
 | Order boards and cases | [`docs/ORDERING.md`](docs/ORDERING.md) |
@@ -55,6 +56,8 @@ Battery life comes from being asleep: the watch wakes when a button is pressed, 
 firmware/watch_v1/     Arduino sketch (one file per feature; start with watch_v1.ino)
 app/                   Watch Studio, the companion app (one page: index.html)
 installer/             Windows and macOS installers for it; build.py makes dist/*.zip
+java-app/              the same app as a Java program; build.py makes dist/WatchStudio.jar
+vercel.json            serves app/ as a web site on Vercel
 hardware/scripts/      design.py is the circuit; the other scripts generate KiCad files from it
 hardware/kicad/        generated KiCad 10 project (schematic, board, libraries)
 hardware/addons/       add-on packs: the Pack Base board that every pack is built on
