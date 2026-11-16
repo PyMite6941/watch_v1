@@ -8,6 +8,7 @@ unrouted connections or rule violations. Then writes
     ../fab/watch_v1_drc.rpt        the DRC report, for the record
 """
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -23,6 +24,13 @@ LAYERS = "F.Cu,B.Cu,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts"
 # through-hole parts share the area under the display, and silkscreen is clipped at pads.
 IGNORED = ("pth_inside_courtyard", "silk_over_copper", "silk_overlap", "silk_edge_clearance",
            "lib_footprint_issues")   # only says a library is not installed on this machine; the footprints are inside the board
+# Courtyard overlaps checked against the real parts and allowed. Only these exact pairs:
+# D3's courtyard is a cautious 6.5 mm square, but the LED itself is a 5.8 mm round rim
+# lifted 3 mm on its printed spacer (6.6 x 3.2 mm block). R11 and R12 stand 2.5 mm thick
+# beside it: their bodies clear the rim by about 0.5 mm and the spacer by 0.95 mm
+# (stand them straight up: see docs/BUILD_GUIDE.md).
+# (Moving R11/R12 out of the courtyard leaves the board unroutable.)
+ALLOWED_OVERLAPS = ({"D3", "R11"}, {"D3", "R12"})
 
 
 def run(*args):
@@ -37,9 +45,20 @@ def main():
     run("pcb", "drc", BOARD, "-o", report, "--severity-all")
     problems = []
     with open(report, encoding="utf-8") as f:
+        blocks = []          # (heading, [detail lines])
         for line in f:
-            if line.startswith("[") and not line.startswith(tuple("[" + name for name in IGNORED)):
-                problems.append(line.strip())
+            if line.startswith("["):
+                blocks.append((line.strip(), []))
+            elif blocks and line.startswith(" "):
+                blocks[-1][1].append(line)
+    for head, details in blocks:
+        if head.startswith(tuple("[" + name for name in IGNORED)):
+            continue
+        if head.startswith("[courtyards_overlap]"):
+            refs = set(re.findall(r"Footprint (\S+)", "".join(details)))
+            if refs in ALLOWED_OVERLAPS:
+                continue
+        problems.append(head)
     if problems:
         print(f"\n{len(problems)} problem(s) - not exporting. First few:")
         for p in problems[:8]:
