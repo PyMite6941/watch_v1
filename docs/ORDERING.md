@@ -84,7 +84,7 @@ Resin versus PETG for this watch:
 
 For a gift that will be worn daily, **PETG for the base and resin for the lid** is a good mix: toughness where the screws and strap pull, clarity where people look.
 
-Resin parts come ±0.2 mm; the model has 0.4 mm of clearance around the PCB, so they should fit, but that is exactly what the fit test is for.
+Resin parts come ±0.2 mm; the model has 0.5 mm of clearance around the PCB, so they should fit, but that is exactly what the fit test is for.
 
 ## Parts
 
@@ -95,6 +95,52 @@ Every part is a common hobby part. Local electronics shops and local online mark
 3. the tactile switches are **13 mm tall**.
 
 For a batch of watches, buying resistors, transistors and capacitors in packs of 50–100 costs barely more than buying ten.
+
+## In Bangkok
+
+Researched November 2026, from web sources listed below. Nothing here has been ordered yet, so ring or email before going. Some sources are a few years old, and opening hours and machines change. Cheapest first:
+
+### 1. Boards: still cheapest from China, but budget for tax
+
+No Bangkok board house found advertises prototype prices anywhere near JLCPCB's or PCBWay's. Local assembly houses are aimed at production runs. For example, C.E. ANTS lists a minimum order of about US$2,000 for low-volume SMT assembly. So order the bare boards online and solder them yourself (every part on this watch is through-hole, except the optional Qwiic socket on the Pack Base).
+
+**Customs:**
+- Thailand ended its 1,500-baht duty-free allowance on 1 January 2026.
+- Every imported parcel is now assessed for **7 % VAT plus any import duty**, whatever its value. VAT is charged on the value plus duty.
+- The duty rate depends on the goods; check the rate for printed circuit boards when the quote arrives.
+
+**Ways to keep the tax down:**
+- Put the watch boards, Pack Bases and printed cases in **one parcel**.
+- Prefer a checkout option that shows tax and duty paid up front, if the factory offers one for Thailand.
+
+### 2. Printed case: a makerspace, or JLC3DP in the same parcel
+
+| Where | What it has | Notes |
+|---|---|---|
+| **FabLab Bangkok** (Banglamphu) | 3D printers, laser cutters, CNC milling, circuit-board production | Its listing also names PCB assembly. Bring `fit_test.stl` first. The Electrical and Electronics Institute's (EEI) design centre runs small-lot SMT assembly from FabLab Bangkok's building (KX), which is the one local route to machine-assembled boards in small numbers. |
+| **FabCafe Bangkok** (Central Post Office building, Charoen Krung) | 3D printers, laser cutters | Café-style: good for printing a case while you wait. Source is a travel FAQ and a 2017 article, so check it is still open. |
+| **Fab Lab Siam** | 3D printing, CNC milling, circuit production, laser cutting | Listed on fablabs.io. |
+| A makerspace and electronics shop at **Fortune Town** IT mall | Workshop and DIY electronics shop | Described in 2017-2018 articles; check it is still there. |
+| [JLC3DP](https://jlc3dp.com/) | Clear resin or PETG | Ships with the board order, so it shares the same tax bill instead of adding a second parcel. |
+
+No Bangkok per-gram prices were published. Ask for a quote with the STL attached: the base and lid are about 30 g together, and the dome and spacer are a few grams more.
+
+### 3. Parts: Ban Mo
+
+**Ban Mo** (near Phahurat, old town) is Bangkok's traditional electronics street: hundreds of shops selling components, LEDs, cables and chargers, with repair shops that also do hand soldering. A forum thread recommends it for soldering work and notes that it helps to bring a Thai speaker. Take [BOM.md](BOM.md) printed out, and check the three tricky parts listed above (common-cathode display, E-B-C transistors, 13 mm switches).
+
+### 4. Assembly, if you would rather not solder
+
+| Where | Fits this project? |
+|---|---|
+| EEI PCB assembly service (at FabLab Bangkok) | Small lots. Send Gerbers, drill file, pick-and-place, BOM and assembly drawing. The watch is all through-hole, so ask whether they hand-solder THT. |
+| Surplus Technology (Bang Khen) | Prototype to production; quote by email. |
+| Meesinsup Technology | Published prototype + assembly packages, 30-90 days, and you supply the boards, stencil and parts. Slower than soldering it yourself. |
+| C.E. ANTS | Minimum about US$2,000: only for a large batch. |
+
+For five gift watches, **solder them yourself** (an evening each with the build guide) or ask a Ban Mo repair shop. Both cost far less than any assembly house.
+
+**Cheapest plan for a first copy:** boards, Pack Bases and resin lid from JLCPCB/JLC3DP in one parcel (one tax bill); the PETG base printed at FabLab Bangkok or a makerspace; parts from Ban Mo; solder it yourself.
 
 ## Rough cost per watch
 
@@ -121,3 +167,17 @@ Shipping and import handling for the board order will likely exceed the cost of 
 - [3D Print Beginner — JustWay vs PCBWay vs JLCPCB](https://3dprintbeginner.com/justway-vs-pcbway-vs-jlcpcb-what-to-use/)
 - [All3DP — best cheap 3D printing services](https://all3dp.com/2/best-cheap-3d-printing-services/)
 - [find-a-printer — rated PCB, 3D-printing, CNC and sheet-metal services](https://find-a-printer.vercel.app)
+- [EEI — PCB assembly service (FabLab Bangkok, KX building)](https://www.thaieei.com/en/services/electronic-design-services/electronic-circuit-board-assembly-service-pcb-assembly/)
+- [C.E. ANTS — Bangkok SMT assembly, minimum orders](https://www.ceants.com/)
+- [Surplus Technology — Bangkok](https://surplus.co.th/en)
+- [Meesinsup — PCB assembly packages](https://meesinsup.com/pcb-assembly/)
+- [FabLab Bangkok on fablabs.io](https://fablabs.io/labs/fablabbkk)
+- [Fab Lab Siam on fablabs.io](https://www.fablabs.io/labs/fablabsiam?locale=en)
+- [FabCafe Bangkok — visitor FAQ](https://yourthaiguide.com/fabcafe-bangkok-tourist-faq/)
+- [Make: — Bangkok's growing maker movement](https://makezine.com/article/education/bangkoks-growing-maker-movement/)
+- [Make: — a makerspace in a shopping mall](https://makezine.com/2018/07/13/makerspace-shopping-mall-makes-sense-world)
+- [Ban Mo, Bangkok — Wikipedia](https://en.wikipedia.org/wiki/Ban_Mo,_Bangkok)
+- [Thaivisa forum — hand soldering in Bangkok](https://forum.thaivisa.com/topic/1144223-hand-soldering-in-bangkok/)
+- [Thailand ends duty relief for low-value imports, January 2026 (VATupdate)](https://www.vatupdate.com/2026/01/03/thailand-to-end-customs-duty-relief-for-low-value-imports-from-january-2026/)
+- [Thailand customs duty 2026: end of de minimis (Lex Bangkok)](https://lexbangkok.com/thailand-customs-duty-2026/)
+- [Bangkok Post — customs rule change trims parcel imports](https://www.bangkokpost.com/business/general/3226823/customs-rule-change-trims-parcel-imports)
