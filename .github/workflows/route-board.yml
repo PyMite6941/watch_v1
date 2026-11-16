@@ -19,6 +19,8 @@ on:
       - hardware/scripts/design.py
       - hardware/scripts/gen_pcb.py
       - hardware/kicad/watch_v1.pretty/**
+      - hardware/scripts/freeroute.py
+      - .github/workflows/route-board.yml
 
 permissions:
   contents: write
@@ -44,12 +46,12 @@ jobs:
       - name: Tools the KiCad image may lack
         run: command -v git && command -v curl || (apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates)
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "25"
 
       - name: Get Freerouting 2.5.0 (checksum-verified)
         run: |
@@ -80,7 +82,7 @@ jobs:
 
       - name: Keep the files on the run
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: routed-board
           path: |
