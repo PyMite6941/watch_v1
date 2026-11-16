@@ -52,6 +52,7 @@ Anyone near a watch in link mode could connect by Bluetooth. Set a PIN and Bluet
 | `dice` | Dice sides | 2–99 / 6 |
 | `bpm` | Metronome tempo | 30–240 / 100 |
 | `tune_a4` | Tuner reference pitch, Hz | 400–480 / 440 |
+| `oled` | OLED screen on the socket: 0 none, 1 128×32, 2 128×64, 3 64×32 ([ADDONS.md](ADDONS.md)) | 0–3 / 1 |
 | `fahrenheit` | Temperature in °F | `false` |
 | `log_min` | Save a sensor sample every N minutes (0 = off) | 0–1440 / 0 |
 | `alerts` | Bell times, `"HH:MM"`, at most 16 | empty |

@@ -52,6 +52,7 @@ static void settingsDefaults() {
   settings.alert_days = 0x3E;          // Monday-Friday
   settings.tune_a4 = 440;
   settings.bpm = 100;
+  settings.oled = 1;                   // a 128x32 OLED is used if one is plugged in
 #ifdef WIFI_SSID
   copyStr(settings.wifi[0].ssid, sizeof(settings.wifi[0].ssid), WIFI_SSID);
   copyStr(settings.wifi[0].pass, sizeof(settings.wifi[0].pass), WIFI_PASSWORD);
@@ -103,6 +104,7 @@ static void settingsToJson(JsonObject o, bool withSecrets) {
   o["fahrenheit"] = settings.fahrenheit;
   o["tune_a4"] = settings.tune_a4;
   o["bpm"] = settings.bpm;
+  o["oled"] = settings.oled;
   o["hello"] = settings.hello;
   o["wx_url"] = settings.wx_url;
   o["wx_city"] = settings.wx_city;
@@ -149,6 +151,7 @@ static bool settingsFromJson(JsonObjectConst o, bool withSecrets) {
   BOOL("fahrenheit", fahrenheit)
   NUM("tune_a4", tune_a4, 400, 480)
   NUM("bpm", bpm, 30, 240)
+  NUM("oled", oled, 0, 3)
   STR("hello", hello)
   STR("wx_url", wx_url)
   STR("wx_city", wx_city)

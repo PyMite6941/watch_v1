@@ -107,6 +107,40 @@ Turn on the `tuner` screen. Start with the gain trimmer about a third of the way
 
 This is the newest and least-proven feature: the pitch maths is standard, but it has not been tried on real hardware yet. It is on the project to-do list.
 
+### Screen pack — a small OLED that says it in words
+
+The four LED digits stay the watch's main display. A small SSD1306 OLED on the socket repeats the current screen in words and longer numbers:
+
+- the full date ("Monday 16 Nov");
+- the whole weather ("Partly cloudy, high 21 low 12, rain 20%");
+- a message app's full text;
+- temperature, humidity and pressure together;
+- the tuner's note, cents and frequency;
+- a sequence app's step ("FOCU: step 1 of 2").
+
+It is switched off when the watch sleeps, so it draws next to nothing then, and redraws only when the text changes, at most four times a second.
+
+| Part | Notes |
+|---|---|
+| SSD1306 OLED, I²C, 3.3 V | 0.91" 128×32 (the default), 0.96" 128×64, or 0.49" 64×32. Address `0x3C` or `0x3D`; the watch finds either. **Not** the SPI versions (7 pins) or SH1106 1.3" boards. |
+| A Pack Base, or a Qwiic cable | See below |
+
+**Two ways to fit it.**
+
+1. **Plug-in, anywhere on a cable (easiest):** an OLED with a Qwiic / STEMMA QT socket (SparkFun, Adafruit and copies), plugged into the Pack Base's Qwiic socket J5 with a Qwiic cable. The screen can then sit wherever it is wanted: on the strap, on the desk stand, on a lanyard. No soldering on the screen side, and the plug only fits one way round.
+2. **Soldered onto the Pack Base:** a plain 4-pin OLED board in the breakout row J2. **Check the order printed on the OLED first.** J2 is `V G SCL SDA`. Many OLED boards are `G V SCL SDA` (GND first), and plugging one of those straight in swaps the power, which can destroy the screen. If yours starts with `G`/`GND`, cross the first two pins with short wires instead of soldering it straight in.
+
+| OLED pin | Pack Base | Socket pin |
+|---|---|---|
+| VCC | J2 `V` (or Qwiic) | 2 (3V3) through JP1 |
+| GND | J2 `G` | 1 (GND) |
+| SCL | J2 `SCL` | 4 (SCL) |
+| SDA | J2 `SDA` | 3 (SDA) |
+
+In Watch Studio, *Setup › OLED screen on the socket* picks the size (`oled` setting: 0 none, 1 128×32, 2 128×64, 3 64×32). The watch skips the screen if none answers, so leaving the setting on costs nothing. The firmware needs two more libraries: see [`BUILD_GUIDE.md`](BUILD_GUIDE.md) step 1.
+
+Not yet tried on real hardware: the drawing code compiles against the Adafruit SSD1306 library, and the panel sizes come from that library's own settings.
+
 ### Designing your own pack
 
 Anything that speaks I²C at 3.3 V can share the socket. Parts that would suit this watch, none of which have firmware yet:
@@ -117,7 +151,6 @@ Anything that speaks I²C at 3.3 V can share the socket. Parts that would suit t
 | MPU6050 / LIS3DH | `0x68`\* / `0x18` | Acceleration: pendulum timing, step counting, tilt-to-wake |
 | VEML7700 / BH1750 | `0x10` / `0x23` | Light in lux for photosynthesis and inverse-square experiments |
 | SCD40 | `0x62` | CO₂ — classroom air quality, respiration |
-| SSD1306 OLED 0.49" | `0x3C` | A text display for longer messages |
 | VL53L0X | `0x29` | Distance by laser — motion graphs |
 
 \* The MPU6050's default address collides with the clock chip; tie its AD0 pin high to move it to `0x69`.

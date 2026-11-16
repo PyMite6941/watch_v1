@@ -49,6 +49,7 @@
 #include "tuner.h"
 #include "apps.h"
 #include "link.h"
+#include "oled.h"
 
 // ------------------------------------------------------------------ glyphs
 // bit0 = a, bit1 = b, ... bit6 = g, bit7 = dp
@@ -683,6 +684,159 @@ static void renderView() {
   }
 }
 
+// ------------------------------------------------------------- OLED (oled.h)
+// The current screen in words: `big` is the value, `small` says what it is.
+static void oledCompose(char *big, size_t nb, char *small, size_t ns) {
+  static const char *const DAYS[7] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+  static const char *const MONTHS[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+  struct tm t;
+  localNow(t);
+  char date[32];
+  snprintf(date, sizeof(date), "%s %d %s", DAYS[t.tm_wday], t.tm_mday, MONTHS[t.tm_mon]);
+  char unit = settings.fahrenheit ? 'F' : 'C';
+  big[0] = small[0] = 0;
+  uint8_t v = view();
+  bool clockView = v == VIEW_TIME || v == VIEW_SECONDS || v == VIEW_DATE || v == VIEW_PERIOD;
+  if (clockView && !timeValid()) {
+    snprintf(big, nb, "--:--");
+    snprintf(small, ns, "Time not set: hold SET to sync");
+    return;
+  }
+  switch (v) {
+    case VIEW_TIME: {
+      int h = settings.h24 ? t.tm_hour : (t.tm_hour % 12 ? t.tm_hour % 12 : 12);
+      if (settings.h24) snprintf(big, nb, "%02d:%02d", h, t.tm_min);
+      else snprintf(big, nb, "%d:%02d %s", h, t.tm_min, t.tm_hour >= 12 ? "PM" : "AM");
+      snprintf(small, ns, "%s", date);
+      break;
+    }
+    case VIEW_SECONDS:
+      snprintf(big, nb, "%02d:%02d:%02d", t.tm_hour, t.tm_min, t.tm_sec);
+      snprintf(small, ns, "%s", date);
+      break;
+    case VIEW_DATE:
+      snprintf(big, nb, "%d %s", t.tm_mday, MONTHS[t.tm_mon]);
+      snprintf(small, ns, "%s %d", DAYS[t.tm_wday], 1900 + t.tm_year);
+      break;
+    case VIEW_BATTERY: {
+      uint32_t mv = batteryMilliVolts();
+      snprintf(big, nb, "%u%%", (unsigned)batteryPercent(mv));
+      snprintf(small, ns, "Battery %.2f V%s", mv / 1000.0f, isCharging() ? ", charging" : "");
+      break;
+    }
+    case VIEW_STOPWATCH: {
+      int64_t ms = stopwatchMs();
+      snprintf(big, nb, "%02d:%02d.%d", (int)(ms / 60000), (int)(ms / 1000 % 60), (int)(ms / 100 % 10));
+      snprintf(small, ns, "%s", swRunning ? "Stopwatch running" : "Stopwatch");
+      break;
+    }
+    case VIEW_TIMER: {
+      long sec = timerEndMs ? (long)((timerEndMs - nowMs() + 999) / 1000) : (long)settings.timer_s;
+      snprintf(big, nb, "%02ld:%02ld", sec / 60, sec % 60);
+      snprintf(small, ns, "%s", timerEndMs ? "Timer running" : "Timer: press SET to start");
+      break;
+    }
+    case VIEW_COUNTER:
+      snprintf(big, nb, "%d", (int)tally);
+      snprintf(small, ns, "Tally");
+      break;
+    case VIEW_DICE:
+      if (lastRoll) snprintf(big, nb, "%d", (int)lastRoll);
+      else snprintf(big, nb, "?");
+      snprintf(small, ns, "Dice, %d sides", (int)settings.dice);
+      break;
+    case VIEW_PERIOD: {
+      long left = secondsToNextBell(false);
+      if (left < 0) { snprintf(big, nb, "--"); snprintf(small, ns, "No more bells"); break; }
+      if (left >= 3600) snprintf(big, nb, "%ld:%02ld:%02ld", left / 3600, left / 60 % 60, left % 60);
+      else snprintf(big, nb, "%02ld:%02ld", left / 60, left % 60);
+      snprintf(small, ns, "Until the next bell");
+      break;
+    }
+    case VIEW_MESH:
+      if (!settings.mesh) { snprintf(big, nb, "Off"); snprintf(small, ns, "Watch-to-watch is off"); }
+      else { snprintf(big, nb, "%d", (int)meshPeerCount()); snprintf(small, ns, "Watches nearby"); }
+      break;
+    case VIEW_TEMP: case VIEW_HUMIDITY: case VIEW_PRESSURE: {
+      if (!envNow.ok) { snprintf(big, nb, "--"); snprintf(small, ns, "No sensor on the socket"); break; }
+      float temp = settings.fahrenheit ? envNow.tempC * 9 / 5 + 32 : envNow.tempC;
+      if (v == VIEW_TEMP) snprintf(big, nb, "%.1f\xF8%c", temp, unit);
+      else if (v == VIEW_HUMIDITY && envNow.hasHumidity) snprintf(big, nb, "%.0f%%", envNow.humidity);
+      else if (v == VIEW_HUMIDITY) snprintf(big, nb, "--");
+      else snprintf(big, nb, "%.0f hPa", envNow.hPa);
+      if (envNow.hasHumidity)
+        snprintf(small, ns, "%.1f\xF8%c  %.0f%% humidity  %.0f hPa", temp, unit, envNow.humidity, envNow.hPa);
+      else snprintf(small, ns, "%.1f\xF8%c  %.0f hPa", temp, unit, envNow.hPa);
+      break;
+    }
+    case VIEW_TUNER: {
+      static const char *const NOTES[12] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+      if (!pitchNow.ok) {
+        snprintf(big, nb, "Tuner");
+        snprintf(small, ns, "Play a note (A4 = %u Hz)", (unsigned)settings.tune_a4);
+        break;
+      }
+      snprintf(big, nb, "%s%d %+d", NOTES[pitchNow.note % 12], (int)pitchNow.octave, (int)pitchNow.cents);
+      snprintf(small, ns, "%.1f Hz  %s", pitchNow.hz,
+               abs(pitchNow.cents) <= 5 ? "in tune" : (pitchNow.cents < 0 ? "flat: tighten" : "sharp: loosen"));
+      break;
+    }
+    case VIEW_METRONOME:
+      snprintf(big, nb, "%u bpm", (unsigned)settings.bpm);
+      snprintf(small, ns, "%s", metroOn ? "Metronome on" : "Metronome: press SET");
+      break;
+    case VIEW_WEATHER:
+      if (!wxConfigured()) { snprintf(big, nb, "Weather"); snprintf(small, ns, "Set a place in Watch Studio"); break; }
+      if (!wxFresh()) { snprintf(big, nb, "--"); snprintf(small, ns, "Hold SET to fetch the weather"); break; }
+      snprintf(big, nb, "%d\xF8%c", wxDegrees(wx.temp), unit);
+      if (wx.high != WX_NONE && wx.low != WX_NONE)
+        snprintf(small, ns, "%s, high %d low %d, rain %u%%", wxPhrase(wx.code), wxDegrees(wx.high),
+                 wxDegrees(wx.low), (unsigned)wx.rain);
+      else snprintf(small, ns, "%s", wxPhrase(wx.code));
+      break;
+    case VIEW_APP: {
+      int8_t idx = appIndex();
+      appLoad(idx);
+      if (app.type == APP_MESSAGE) {
+        snprintf(big, nb, "%s", app.title);
+        snprintf(small, ns, "%s", app.text);
+      } else if (app.type == APP_SEQUENCE && seqApp == idx) {
+        long sec = (long)((seqEndMs - nowMs() + 999) / 1000);
+        snprintf(big, nb, "%02ld:%02ld", sec / 60, sec % 60);
+        snprintf(small, ns, "%s: step %u of %u", app.title, (unsigned)seqStep + 1, (unsigned)app.n);
+      } else if (app.type == APP_PICKER && pickApp == idx && pickLast >= 0) {
+        if (app.n && pickLast < app.n && app.items[pickLast].label[0]) snprintf(big, nb, "%s", app.items[pickLast].label);
+        else snprintf(big, nb, "%d", (int)pickLast + 1);
+        snprintf(small, ns, "%s", app.title);
+      } else if (app.type == APP_COUNTDOWN && timeValid()) {
+        long left = (long)(app.date - time(nullptr));
+        if (left <= 0) snprintf(big, nb, "Done");
+        else snprintf(big, nb, "%ld days", (left + 86399) / 86400);
+        snprintf(small, ns, "%s", app.title);
+      } else {
+        snprintf(big, nb, "%s", app.title);
+        snprintf(small, ns, "Press SET");
+      }
+      break;
+    }
+  }
+}
+
+static void oledUpdate(uint32_t now) {
+  if (!oled) return;
+  char big[24], small[100];
+  if (setMode) {
+    snprintf(big, sizeof(big), "Set");
+    snprintf(small, sizeof(small), "SET changes, MODE moves on, hold MODE saves");
+  } else if (now < overlayUntil) {
+    snprintf(big, sizeof(big), "%s", overlay);
+    small[0] = 0;
+  } else {
+    oledCompose(big, sizeof(big), small, sizeof(small));
+  }
+  oledShow(big, small);
+}
+
 static void renderSet() {
   bool hide = ((millis() / 250) & 1) && !btnSet.down;   // edited field blinks
   switch (field) {
@@ -837,6 +991,7 @@ static void goToSleep() {
   savedView = viewIndex;
   meshStop();
   displayEnd();
+  oledOff();
   digitalWrite(PIN_LDR_PWR, LOW);           // light sensor and accessory AUX_PWR off
   Wire.end();
   esp_deep_sleep_enable_gpio_wakeup((1ULL << PIN_BTN_MODE) | (1ULL << PIN_BTN_SET),
@@ -906,6 +1061,7 @@ void setup() {
     if (!forWearer) goToSleep();
   }
 
+  oledBegin();                              // only now: wake-ups for a chore stay dark
   setBrightness(ambientBrightness());
   if (cause != ESP_SLEEP_WAKEUP_GPIO && cause != ESP_SLEEP_WAKEUP_TIMER) {   // power-on or reset
     if (!timeValid() && settings.wifi_n) doSync();
@@ -1001,6 +1157,7 @@ void loop() {
   else renderView();
   if (setMode || now < overlayUntil) ledOverride = 0xFF;
   applyLed();
+  oledUpdate(now);
 
   // Haptic motor is on a shift-register output, which /OE PWM would chop, so
   // run at full duty while it is buzzing.
