@@ -206,7 +206,24 @@ def r(v):
     return round(v, 4)
 
 
-def build():
+WATCH_NOTE = "Pins with the same label are connected. Generated from hardware/scripts/design.py - edit that and regenerate."
+
+
+def build(parts=None, pos=None, titles=None, notes=None, power_nets=None, project=PROJECT,
+          title="Watch V1 - ESP32-C3 SuperMini LED watch", rev="5", note=WATCH_NOTE,
+          paper="A3", key="", flag_y=266.7):
+    """Returns the sheet. The defaults draw the watch; the add-on boards pass their own
+    parts (gen_pack_base_sch.py). `key` keeps their UUIDs apart from the watch's."""
+    parts = PARTS if parts is None else parts
+    pos = POS if pos is None else pos
+    titles = TITLES if titles is None else titles
+    notes = NOTES if notes is None else notes
+    power_nets = POWER_NETS if power_nets is None else power_nets
+
+    def uid(*k):
+        return globals()["uid"](*((key,) + k if key else k))
+
+    root = uid("root")
     items = []
     lib_symbols = {}
 
@@ -239,14 +256,14 @@ def build():
             inst.append(node)
         for num in pin_geo:
             inst.append([S("pin"), num, [S("uuid"), uid("pin", ref, num)]])
-        inst.append([S("instances"), [S("project"), PROJECT,
-                    [S("path"), "/" + ROOT_UUID, [S("reference"), ref], [S("unit"), 1]]]])
+        inst.append([S("instances"), [S("project"), project,
+                    [S("path"), "/" + root, [S("reference"), ref], [S("unit"), 1]]]])
         items.append(inst)
 
         for num, (px, py, ang, _unit) in pin_geo.items():
             ex, ey = r(x + px), r(y - py)
             if num not in pins:
-                raise SystemExit(f"{ref}: pin {num} missing from design.py")
+                raise SystemExit(f"{ref}: pin {num} has no net")
             net = pins[num]
             if net is None:
                 items.append([S("no_connect"), [S("at"), ex, ey], [S("uuid"), uid("nc", ref, num)]])
@@ -261,32 +278,31 @@ def build():
             eff.append([S("justify"), S(just), S("bottom")])
             items.append([S("label"), net, [S("at"), lx, ly, angle], eff, [S("uuid"), uid("label", ref, num)]])
 
-    for p in PARTS:
-        x, y = POS[p["ref"]]
+    for p in parts:
+        x, y = pos[p["ref"]]
         add_symbol(p["ref"], p["symbol"], p["value"], p["footprint"], p["pins"], x, y,
                    in_bom=not p["ref"].startswith("H"))
-    for i, net in enumerate(POWER_NETS):
-        add_symbol(f"#FLG0{i + 1}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": net}, 48.26 + 20.32 * i, 266.7, in_bom=False)
+    for i, net in enumerate(power_nets):
+        add_symbol(f"#FLG0{i + 1}", "power:PWR_FLAG", "PWR_FLAG", "", {"1": net}, 48.26 + 20.32 * i, flag_y, in_bom=False)
 
-    for x, y, text in TITLES:
+    for x, y, text in titles:
         eff = [S("effects"), [S("font"), [S("size"), 2, 2], [S("bold"), S("yes")]],
                [S("justify"), S("left"), S("bottom")]]
         items.append([S("text"), text, [S("exclude_from_sim"), S("no")], [S("at"), x, y, 0], eff,
                       [S("uuid"), uid("text", text)]])
-    for x, y, text in NOTES:
+    for x, y, text in notes:
         items.append([S("text"), text, [S("exclude_from_sim"), S("no")], [S("at"), x, y, 0],
                       [S("effects"), [S("font"), [S("size"), 1.27, 1.27]], [S("justify"), S("left"), S("top")]],
                       [S("uuid"), uid("note", text[:24])]])
-    note = "Pins with the same label are connected. Generated from hardware/scripts/design.py - edit that and regenerate."
     items.append([S("text"), note, [S("exclude_from_sim"), S("no")], [S("at"), 30.48, 38.1, 0],
                   [S("effects"), [S("font"), [S("size"), 1.5, 1.5]], [S("justify"), S("left"), S("bottom")]],
                   [S("uuid"), uid("text", "note")]])
 
     sch = [
         S("kicad_sch"), [S("version"), 20250610], [S("generator"), "eeschema"], [S("generator_version"), "10.0"],
-        [S("uuid"), ROOT_UUID], [S("paper"), "A3"],
-        [S("title_block"), [S("title"), "Watch V1 - ESP32-C3 SuperMini LED watch"],
-         [S("date"), "2026-11-12"], [S("rev"), "5"]],
+        [S("uuid"), root], [S("paper"), paper],
+        [S("title_block"), [S("title"), title],
+         [S("date"), "2026-11-12"], [S("rev"), rev]],
         [S("lib_symbols")] + list(lib_symbols.values()),
     ] + items + [
         [S("sheet_instances"), [S("path"), "/", [S("page"), "1"]]],
