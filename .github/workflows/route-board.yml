@@ -61,12 +61,14 @@ jobs:
       - name: Place (unrouted)
         working-directory: hardware/scripts
         run: |
-          rm -f ../kicad/watch_v1.ses ../kicad/watch_v1.ses.json ../kicad/watch_v1.routes.json
+          # A committed watch_v1.ses is kept if it belongs to this placement (freeroute.py --if-needed):
+          # Freerouting's results vary from run to run, so a complete route is not thrown away.
+          rm -f ../kicad/watch_v1.routes.json
           python3 gen_pcb.py
 
       - name: Route with Freerouting
         working-directory: hardware/scripts
-        run: python3 freeroute.py
+        run: python3 freeroute.py --if-needed
 
       - name: Place again with the tracks
         working-directory: hardware/scripts

@@ -21,6 +21,13 @@ it needs Java 25+). It is not kept in this repository.
 Memory: Freerouting is a Java program and wants about 1 GB. FREEROUTING_MEM sets
 the limit (default 1g); close other programs first on a busy machine.
 Time: FREEROUTING_PASSES (default 40) caps the optimisation passes.
+
+Freerouting does not give the same result every time: the same placement can come
+out fully routed on one run and with a connection or two missing on the next. So it
+is tried up to FREEROUTING_ATTEMPTS times (default 4) until nothing is left unrouted,
+keeping the best. And once a complete route is committed, the workflow keeps it:
+with --if-needed this script does nothing when kicad/watch_v1.ses.json already
+belongs to the current placement.
 """
 import hashlib
 import json
@@ -63,7 +70,40 @@ def inset_boundary(path, inset):
         f.write(text[:m.start(1)] + new + text[m.end(1):])
 
 
+def placement_sha():
+    with open(PADS, "rb") as f:
+        return hashlib.sha1(f.read()).hexdigest()
+
+
+def committed_route_fits():
+    try:
+        with open(SES + ".json", encoding="utf-8") as f:
+            return os.path.exists(SES) and json.load(f).get("pads_sha1") == placement_sha()
+    except (OSError, ValueError):
+        return False
+
+
+def route_once(cmd, out):
+    """Runs Freerouting, echoing its log. Returns the unrouted count it reports (99 if unknown)."""
+    if os.path.exists(out):
+        os.remove(out)
+    unrouted = 99
+    proc = subprocess.Popen(cmd, cwd=KICAD, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                            encoding="utf-8", errors="replace")
+    for line in proc.stdout:
+        print(line, end="", flush=True)
+        m = re.search(r"Auto-routing stage completed:.*\((\d+) unrouted", line)
+        if m:
+            unrouted = int(m.group(1))
+    if proc.wait() != 0 or not os.path.exists(out):
+        return None
+    return unrouted
+
+
 def main():
+    if "--if-needed" in sys.argv and committed_route_fits():
+        print("the committed route belongs to this placement - keeping it")
+        return
     jar = os.environ.get("FREEROUTING_JAR", "")
     if not os.path.isfile(jar):
         raise SystemExit("set FREEROUTING_JAR to the Freerouting .jar (see the top of this file)")
@@ -80,24 +120,37 @@ def main():
     print("exported", os.path.basename(DSN), flush=True)
 
     out = SES + ".new"
-    if os.path.exists(out):
-        os.remove(out)
+    best = SES + ".best"
     cmd = [java, "-Xmx" + os.environ.get("FREEROUTING_MEM", "1g"), "-Djava.awt.headless=true", "-jar", jar,
            "-de", DSN, "-do", out, "-mp", os.environ.get("FREEROUTING_PASSES", "40"), "-mt", "1",
            "--gui.enabled=false", "--api_server.enabled=false",
            "--usage_and_diagnostic_data.disable_analytics=true"]
-    print("> freerouting", " ".join(cmd[5:9]), "...", flush=True)
-    code = subprocess.run(cmd, cwd=KICAD).returncode
-    if code != 0 or not os.path.exists(out):
-        raise SystemExit(f"Freerouting failed (exit {code}); nothing changed")
-    os.replace(out, SES)
+    attempts = int(os.environ.get("FREEROUTING_ATTEMPTS", "4"))
+    best_left = None
+    for attempt in range(1, attempts + 1):
+        print(f"> freerouting attempt {attempt}/{attempts}:", " ".join(cmd[5:9]), "...", flush=True)
+        left = route_once(cmd, out)
+        if left is None:
+            print("  Freerouting failed on this attempt")
+            continue
+        print(f"  attempt {attempt}: {left} connection(s) left unrouted", flush=True)
+        if best_left is None or left < best_left:
+            best_left = left
+            os.replace(out, best)
+        if left == 0:
+            break
+    if best_left is None:
+        raise SystemExit("Freerouting failed on every attempt; nothing changed")
+    os.replace(best, SES)
+    if best_left:
+        print(f"best result still leaves {best_left} unrouted: the design-rule check will say so")
 
-    with open(PADS, "rb") as f:
-        sha = hashlib.sha1(f.read()).hexdigest()
     with open(SES + ".json", "w", encoding="utf-8") as f:
-        json.dump({"pads_sha1": sha, "router": os.path.basename(jar)}, f, indent=1)
+        json.dump({"pads_sha1": placement_sha(), "router": os.path.basename(jar), "unrouted": best_left}, f, indent=1)
         f.write("\n")
     os.remove(DSN)
+    if os.path.exists(out):
+        os.remove(out)
     print("saved", os.path.basename(SES), "- now run gen_pcb.py, then export_fab.py")
 
 
