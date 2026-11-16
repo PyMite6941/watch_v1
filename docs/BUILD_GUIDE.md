@@ -53,7 +53,7 @@ Work lowest parts first so the board lies flat.
 | 4 | Front | Diodes D1, D2 | The band (cathode) matches the printed band. |
 | 5 | Front | Capacitors C1–C4 | Either way round. |
 | 6 | Front | Transistors Q1–Q5 | Flat side matches the outline (flat faces the bottom edge). `EBC` is printed under each one: emitter, base, collector, left to right. |
-| 7 | Front | LDR R21, RGB LED D3 | `RKGB` is printed under the LED: red, cathode, green, blue, left to right — the longest leg goes in the second hole (K). Leave the LED and LDR standing about 8 mm tall so they reach the lid. |
+| 7 | Front | LDR R21, RGB LED D3 | `RKGB` is printed under the LED: red, cathode, green, blue, left to right — the longest leg goes in the second hole (K). Thread the legs through the printed **LED spacer** (`led_spacer.stl`, 3 mm) and push the LED down onto it, standing straight up: that puts its tip exactly where the lid's light dome expects it. Leave the spacer in. Stand the LDR about 8 mm tall. Keep R14 and R17 (either side of the LED) no taller than 9 mm, because the dome's ring passes just above them. |
 | 8 | Front | Switches SW1, SW2 | They click in. |
 | 9 | Front | J4 accessory socket | Hold it square while tacking one pin. Pin 1 is the square pad, with a `1` printed beside it. |
 | 10 | — | **Stop and test** (section 4) | |
@@ -86,10 +86,10 @@ Then solder the display, connect the charger board, and unplug USB: the watch sh
 ## 6. Case
 
 1. Print `fit_test.stl` first (ten minutes). Check that an M2 screw passes the post, bites in the boss, and that the PCB corner drops onto the post. Adjust `screw_tap_d`, `gap` in `enclosure/enclosure.scad` if not, and re-export.
-2. Print `base.stl` as it is and `lid.stl` as it is (already flipped so the outer face is on the bed). For a personal case, use a patterned lid (`lid_honeycomb.stl`, `lid_binary.stl`, `lid_staff.stl`, `lid_sine.stl`) or set *Personal touches* in `enclosure.scad` (lid pattern, text under the base) and export your own; see [`kits/`](../kits/README.md). 0.2 mm layers, 3 walls, no supports. In clear PETG, print slow and hot with the fan low for the best transparency.
+2. Print `led_dome.stl` and `led_spacer.stl` (both stand on their flat side; print the dome in clear or translucent white, 0.12–0.16 mm layers so the facets come out crisp). Print `base.stl` as it is and `lid.stl` as it is (already flipped so the outer face is on the bed). For a personal case, use a patterned lid (`lid_honeycomb.stl`, `lid_binary.stl`, `lid_staff.stl`, `lid_sine.stl`) or set *Personal touches* in `enclosure.scad` (lid pattern, text under the base) and export your own; see [`kits/`](../kits/README.md). 0.2 mm layers, 3 walls, no supports. In clear PETG, print slow and hot with the fan low for the best transparency.
 3. Charger board on the floor between its two rails, USB socket in the left-hand opening; a square of foam tape holds it. Battery in its pocket to the right.
 4. Lower the PCB onto the four posts, wires tucked into the space under the display — not across the battery.
-5. Lid on: buttons, LED, light sensor and accessory socket line up with their openings.
+5. Push the LED dome up through the hexagonal hole from the inside of the lid, so its ring lies flat against the lid's underside (it only fits one way round: the ring's straight edge faces the display). Lid on: the LED slides up into the dome's bore; buttons, light sensor and accessory socket line up with their openings. The lid clamps the ring, so the dome cannot fall out or turn. Hold SET on a clock screen for party mode: the dome changes colour twice a second.
 6. Four M2 × 16 screws from underneath. Snug only; the plastic strips easily.
 7. Thread the strap through both lugs.
 

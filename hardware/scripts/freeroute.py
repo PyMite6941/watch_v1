@@ -25,6 +25,7 @@ Time: FREEROUTING_PASSES (default 40) caps the optimisation passes.
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -37,6 +38,29 @@ BOARD = os.path.join(KICAD, "watch_v1.kicad_pcb")
 PADS = os.path.join(KICAD, "watch_v1.pads.json")
 DSN = os.path.join(KICAD, "watch_v1.dsn")
 SES = os.path.join(KICAD, "watch_v1.ses")
+# Freerouting keeps copper only its normal clearance (0.2 mm) from the outline, but the
+# board's rule (and the factories') is 0.3 mm. Shrinking the outline it is given by
+# 0.15 mm leaves 0.35 mm.
+EDGE_INSET_UM = 150
+
+
+def inset_boundary(path, inset):
+    """Moves the rectangular board outline in the DSN inwards by `inset` (DSN units, um)."""
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    m = re.search(r"\(boundary\s*\(path pcb 0([-\d\s.]+)\)", text)
+    if not m:
+        raise SystemExit("no board outline in the DSN")
+    nums = [float(v) for v in m.group(1).split()]
+    xs, ys = nums[0::2], nums[1::2]
+    if any(x not in (min(xs), max(xs)) for x in xs) or any(y not in (min(ys), max(ys)) for y in ys):
+        raise SystemExit("the outline is not a rectangle: update inset_boundary()")
+    moved = []
+    for x, y in zip(xs, ys):
+        moved += [x + inset if x == min(xs) else x - inset, y + inset if y == min(ys) else y - inset]
+    new = " " + " ".join(f"{v:g}" for v in moved)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(text[:m.start(1)] + new + text[m.end(1):])
 
 
 def main():
@@ -52,6 +76,7 @@ def main():
         raise SystemExit("the board already has tracks: run gen_pcb.py first for a clean, unrouted board")
     if not pcbnew.ExportSpecctraDSN(board, DSN):
         raise SystemExit("DSN export failed")
+    inset_boundary(DSN, EDGE_INSET_UM)
     print("exported", os.path.basename(DSN), flush=True)
 
     out = SES + ".new"

@@ -59,7 +59,7 @@ PLACE = {
     "R21": (TOP, 0, 12.8, 27.7),
     "R20": (TOP, 270, 19.0, 26.8),
     "R17": (TOP, 270, 22.1, 26.8),
-    "D3": (TOP, 0, 27.095, 28.5),
+    "D3": (TOP, 0, 27.095, 29.5),         # 1 mm clear of the old spot: room for the lid's LED dome (enclosure.scad)
     "R14": (TOP, 270, 33.8, 26.8),
     "R15": (TOP, 270, 36.9, 26.8),
     "R16": (TOP, 270, 40.0, 26.8),
@@ -81,7 +81,7 @@ for i, (hx, hy) in enumerate(HOLES):
     PLACE[f"H{i + 1}"] = (TOP, 0, hx, hy)
 
 SILK = [  # (text, x, y, side, size)
-    ("WATCH V1 r5", 29, 43.0, TOP, 0.8),
+    ("WATCH V1 r6", 29, 43.0, TOP, 0.8),
     ("MODE", 7.75, 39.6, TOP, 0.9),
     ("SET", 50.25, 39.6, TOP, 0.9),
     ("G BAT CHG", 45.74, 40.3, BOT, 0.8),
@@ -386,7 +386,7 @@ def write_project():
     pro["net_settings"]["classes"] = [base, power]
     pro["net_settings"]["netclass_patterns"] = [{"netclass": "Power", "pattern": "/" + n} for n in POWER_NETS]
     rules = pro["board"].setdefault("design_settings", {}).setdefault("rules", {})
-    rules.update(min_clearance=0.15, min_track_width=0.2, min_via_diameter=0.5, min_via_annular_width=0.05,
+    rules.update(min_clearance=0.15, min_track_width=0.15, min_via_diameter=0.5, min_via_annular_width=0.05,
                  min_through_hole_diameter=0.3, min_hole_to_hole=0.25, min_copper_edge_clearance=0.3)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         json.dump(pro, f, indent=2)

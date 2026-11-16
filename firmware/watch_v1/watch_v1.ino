@@ -362,7 +362,7 @@ void buzzPattern(uint8_t count, uint16_t onMs, uint16_t offMs) {
 
 static void applyLed() {
   uint8_t bits = COLOURS[ledColour];
-  if (partyMode) bits = COLOURS[1 + (millis() / 150) % 7];
+  if (partyMode) bits = COLOURS[1 + (millis() / PARTY_STEP_MS) % 7];   // a new colour twice a second
   if (ledOverride != 0xFF) bits = ledOverride;
   auxBits = (auxBits & AUX_HAPTIC) | bits;
 }

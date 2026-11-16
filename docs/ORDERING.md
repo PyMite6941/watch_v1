@@ -28,7 +28,7 @@ A first order of five boards is the cheapest mistake-finder there is. Order five
 | Surface finish | HASL with lead is cheapest and solders easiest; lead-free HASL or ENIG if you prefer |
 | Copper | 1 oz |
 | Solder-mask colour | Any. The case is clear, so this is the watch's colour: black, white or purple look good behind an LED display. Green is usually fastest. |
-| Min track / spacing | 0.2 / 0.2 mm, vias 0.7 / 0.35 mm — inside every factory's standard service |
+| Min track / spacing | 0.15 / 0.2 mm (the router narrows a few tracks next to pins), vias 0.7 / 0.35 mm — inside every factory's standard service (JLCPCB and PCBWay go down to 0.127 mm) |
 | "Remove order number" | Worth the small fee, or choose "specify a location" — otherwise the factory prints a number somewhere visible |
 
 ### Where
@@ -53,7 +53,7 @@ Rules depend on the country you are shipping to, so check yours before paying:
 
 ## The case
 
-Two printed parts, `base.stl` and `lid.stl`, in `enclosure/stl/`. Print `fit_test.stl` first.
+Four printed parts in `enclosure/stl/`: `base.stl`, `lid.stl`, `led_dome.stl` (the hexagonal light dome over the RGB LED) and `led_spacer.stl` (sets the LED's height). Print `fit_test.stl` first. Clearances are set for a first print to fit without sanding: 0.5 mm round the board, 0.3 mm round the lid's lip, 0.2 mm round the dome's stem, 0.3 mm round the LED.
 
 Optional extras in the same folder: lids with an engraved pattern (`lid_honeycomb`, `lid_binary`, `lid_staff`, `lid_sine`), a desk stand (`desk_stand.stl`, about 25 g) and a vented sensor probe case (`probe_sleeve.stl` + `probe_plug.stl`). Which suits whom: [`kits/`](../kits/README.md).
 

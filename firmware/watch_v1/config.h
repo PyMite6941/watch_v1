@@ -79,6 +79,7 @@
 #define APP_AWAKE_MS     120000  // a running stopwatch / timer / mesh view keeps the display on this long
 #define LINK_AWAKE_MS    180000  // link (Bluetooth) mode lasts this long after the last command
 #define LED_MAX_MS       60000   // RGB LED / party mode auto-off
+#define PARTY_STEP_MS    500     // party mode (hold SET on a clock screen): next colour every half second
 #define LONG_PRESS_MS    800
 #define DEBOUNCE_MS      25
 #define MUX_PERIOD_US    2000    // per digit -> 125 Hz full refresh
