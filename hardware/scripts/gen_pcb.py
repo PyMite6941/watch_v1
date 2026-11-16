@@ -77,6 +77,9 @@ for i in range(8):
 for i in range(5):
     PLACE[f"Q{i + 1}"] = (TOP, 0, 14.0 + 5.5 * i, 39.7)
     PLACE[f"R{9 + i}"] = (TOP, 270, 15.27 + 5.5 * i, 33.3)
+# R11 and R12 step sideways out of the way of the RGB LED's courtyard (D3 at y 29.5)
+PLACE["R11"] = (TOP, 270, 24.1, 33.3)
+PLACE["R12"] = (TOP, 270, 33.9, 33.3)
 for i, (hx, hy) in enumerate(HOLES):
     PLACE[f"H{i + 1}"] = (TOP, 0, hx, hy)
 
@@ -331,12 +334,12 @@ def add_routes(board, pads_path):
         return msg
     routes_path = os.path.join(OUT_DIR, "watch_v1.routes.json")
     if not os.path.exists(routes_path):
-        return "no routes yet - run route.py, then this script again"
+        return "no routes yet - push to main and the cloud workflow routes it (or run freeroute.py, then this script again)"
     with open(routes_path, encoding="utf-8") as f:
         routes = json.load(f)
     with open(pads_path, "rb") as f:
         if hashlib.sha1(f.read()).hexdigest() != routes["pads_sha1"]:
-            return "routes are for an older placement - run route.py, then this script again"
+            return "routes are for an older placement - the cloud workflow reroutes it on the next push to main"
     for s in routes["tracks"]:
         t = pcbnew.PCB_TRACK(board)
         t.SetStart(pt(s["x1"], s["y1"]))

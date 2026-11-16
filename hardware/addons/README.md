@@ -8,6 +8,8 @@ Plug-in boards for the watch's accessory socket. What the socket is and what it 
 |---|---|
 | `pack_base/gen_pack_base.py` | Generates the Pack Base board, checks it, and with `--fab` exports the factory files |
 | `pack_base/kicad/pack_base.kicad_pcb` | The board, placed and routed. Open it in KiCad 10 |
+| `pack_base/gen_pack_base_sch.py` | Generates the schematic from the same parts table (any Python 3) |
+| `pack_base/kicad/pack_base.kicad_sch` | The schematic: 0 electrical-rule findings, and its nets match the board's |
 | `pack_base/fab/pack_base_gerbers.zip` | Upload this to the PCB factory |
 | `pack_base/render_top.png`, `render_bottom.png` | Pictures of both sides |
 
@@ -57,6 +59,8 @@ To rebuild after a change:
 ```
 
 It prints its placement checks and the design-rule result. It only writes the factory files when both are clean.
+
+The schematic comes from the same parts table, so after changing a part's nets also run `python hardware/addons/pack_base/gen_pack_base_sch.py`.
 
 ### Ordering
 
