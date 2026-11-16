@@ -16,7 +16,7 @@ Steps:
      placement it belongs to; gen_pcb.py imports it from then on
 
 Get Freerouting from https://github.com/freerouting/freerouting/releases (the .jar;
-it needs Java 21+). It is not kept in this repository.
+it needs Java 25+). It is not kept in this repository.
 
 Memory: Freerouting is a Java program and wants about 1 GB. FREEROUTING_MEM sets
 the limit (default 1g); close other programs first on a busy machine.
@@ -45,7 +45,7 @@ def main():
         raise SystemExit("set FREEROUTING_JAR to the Freerouting .jar (see the top of this file)")
     java = shutil.which("java")
     if not java:
-        raise SystemExit("Java not found: install Java 21 or newer")
+        raise SystemExit("Java not found: install Java 25 or newer (Freerouting 2.5 needs it)")
 
     board = pcbnew.LoadBoard(BOARD)
     if len(board.GetTracks()):
