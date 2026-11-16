@@ -7,6 +7,7 @@ scripts/design.py      THE circuit: every part, its value, footprint and which n
 scripts/gen_sch.py     -> kicad/watch_v1.kicad_sch   (any Python 3)
 scripts/gen_pcb.py     -> kicad/watch_v1.kicad_pcb   (KiCad's own Python: needs the pcbnew module)
 scripts/check_wiring.py  audits the generated schematic and board against datasheet pinouts
+scripts/freeroute.py   -> kicad/watch_v1.ses         (Freerouting; run for you by the cloud workflow)
 scripts/route.py       -> kicad/watch_v1.routes.json (any Python 3; experimental autorouter)
 scripts/export_fab.py  -> fab/watch_v1_gerbers.zip   (checks the board first)
 kicad/                 the generated KiCad 10 project - open watch_v1.kicad_pro
@@ -23,9 +24,9 @@ addons/                add-on packs: the Pack Base board (routed, design-rule cl
 | Placement self-checks (display orientation, USB end, parts inside the outline) | all pass |
 | Wiring audit (`check_wiring.py`) | 55 checks against datasheet pinouts and the firmware's pin table, all pass |
 | Board against schematic | 0 differences |
-| Design rules (DRC) | clean, **except 103 unrouted connections** |
+| Design rules (DRC) | clean apart from routing, which the cloud workflow does (see *Routing*) |
 
-The board is **placed but not routed**. It cannot be manufactured until it is.
+The board is placed; routing and the Gerbers come from the cloud workflow below, so nobody has to run a router.
 
 ## Finding pin 1 — on the drawings and on the parts
 
@@ -99,35 +100,25 @@ Set `KICAD_SYMBOL_DIR` / `KICAD_FOOTPRINT_DIR` if KiCad is installed somewhere e
 
 To move a part, change its entry in `PLACE` in `gen_pcb.py` (millimetres from the board's top-left corner, looking at the display side). The enclosure reads the same coordinates — if the display, buttons, LED, light sensor, accessory socket or USB end move, update the matching numbers at the top of `enclosure/enclosure.scad`.
 
-## Routing — the open job
+## Routing — done in the cloud
 
-There are three ways to do it. Pick one.
+**Nobody building a watch has to route anything or install Freerouting or Java.** The board is routed by a GitHub workflow, [`.github/workflows/route-board.yml`](../.github/workflows/route-board.yml), on GitHub's computers:
 
-### A. Route by hand in KiCad (most control)
+1. `gen_pcb.py` places the parts (unrouted).
+2. `freeroute.py` runs [Freerouting](https://github.com/freerouting/freerouting) 2.5.0 headless (checksum-verified download) and saves `kicad/watch_v1.ses`.
+3. `gen_pcb.py` places again, this time importing the tracks.
+4. `check_wiring.py` audits the wiring, and `export_fab.py` runs the design-rule check and writes `fab/watch_v1_gerbers.zip`.
+5. The routed board and the Gerbers are pushed to the branch `routed-board`, and kept as a download on the run (*routed-board*).
 
-Open `kicad/watch_v1.kicad_pcb`. The thin "ratsnest" lines show what must connect. Press `X` to draw a track, `V` to drop a via and change side. Net classes are already set up: signals 0.3 mm, power 0.4 mm, 0.2 mm clearance. Useful approach for this board: run the top side mostly up-and-down and the bottom side mostly left-and-right, and do power last.
+It runs by itself whenever `design.py`, `gen_pcb.py` or the footprints change on `main`, and by hand from **GitHub › Actions › Route the board › Run workflow**. If you only want to order boards, take `hardware/fab/watch_v1_gerbers.zip` and go to [`docs/ORDERING.md`](../docs/ORDERING.md).
 
-Tracks drawn by hand are **lost if `gen_pcb.py` is run again**, so finish the placement first, and after routing treat the `.kicad_pcb` as the master.
+`gen_pcb.py` imports `watch_v1.ses` only when it was made for the current placement (it records a fingerprint of the pads in `watch_v1.ses.json`), so a stale route is never applied to a moved part.
 
-### B. Freerouting (best automatic result)
+### Other ways, for experimenting
 
-In KiCad: *Plugin and Content Manager* → install **Freerouting**, then *Tools → External Plugins → Freerouting* in the PCB editor. It needs Java (already installed on this machine). A board this size takes a few minutes. Same caveat about re-running `gen_pcb.py`.
-
-### C. The in-repo autorouter (experimental)
-
-```bash
-python route.py                                             # 10 minutes or more, about 400 MB of memory
-"%LOCALAPPDATA%\Programs\KiCad\10.0\bin\python.exe" gen_pcb.py   # places again and adds the tracks
-```
-
-`route.py` is a small rip-up-and-reroute maze router written for this board, with no dependencies. What is known about it:
-
-- Its output is electrically correct: on the previous placement KiCad's DRC found no clearance violations or shorts in what it routed.
-- It did **not** finish that board — 17 of 96 connections were left — and the result was tangled. It has since been given a preferred direction per layer, which usually fixes both, but **that version has not completed a run**: it was stopped twice by a low-memory guard on this machine, not by an error of its own.
-- `ROUTE_SECONDS=600 python route.py` limits how long it keeps ripping up and retrying; after that it finishes what it can and lists what is left under `NOT ROUTED`.
-- Close other programs first. If it still leaves connections, finish them by hand in KiCad (a handful of tracks is quick) — and from then on do not re-run `gen_pcb.py`.
-
-Because the routes file records which placement it was made for, `gen_pcb.py` ignores routes that no longer match and says so.
+- **Freerouting on your own computer:** `set FREEROUTING_JAR=…freerouting-2.5.0.jar`, then run `freeroute.py` and `gen_pcb.py` with KiCad's Python. It wants about 1 GB of free memory (`FREEROUTING_MEM`).
+- **By hand in KiCad:** open `kicad/watch_v1.kicad_pcb`; `X` draws a track, `V` drops a via. Net classes are set (signals 0.3 mm, power 0.4 mm, 0.2 mm clearance). Hand-drawn tracks are lost if `gen_pcb.py` runs again.
+- **`route.py`**, the small in-repo maze router (any Python 3, about 400 MB). Experimental: it has never finished this board; its output (`watch_v1.routes.json`) is used only when there is no Freerouting session.
 
 ## Exporting for manufacture
 
