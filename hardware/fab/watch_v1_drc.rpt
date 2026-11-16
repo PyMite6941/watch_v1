@@ -1,8 +1,36 @@
 ** Drc report for watch_v1.kicad_pcb **
-** Created on 2026-11-13T20:57:53 **
+** Created on 2026-11-16T12:53:29 **
 ** Report includes: Errors, Warnings, Exclusions **
 
-** Found 135 DRC violations **
+** Found 207 DRC violations **
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(126.2700 mm, 133.3000 mm): Footprint R11
+    @(127.0950 mm, 129.5000 mm): Footprint D3
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(124.0000 mm, 120.5800 mm): PTH pad 1 [/+3V3] of J1
+    @(122.6500 mm, 123.1200 mm): Footprint DS1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(124.0000 mm, 118.0400 mm): PTH pad 2 [/SDA] of J1
+    @(122.6500 mm, 123.1200 mm): Footprint DS1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(124.0000 mm, 115.5000 mm): PTH pad 3 [/SCL] of J1
+    @(122.6500 mm, 123.1200 mm): Footprint DS1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(124.0000 mm, 112.9600 mm): PTH pad 4 [unconnected-(J1-Pin_4-Pad4)] of J1
+    @(122.6500 mm, 123.1200 mm): Footprint DS1
+[pth_inside_courtyard]: PTH inside courtyard
+    Local override; error
+    @(124.0000 mm, 110.4200 mm): PTH pad 5 [/GND] of J1
+    @(122.6500 mm, 123.1200 mm): Footprint DS1
+[courtyards_overlap]: Courtyards overlap
+    Rule: board setup constraints courtyard; error
+    @(127.0950 mm, 129.5000 mm): Footprint D3
+    @(131.7700 mm, 133.3000 mm): Footprint R12
 [pth_inside_courtyard]: PTH inside courtyard
     Local override; error
     @(119.9800 mm, 114.6200 mm): PTH pad 1 [/SR_B] of U2
@@ -58,26 +86,6 @@
 [pth_inside_courtyard]: PTH inside courtyard
     Local override; error
     @(119.9800 mm, 107.0000 mm): PTH pad 16 [/+3V3] of U2
-    @(122.6500 mm, 123.1200 mm): Footprint DS1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(124.0000 mm, 120.5800 mm): PTH pad 1 [/+3V3] of J1
-    @(122.6500 mm, 123.1200 mm): Footprint DS1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(124.0000 mm, 118.0400 mm): PTH pad 2 [/SDA] of J1
-    @(122.6500 mm, 123.1200 mm): Footprint DS1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(124.0000 mm, 115.5000 mm): PTH pad 3 [/SCL] of J1
-    @(122.6500 mm, 123.1200 mm): Footprint DS1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(124.0000 mm, 112.9600 mm): PTH pad 4 [<no net>] of J1
-    @(122.6500 mm, 123.1200 mm): Footprint DS1
-[pth_inside_courtyard]: PTH inside courtyard
-    Local override; error
-    @(124.0000 mm, 110.4200 mm): PTH pad 5 [/GND] of J1
     @(122.6500 mm, 123.1200 mm): Footprint DS1
 [pth_inside_courtyard]: PTH inside courtyard
     Local override; error
@@ -173,7 +181,7 @@
     @(122.6500 mm, 123.1200 mm): Footprint DS1
 [pth_inside_courtyard]: PTH inside courtyard
     Local override; error
-    @(142.9400 mm, 108.0000 mm): PTH pad 11 [<no net>] of U1
+    @(142.9400 mm, 108.0000 mm): PTH pad 11 [unconnected-(U1-GPIO2-Pad11)] of U1
     @(122.6500 mm, 123.1200 mm): Footprint DS1
 [pth_inside_courtyard]: PTH inside courtyard
     Local override; error
@@ -207,125 +215,341 @@
     Rule: board setup constraints silk; warning
     @(158.0000 mm, 100.0000 mm): Segment on Edge.Cuts
     @(159.0100 mm, 120.1200 mm): Rectangle of U1 on B.Silkscreen
+[lib_footprint_issues]: The current configuration does not include the footprint library 'MountingHole'
+    Local override; warning
+    @(155.0000 mm, 103.0000 mm): Footprint H2
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(126.2700 mm, 133.3000 mm): Footprint R11
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(136.7500 mm, 101.8000 mm): Footprint R7
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Connector_PinSocket_2.54mm'
+    Local override; warning
+    @(143.2000 mm, 101.4000 mm): Footprint J4
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(122.1000 mm, 126.8000 mm): Footprint R17
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(139.8500 mm, 101.8000 mm): Footprint R8
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Package_TO_SOT_THT'
+    Local override; warning
+    @(130.5000 mm, 139.7000 mm): Footprint Q4
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(120.7700 mm, 133.3000 mm): Footprint R10
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Package_TO_SOT_THT'
+    Local override; warning
+    @(136.0000 mm, 139.7000 mm): Footprint Q5
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(115.2700 mm, 133.3000 mm): Footprint R9
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(118.1500 mm, 101.8000 mm): Footprint R1
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Diode_THT'
+    Local override; warning
+    @(141.3000 mm, 139.5000 mm): Footprint D2
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Button_Switch_THT'
+    Local override; warning
+    @(104.5000 mm, 132.4000 mm): Footprint SW1
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Capacitor_THT'
+    Local override; warning
+    @(151.4000 mm, 104.3000 mm): Footprint C4
+[lib_footprint_issues]: The current configuration does not include the footprint library 'LED_THT'
+    Local override; warning
+    @(127.0950 mm, 129.5000 mm): Footprint D3
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Diode_THT'
+    Local override; warning
+    @(143.2000 mm, 126.9000 mm): Footprint D1
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(115.0500 mm, 101.8000 mm): Footprint R23
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(121.2500 mm, 101.8000 mm): Footprint R2
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Button_Switch_THT'
+    Local override; warning
+    @(147.0000 mm, 132.4000 mm): Footprint SW2
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(131.7700 mm, 133.3000 mm): Footprint R12
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Package_TO_SOT_THT'
+    Local override; warning
+    @(119.5000 mm, 139.7000 mm): Footprint Q2
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Capacitor_THT'
+    Local override; warning
+    @(108.0000 mm, 127.0000 mm): Footprint C3
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(140.4000 mm, 133.3000 mm): Footprint R18
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Capacitor_THT'
+    Local override; warning
+    @(106.8000 mm, 103.0000 mm): Footprint C1
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Display_7Segment'
+    Local override; warning
+    @(122.6500 mm, 123.1200 mm): Footprint DS1
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(133.6500 mm, 101.8000 mm): Footprint R6
+[lib_footprint_issues]: The current configuration does not include the footprint library 'OptoDevice'
+    Local override; warning
+    @(112.8000 mm, 127.7000 mm): Footprint R21
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(119.0000 mm, 126.8000 mm): Footprint R20
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(124.3500 mm, 101.8000 mm): Footprint R3
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(140.0000 mm, 126.8000 mm): Footprint R16
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(130.5500 mm, 101.8000 mm): Footprint R5
+[lib_footprint_issues]: The current configuration does not include the footprint library 'MountingHole'
+    Local override; warning
+    @(103.0000 mm, 103.0000 mm): Footprint H1
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(143.5000 mm, 133.3000 mm): Footprint R19
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(137.2700 mm, 133.3000 mm): Footprint R13
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(136.9000 mm, 126.8000 mm): Footprint R15
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(127.4500 mm, 101.8000 mm): Footprint R4
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(133.8000 mm, 126.8000 mm): Footprint R14
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Capacitor_THT'
+    Local override; warning
+    @(103.0000 mm, 127.0000 mm): Footprint C2
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Package_TO_SOT_THT'
+    Local override; warning
+    @(114.0000 mm, 139.7000 mm): Footprint Q1
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Package_TO_SOT_THT'
+    Local override; warning
+    @(125.0000 mm, 139.7000 mm): Footprint Q3
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Resistor_THT'
+    Local override; warning
+    @(111.9500 mm, 101.8000 mm): Footprint R22
+[lib_footprint_issues]: The current configuration does not include the footprint library 'MountingHole'
+    Local override; warning
+    @(155.0000 mm, 141.0000 mm): Footprint H4
+[lib_footprint_issues]: The current configuration does not include the footprint library 'MountingHole'
+    Local override; warning
+    @(103.0000 mm, 141.0000 mm): Footprint H3
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Connector_PinHeader_2.54mm'
+    Local override; warning
+    @(109.5400 mm, 142.0000 mm): Footprint J3
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Connector_PinHeader_2.54mm'
+    Local override; warning
+    @(124.0000 mm, 120.5800 mm): Footprint J1
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Package_DIP'
+    Local override; warning
+    @(119.9800 mm, 114.6200 mm): Footprint U2
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Package_DIP'
+    Local override; warning
+    @(119.9800 mm, 124.6200 mm): Footprint U3
+[lib_footprint_issues]: The current configuration does not include the footprint library 'Connector_PinHeader_2.54mm'
+    Local override; warning
+    @(148.2800 mm, 142.3000 mm): Footprint J2
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
-    @(137.2700 mm, 139.7000 mm): Arc of Q5 on F.Silkscreen
-    @(141.3000 mm, 139.5000 mm): Circle of D2 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(140.0000 mm, 126.8000 mm): Circle of R16 on F.Silkscreen
-    @(143.2000 mm, 126.9000 mm): Arc of D1 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(140.0000 mm, 126.8000 mm): Circle of R16 on F.Silkscreen
-    @(139.2700 mm, 128.0700 mm): Reference field of R15
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(143.2000 mm, 126.9000 mm): Arc of D1 on F.Silkscreen
-    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(142.3700 mm, 128.0700 mm): Reference field of R16
-    @(143.2000 mm, 126.9000 mm): Arc of D1 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(142.7700 mm, 134.5700 mm): Reference field of R18
-    @(143.5000 mm, 133.3000 mm): Circle of R19 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(114.5000 mm, 124.8000 mm): Reference field of R21
-    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
-    @(109.2500 mm, 124.9500 mm): Reference field of C3
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(136.9000 mm, 126.8000 mm): Circle of R15 on F.Silkscreen
-    @(136.1700 mm, 128.0700 mm): Reference field of R14
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(139.6400 mm, 134.5700 mm): Reference field of R13
-    @(140.4000 mm, 133.3000 mm): Circle of R18 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(129.0000 mm, 124.5400 mm): Reference field of D3
-    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(122.1000 mm, 126.8000 mm): Circle of R17 on F.Silkscreen
-    @(121.6500 mm, 125.5000 mm): Segment of DS1 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(122.1000 mm, 126.8000 mm): Circle of R17 on F.Silkscreen
-    @(121.3700 mm, 128.0700 mm): Reference field of R20
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(139.8500 mm, 101.8000 mm): Circle of R8 on F.Silkscreen
     @(139.1200 mm, 103.0700 mm): Reference field of R7
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(136.7500 mm, 101.8000 mm): Circle of R7 on F.Silkscreen
-    @(136.0200 mm, 103.0700 mm): Reference field of R6
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(132.9200 mm, 103.0700 mm): Reference field of R5
-    @(133.6500 mm, 101.8000 mm): Circle of R6 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(129.8200 mm, 103.0700 mm): Reference field of R4
-    @(130.5500 mm, 101.8000 mm): Circle of R5 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(127.4500 mm, 101.8000 mm): Circle of R4 on F.Silkscreen
-    @(126.7200 mm, 103.0700 mm): Reference field of R3
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(104.2500 mm, 124.9500 mm): Reference field of C2
-    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
-[silk_overlap]: Silkscreen clearance
-    Rule: board setup constraints silk; warning
-    @(124.3500 mm, 101.8000 mm): Circle of R3 on F.Silkscreen
-    @(123.6200 mm, 103.0700 mm): Reference field of R2
+    @(139.8500 mm, 101.8000 mm): Circle of R8 on F.Silkscreen
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
     @(139.8500 mm, 101.8000 mm): Circle of R8 on F.Silkscreen
     @(140.4300 mm, 102.6700 mm): Reference field of J4
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
-    @(120.5200 mm, 103.0700 mm): Reference field of R1
-    @(121.2500 mm, 101.8000 mm): Circle of R2 on F.Silkscreen
+    @(141.3000 mm, 101.4000 mm): PCB text '1' on F.Silkscreen
+    @(139.8500 mm, 101.8000 mm): Circle of R8 on F.Silkscreen
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
-    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
-    @(104.2500 mm, 124.9500 mm): Reference field of C2
+    @(142.2200 mm, 103.0700 mm): Reference field of R8
+    @(141.8700 mm, 105.2700 mm): Segment of J4 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(142.2200 mm, 103.0700 mm): Reference field of R8
+    @(141.8700 mm, 102.6700 mm): Segment of J4 on F.Silkscreen
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
     @(149.6100 mm, 105.2700 mm): Segment of J4 on F.Silkscreen
     @(149.3500 mm, 103.0500 mm): Reference field of C4
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
-    @(141.8700 mm, 105.2700 mm): Segment of J4 on F.Silkscreen
-    @(142.2200 mm, 103.0700 mm): Reference field of R8
+    @(136.7500 mm, 101.8000 mm): Circle of R7 on F.Silkscreen
+    @(136.0200 mm, 103.0700 mm): Reference field of R6
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
-    @(141.8700 mm, 102.6700 mm): Segment of J4 on F.Silkscreen
+    @(139.6400 mm, 134.5700 mm): Reference field of R13
+    @(140.4000 mm, 133.3000 mm): Circle of R18 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(143.5000 mm, 133.3000 mm): Circle of R19 on F.Silkscreen
+    @(142.7700 mm, 134.5700 mm): Reference field of R18
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
+    @(143.2000 mm, 126.9000 mm): Arc of D1 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(143.2000 mm, 126.9000 mm): Arc of D1 on F.Silkscreen
+    @(142.3700 mm, 128.0700 mm): Reference field of R16
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(140.0000 mm, 126.8000 mm): Circle of R16 on F.Silkscreen
+    @(143.2000 mm, 126.9000 mm): Arc of D1 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(120.5200 mm, 103.0700 mm): Reference field of R1
+    @(121.2500 mm, 101.8000 mm): Circle of R2 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(118.1500 mm, 101.8000 mm): Circle of R1 on F.Silkscreen
+    @(117.4200 mm, 103.0700 mm): Reference field of R23
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(124.3500 mm, 101.8000 mm): Circle of R3 on F.Silkscreen
+    @(123.6200 mm, 103.0700 mm): Reference field of R2
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
+    @(104.2500 mm, 124.9500 mm): Reference field of C2
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
+    @(129.0000 mm, 125.5400 mm): Reference field of D3
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
+    @(109.2500 mm, 124.9500 mm): Reference field of C3
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
+    @(104.2500 mm, 124.9500 mm): Reference field of C2
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
+    @(114.5000 mm, 124.8000 mm): Reference field of R21
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(127.4500 mm, 101.8000 mm): Circle of R4 on F.Silkscreen
+    @(126.7200 mm, 103.0700 mm): Reference field of R3
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(133.6500 mm, 101.8000 mm): Circle of R6 on F.Silkscreen
+    @(132.9200 mm, 103.0700 mm): Reference field of R5
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(130.5500 mm, 101.8000 mm): Circle of R5 on F.Silkscreen
+    @(129.8200 mm, 103.0700 mm): Reference field of R4
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(115.0500 mm, 101.8000 mm): Circle of R23 on F.Silkscreen
+    @(114.3200 mm, 103.0700 mm): Reference field of R22
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(113.4700 mm, 141.5500 mm): Segment of Q1 on F.Silkscreen
+    @(115.2700 mm, 141.6000 mm): PCB text 'EBC' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(120.7700 mm, 141.6000 mm): PCB text 'EBC' on F.Silkscreen
+    @(118.9700 mm, 141.5500 mm): Segment of Q2 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(126.2700 mm, 141.6000 mm): PCB text 'EBC' on F.Silkscreen
+    @(124.4700 mm, 141.5500 mm): Segment of Q3 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(129.0000 mm, 129.5000 mm): Arc of D3 on F.Silkscreen
+    @(129.0000 mm, 132.0000 mm): PCB text 'RKGB' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(129.0000 mm, 129.5000 mm): Arc of D3 on F.Silkscreen
+    @(129.0000 mm, 132.0000 mm): PCB text 'RKGB' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(131.7700 mm, 141.6000 mm): PCB text 'EBC' on F.Silkscreen
+    @(129.9700 mm, 141.5500 mm): Segment of Q4 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(135.4700 mm, 141.5500 mm): Segment of Q5 on F.Silkscreen
+    @(137.2700 mm, 141.6000 mm): PCB text 'EBC' on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(137.2700 mm, 139.7000 mm): Arc of Q5 on F.Silkscreen
+    @(141.3000 mm, 139.5000 mm): Circle of D2 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(122.1000 mm, 126.8000 mm): Circle of R17 on F.Silkscreen
+    @(121.3700 mm, 128.0700 mm): Reference field of R20
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(121.6500 mm, 125.5000 mm): Segment of DS1 on F.Silkscreen
+    @(122.1000 mm, 126.8000 mm): Circle of R17 on F.Silkscreen
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(140.0000 mm, 126.8000 mm): Circle of R16 on F.Silkscreen
+    @(139.2700 mm, 128.0700 mm): Reference field of R15
+[silk_overlap]: Silkscreen clearance
+    Rule: board setup constraints silk; warning
+    @(136.1700 mm, 128.0700 mm): Reference field of R14
+    @(136.9000 mm, 126.8000 mm): Circle of R15 on F.Silkscreen
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(121.0000 mm, 107.8800 mm): PCB text '12' on F.Silkscreen
+    @(119.9800 mm, 107.0000 mm): PTH pad 16 [/+3V3] of U2
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(136.9000 mm, 123.1200 mm): PCB text '6' on F.Silkscreen
+    @(137.8600 mm, 123.2400 mm): PTH pad 8 [/LDR_PWR] of U1
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(140.4300 mm, 102.6700 mm): Reference field of J4
+    @(139.8500 mm, 101.8000 mm): PTH pad 1 [/SR_DP] of R8
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
     @(142.2200 mm, 103.0700 mm): Reference field of R8
+    @(143.2000 mm, 103.9400 mm): PTH pad 2 [/+3V3] of J4
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(131.7700 mm, 136.1400 mm): Reference field of Q4
-    @(131.7700 mm, 135.8400 mm): PTH pad 2 [/DIG4_BASE] of R12
+    @(142.2200 mm, 103.0700 mm): Reference field of R8
+    @(143.2000 mm, 101.4000 mm): PTH pad 1 [/GND] of J4
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(126.2700 mm, 136.1400 mm): Reference field of Q3
-    @(126.2700 mm, 135.8400 mm): PTH pad 2 [/DIG3_BASE] of R11
+    @(149.3500 mm, 103.0500 mm): Reference field of C4
+    @(148.2800 mm, 103.9400 mm): PTH pad 6 [/AIN] of J4
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(120.7700 mm, 136.1400 mm): Reference field of Q2
-    @(120.7700 mm, 135.8400 mm): PTH pad 2 [/DIG2_BASE] of R10
+    @(136.9000 mm, 107.8800 mm): PCB text '7' on F.Silkscreen
+    @(137.8600 mm, 108.0000 mm): PTH pad 9 [/VBAT_SENSE] of U1
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(142.5700 mm, 137.1736 mm): Reference field of D2
+    @(139.1200 mm, 103.0700 mm): Reference field of R7
+    @(139.8500 mm, 104.3400 mm): PTH pad 2 [/SEG_DP] of R8
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(136.0200 mm, 103.0700 mm): Reference field of R6
+    @(136.7500 mm, 104.3400 mm): PTH pad 2 [/SEG_G] of R7
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(136.0200 mm, 103.0700 mm): Reference field of R6
+    @(136.7500 mm, 101.8000 mm): PTH pad 1 [/SR_G] of R7
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(137.2700 mm, 136.1400 mm): Reference field of Q5
+    @(137.2700 mm, 135.8400 mm): PTH pad 2 [/HAPTIC_BASE] of R13
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(142.7700 mm, 134.5700 mm): Reference field of R18
     @(143.5000 mm, 135.8400 mm): PTH pad 2 [/GND] of R19
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
@@ -337,88 +561,32 @@
     @(145.4800 mm, 123.2400 mm): PTH pad 5 [/SCL] of U1
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(142.3700 mm, 128.0700 mm): Reference field of R16
-    @(143.2000 mm, 126.9000 mm): PTH pad 1 [/VBUS] of D1
+    @(120.5200 mm, 103.0700 mm): Reference field of R1
+    @(121.2500 mm, 101.8000 mm): PTH pad 1 [/SR_B] of R2
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(142.7700 mm, 134.5700 mm): Reference field of R18
-    @(143.5000 mm, 133.3000 mm): PTH pad 1 [/VBAT_SENSE] of R19
+    @(117.4200 mm, 103.0700 mm): Reference field of R23
+    @(118.1500 mm, 101.8000 mm): PTH pad 1 [/SR_A] of R1
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(115.2700 mm, 136.1400 mm): Reference field of Q1
-    @(115.2700 mm, 135.8400 mm): PTH pad 2 [/DIG1_BASE] of R9
+    @(117.4200 mm, 103.0700 mm): Reference field of R23
+    @(118.1500 mm, 104.3400 mm): PTH pad 2 [/SEG_A] of R1
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(121.3700 mm, 128.0700 mm): Reference field of R20
-    @(122.1000 mm, 129.3400 mm): PTH pad 2 [/SR_OE] of R17
+    @(120.5200 mm, 103.0700 mm): Reference field of R1
+    @(121.2500 mm, 104.3400 mm): PTH pad 2 [/SEG_B] of R2
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(114.5000 mm, 124.8000 mm): Reference field of R21
-    @(114.9000 mm, 124.6200 mm): PTH pad 3 [/DIG4_DRV] of U3
+    @(123.6200 mm, 103.0700 mm): Reference field of R2
+    @(124.3500 mm, 104.3400 mm): PTH pad 2 [/SEG_C] of R3
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(109.2500 mm, 124.9500 mm): Reference field of C3
-    @(109.8200 mm, 124.6200 mm): PTH pad 5 [/LED_G_DRV] of U3
+    @(123.6200 mm, 103.0700 mm): Reference field of R2
+    @(124.3500 mm, 101.8000 mm): PTH pad 1 [/SR_C] of R3
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(136.1700 mm, 128.0700 mm): Reference field of R14
-    @(136.9000 mm, 129.3400 mm): PTH pad 2 [/LED_G_A] of R15
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(139.2700 mm, 128.0700 mm): Reference field of R15
-    @(140.0000 mm, 126.8000 mm): PTH pad 1 [/LED_B_DRV] of R16
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(139.1200 mm, 103.0700 mm): Reference field of R7
-    @(139.8500 mm, 104.3400 mm): PTH pad 2 [/SEG_DP] of R8
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(132.9200 mm, 103.0700 mm): Reference field of R5
-    @(133.6500 mm, 104.3400 mm): PTH pad 2 [/SEG_F] of R6
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(136.0200 mm, 103.0700 mm): Reference field of R6
-    @(136.7500 mm, 104.3400 mm): PTH pad 2 [/SEG_G] of R7
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(139.6400 mm, 134.5700 mm): Reference field of R13
-    @(140.4000 mm, 133.3000 mm): PTH pad 1 [/VBAT] of R18
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(139.2700 mm, 128.0700 mm): Reference field of R15
-    @(140.0000 mm, 129.3400 mm): PTH pad 2 [/LED_B_A] of R16
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(136.1700 mm, 128.0700 mm): Reference field of R14
-    @(136.9000 mm, 126.8000 mm): PTH pad 1 [/LED_G_DRV] of R15
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(129.8200 mm, 103.0700 mm): Reference field of R4
-    @(130.5500 mm, 104.3400 mm): PTH pad 2 [/SEG_E] of R5
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(132.9200 mm, 103.0700 mm): Reference field of R5
-    @(133.6500 mm, 101.8000 mm): PTH pad 1 [/SR_F] of R6
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(136.0200 mm, 103.0700 mm): Reference field of R6
-    @(136.7500 mm, 101.8000 mm): PTH pad 1 [/SR_G] of R7
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(126.7200 mm, 103.0700 mm): Reference field of R3
-    @(127.4500 mm, 101.8000 mm): PTH pad 1 [/SR_D] of R4
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(129.8200 mm, 103.0700 mm): Reference field of R4
-    @(130.5500 mm, 101.8000 mm): PTH pad 1 [/SR_E] of R5
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(126.7200 mm, 103.0700 mm): Reference field of R3
-    @(127.4500 mm, 104.3400 mm): PTH pad 2 [/SEG_D] of R4
-[silk_over_copper]: Silkscreen clipped by solder mask
-    Local override; warning
-    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
-    @(117.4400 mm, 124.6200 mm): PTH pad 2 [/DIG3_DRV] of U3
+    @(114.3200 mm, 103.0700 mm): Reference field of R22
+    @(115.0500 mm, 104.3400 mm): PTH pad 2 [/SCL] of R23
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
@@ -426,11 +594,15 @@
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
-    @(114.9000 mm, 124.6200 mm): PTH pad 3 [/DIG4_DRV] of U3
+    @(117.4400 mm, 124.6200 mm): PTH pad 2 [/DIG3_DRV] of U3
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
     @(104.7400 mm, 124.6200 mm): PTH pad 7 [/HAPTIC_DRV] of U3
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
+    @(114.9000 mm, 124.6200 mm): PTH pad 3 [/DIG4_DRV] of U3
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(103.7300 mm, 125.1200 mm): Segment of DS1 on F.Silkscreen
@@ -445,60 +617,108 @@
     @(107.2800 mm, 124.6200 mm): PTH pad 6 [/LED_B_DRV] of U3
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(140.4300 mm, 102.6700 mm): Reference field of J4
-    @(139.8500 mm, 101.8000 mm): PTH pad 1 [/SR_DP] of R8
+    @(126.7200 mm, 103.0700 mm): Reference field of R3
+    @(127.4500 mm, 104.3400 mm): PTH pad 2 [/SEG_D] of R4
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(120.5200 mm, 103.0700 mm): Reference field of R1
-    @(121.2500 mm, 104.3400 mm): PTH pad 2 [/SEG_B] of R2
+    @(126.7200 mm, 103.0700 mm): Reference field of R3
+    @(127.4500 mm, 101.8000 mm): PTH pad 1 [/SR_D] of R4
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(120.5200 mm, 103.0700 mm): Reference field of R1
-    @(121.2500 mm, 101.8000 mm): PTH pad 1 [/SR_B] of R2
+    @(132.9200 mm, 103.0700 mm): Reference field of R5
+    @(133.6500 mm, 104.3400 mm): PTH pad 2 [/SEG_F] of R6
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(123.6200 mm, 103.0700 mm): Reference field of R2
-    @(124.3500 mm, 104.3400 mm): PTH pad 2 [/SEG_C] of R3
+    @(132.9200 mm, 103.0700 mm): Reference field of R5
+    @(133.6500 mm, 101.8000 mm): PTH pad 1 [/SR_F] of R6
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(123.6200 mm, 103.0700 mm): Reference field of R2
-    @(124.3500 mm, 101.8000 mm): PTH pad 1 [/SR_C] of R3
+    @(129.8200 mm, 103.0700 mm): Reference field of R4
+    @(130.5500 mm, 101.8000 mm): PTH pad 1 [/SR_E] of R5
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(149.3500 mm, 103.0500 mm): Reference field of C4
-    @(148.2800 mm, 103.9400 mm): PTH pad 6 [/AIN] of J4
+    @(129.8200 mm, 103.0700 mm): Reference field of R4
+    @(130.5500 mm, 104.3400 mm): PTH pad 2 [/SEG_E] of R5
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(142.2200 mm, 103.0700 mm): Reference field of R8
-    @(143.2000 mm, 103.9400 mm): PTH pad 2 [/+3V3] of J4
+    @(114.3200 mm, 103.0700 mm): Reference field of R22
+    @(115.0500 mm, 101.8000 mm): PTH pad 1 [/+3V3] of R23
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(142.2200 mm, 103.0700 mm): Reference field of R8
-    @(143.2000 mm, 101.4000 mm): PTH pad 1 [/GND] of J4
+    @(120.7700 mm, 136.1400 mm): Reference field of Q2
+    @(120.7700 mm, 135.8400 mm): PTH pad 2 [/DIG2_BASE] of R10
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(104.2500 mm, 124.9500 mm): Reference field of C2
-    @(104.7400 mm, 124.6200 mm): PTH pad 7 [/HAPTIC_DRV] of U3
+    @(115.2700 mm, 136.1400 mm): Reference field of Q1
+    @(115.2700 mm, 135.8400 mm): PTH pad 2 [/DIG1_BASE] of R9
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(126.2700 mm, 136.1400 mm): Reference field of Q3
+    @(126.2700 mm, 135.8400 mm): PTH pad 2 [/DIG3_BASE] of R11
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(131.7700 mm, 136.1400 mm): Reference field of Q4
+    @(131.7700 mm, 135.8400 mm): PTH pad 2 [/DIG4_BASE] of R12
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(109.2500 mm, 124.9500 mm): Reference field of C3
+    @(109.8200 mm, 124.6200 mm): PTH pad 5 [/LED_G_DRV] of U3
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(102.6500 mm, 123.1200 mm): Reference field of DS1
     @(102.2000 mm, 124.6200 mm): PTH pad 8 [/GND] of U3
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
+    @(104.2500 mm, 124.9500 mm): Reference field of C2
+    @(104.7400 mm, 124.6200 mm): PTH pad 7 [/HAPTIC_DRV] of U3
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(114.5000 mm, 124.8000 mm): Reference field of R21
+    @(114.9000 mm, 124.6200 mm): PTH pad 3 [/DIG4_DRV] of U3
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(121.3700 mm, 128.0700 mm): Reference field of R20
+    @(122.1000 mm, 129.3400 mm): PTH pad 2 [/SR_OE] of R17
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
     @(121.3700 mm, 128.0700 mm): Reference field of R20
     @(122.1000 mm, 126.8000 mm): PTH pad 1 [/+3V3] of R17
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(137.2700 mm, 136.1400 mm): Reference field of Q5
-    @(137.2700 mm, 135.8400 mm): PTH pad 2 [/HAPTIC_BASE] of R13
+    @(142.5700 mm, 137.1736 mm): Reference field of D2
+    @(143.5000 mm, 135.8400 mm): PTH pad 2 [/GND] of R19
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(142.7700 mm, 134.5700 mm): Reference field of R18
+    @(143.5000 mm, 133.3000 mm): PTH pad 1 [/VBAT_SENSE] of R19
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(142.3700 mm, 128.0700 mm): Reference field of R16
+    @(143.2000 mm, 126.9000 mm): PTH pad 1 [/VBUS] of D1
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(139.6400 mm, 134.5700 mm): Reference field of R13
     @(140.4000 mm, 135.8400 mm): PTH pad 2 [/VBAT_SENSE] of R18
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(142.7700 mm, 134.5700 mm): Reference field of R18
-    @(143.5000 mm, 135.8400 mm): PTH pad 2 [/GND] of R19
+    @(139.6400 mm, 134.5700 mm): Reference field of R13
+    @(140.4000 mm, 133.3000 mm): PTH pad 1 [/VBAT] of R18
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(139.2700 mm, 128.0700 mm): Reference field of R15
+    @(140.0000 mm, 129.3400 mm): PTH pad 2 [/LED_B_A] of R16
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(139.2700 mm, 128.0700 mm): Reference field of R15
+    @(140.0000 mm, 126.8000 mm): PTH pad 1 [/LED_B_DRV] of R16
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(136.1700 mm, 128.0700 mm): Reference field of R14
+    @(136.9000 mm, 126.8000 mm): PTH pad 1 [/LED_G_DRV] of R15
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(136.1700 mm, 128.0700 mm): Reference field of R14
+    @(136.9000 mm, 129.3400 mm): PTH pad 2 [/LED_G_A] of R15
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
     @(122.6200 mm, 119.3100 mm): Segment of J1 on B.Silkscreen
@@ -513,12 +733,28 @@
     @(145.7400 mm, 106.2000 mm): PCB text 'ACCESSORY' on B.Silkscreen
 [silk_overlap]: Silkscreen clearance
     Rule: board setup constraints silk; warning
-    @(153.1000 mm, 110.3000 mm): Footprint text of U1 (GND)
     @(159.0100 mm, 120.1200 mm): Rectangle of U1 on B.Silkscreen
+    @(153.1000 mm, 110.3000 mm): Footprint text of U1 (GND)
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
-    @(129.0000 mm, 136.5000 mm): PCB text 'BATTERY SIDE' on B.Silkscreen
-    @(126.2700 mm, 135.8400 mm): PTH pad 2 [/DIG3_BASE] of R11
+    @(102.2000 mm, 115.8100 mm): PCB text '8' on B.Silkscreen
+    @(102.2000 mm, 114.6200 mm): PTH pad 8 [/GND] of U2
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(102.2000 mm, 115.8100 mm): PCB text '8' on B.Silkscreen
+    @(102.2000 mm, 117.0000 mm): PTH pad 9 [unconnected-(U3-QH'-Pad9)] of U3
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(119.9800 mm, 126.0700 mm): PCB text '1' on B.Silkscreen
+    @(119.0000 mm, 126.8000 mm): PTH pad 1 [/LDR_SENSE] of R20
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(119.9800 mm, 115.8100 mm): PCB text '1' on B.Silkscreen
+    @(119.9800 mm, 117.0000 mm): PTH pad 16 [/+3V3] of U3
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
+    @(119.9800 mm, 115.8100 mm): PCB text '1' on B.Silkscreen
+    @(119.9800 mm, 114.6200 mm): PTH pad 1 [/SR_B] of U2
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
     @(124.0000 mm, 122.9600 mm): Reference field of J1
@@ -537,6 +773,10 @@
     @(131.7700 mm, 135.8400 mm): PTH pad 2 [/DIG4_BASE] of R12
 [silk_over_copper]: Silkscreen clipped by solder mask
     Local override; warning
+    @(129.0000 mm, 136.5000 mm): PCB text 'BATTERY SIDE' on B.Silkscreen
+    @(126.2700 mm, 135.8400 mm): PTH pad 2 [/DIG3_BASE] of R11
+[silk_over_copper]: Silkscreen clipped by solder mask
+    Local override; warning
     @(158.0100 mm, 124.6200 mm): Rectangle of U1 on B.Silkscreen
     @(135.3500 mm, 107.8800 mm): PTH pad 7 [/SEG_B] of DS1
 [silk_over_copper]: Silkscreen clipped by solder mask
@@ -544,403 +784,7 @@
     @(158.0100 mm, 124.6200 mm): Rectangle of U1 on B.Silkscreen
     @(135.3500 mm, 123.1200 mm): PTH pad 6 [/DIG4] of DS1
 
-** Found 99 unconnected pads **
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(102.2000 mm, 114.6200 mm): PTH pad 8 [/GND] of U2
-    @(102.2000 mm, 124.6200 mm): PTH pad 8 [/GND] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(104.5000 mm, 136.9000 mm): PTH pad 2 [/GND] of SW1
-    @(111.0000 mm, 136.9000 mm): PTH pad 2 [/GND] of SW1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(105.5000 mm, 127.0000 mm): PTH pad 2 [/GND] of C2
-    @(102.2000 mm, 124.6200 mm): PTH pad 8 [/GND] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(105.5000 mm, 127.0000 mm): PTH pad 2 [/GND] of C2
-    @(110.5000 mm, 127.0000 mm): PTH pad 2 [/GND] of C3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(110.0000 mm, 103.0000 mm): PTH pad 2 [/GND] of C1
-    @(102.2000 mm, 114.6200 mm): PTH pad 8 [/GND] of U2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(110.5000 mm, 127.0000 mm): PTH pad 2 [/GND] of C3
-    @(111.0000 mm, 136.9000 mm): PTH pad 2 [/GND] of SW1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(114.0000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q1
-    @(111.0000 mm, 136.9000 mm): PTH pad 2 [/GND] of SW1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(114.0000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q1
-    @(119.5000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(119.0000 mm, 129.3400 mm): PTH pad 2 [/GND] of R20
-    @(110.5000 mm, 127.0000 mm): PTH pad 2 [/GND] of C3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(119.5000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q2
-    @(125.0000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(124.0000 mm, 110.4200 mm): PTH pad 5 [/GND] of J1
-    @(110.0000 mm, 103.0000 mm): PTH pad 2 [/GND] of C1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(128.3650 mm, 128.5000 mm): PTH pad 2 [/GND] of D3
-    @(119.0000 mm, 129.3400 mm): PTH pad 2 [/GND] of R20
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(130.5000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q4
-    @(125.0000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(136.0000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q5
-    @(130.5000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(136.0000 mm, 139.7000 mm): PTH pad 1 [/GND] of Q5
-    @(143.5000 mm, 135.8400 mm): PTH pad 2 [/GND] of R19
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(143.2000 mm, 101.4000 mm): PTH pad 1 [/GND] of J4
-    @(124.0000 mm, 110.4200 mm): PTH pad 5 [/GND] of J1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(143.5000 mm, 135.8400 mm): PTH pad 2 [/GND] of R19
-    @(147.0000 mm, 136.9000 mm): PTH pad 2 [/GND] of SW2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(147.0000 mm, 136.9000 mm): PTH pad 2 [/GND] of SW2
-    @(153.5000 mm, 136.9000 mm): PTH pad 2 [/GND] of SW2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(148.2800 mm, 142.3000 mm): PTH pad 1 [/GND] of J2
-    @(147.0000 mm, 136.9000 mm): PTH pad 2 [/GND] of SW2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(153.1000 mm, 108.0000 mm): PTH pad 15 [/GND] of U1
-    @(143.2000 mm, 101.4000 mm): PTH pad 1 [/GND] of J4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(137.2700 mm, 135.8400 mm): PTH pad 2 [/HAPTIC_BASE] of R13
-    @(137.2700 mm, 139.7000 mm): PTH pad 2 [/HAPTIC_BASE] of Q5
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(138.5400 mm, 139.7000 mm): PTH pad 3 [/MOTOR_N] of Q5
-    @(107.0000 mm, 142.0000 mm): PTH pad 2 [/MOTOR_N] of J3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(143.8400 mm, 139.5000 mm): PTH pad 2 [/MOTOR_N] of D2
-    @(138.5400 mm, 139.7000 mm): PTH pad 3 [/MOTOR_N] of Q5
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(107.2800 mm, 114.6200 mm): PTH pad 6 [/SR_G] of U2
-    @(136.7500 mm, 101.8000 mm): PTH pad 1 [/SR_G] of R7
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(132.8100 mm, 123.1200 mm): PTH pad 5 [/SEG_G] of DS1
-    @(136.7500 mm, 104.3400 mm): PTH pad 2 [/SEG_G] of R7
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(114.9000 mm, 124.6200 mm): PTH pad 3 [/DIG4_DRV] of U3
-    @(131.7700 mm, 133.3000 mm): PTH pad 1 [/DIG4_DRV] of R12
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(131.7700 mm, 135.8400 mm): PTH pad 2 [/DIG4_BASE] of R12
-    @(131.7700 mm, 139.7000 mm): PTH pad 2 [/DIG4_BASE] of Q4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(133.0400 mm, 139.7000 mm): PTH pad 3 [/DIG4] of Q4
-    @(135.3500 mm, 123.1200 mm): PTH pad 6 [/DIG4] of DS1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(115.2700 mm, 133.3000 mm): PTH pad 1 [/DIG1_DRV] of R9
-    @(117.4400 mm, 117.0000 mm): PTH pad 15 [/DIG1_DRV] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(115.2700 mm, 135.8400 mm): PTH pad 2 [/DIG1_BASE] of R9
-    @(115.2700 mm, 139.7000 mm): PTH pad 2 [/DIG1_BASE] of Q1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(116.5400 mm, 139.7000 mm): PTH pad 3 [/DIG1] of Q1
-    @(122.6500 mm, 107.8800 mm): PTH pad 12 [/DIG1] of DS1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(104.5000 mm, 132.4000 mm): PTH pad 1 [/BTN_MODE] of SW1
-    @(111.0000 mm, 132.4000 mm): PTH pad 1 [/BTN_MODE] of SW1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(111.0000 mm, 132.4000 mm): PTH pad 1 [/BTN_MODE] of SW1
-    @(145.4800 mm, 108.0000 mm): PTH pad 12 [/BTN_MODE] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(112.3600 mm, 124.6200 mm): PTH pad 4 [/LED_R_DRV] of U3
-    @(133.8000 mm, 126.8000 mm): PTH pad 1 [/LED_R_DRV] of R14
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(127.0950 mm, 128.5000 mm): PTH pad 1 [/LED_R_A] of D3
-    @(133.8000 mm, 129.3400 mm): PTH pad 2 [/LED_R_A] of R14
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(103.0000 mm, 127.0000 mm): PTH pad 1 [/+3V3] of C2
-    @(104.7400 mm, 117.0000 mm): PTH pad 10 [/+3V3] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(103.0000 mm, 127.0000 mm): PTH pad 1 [/+3V3] of C2
-    @(109.5400 mm, 142.0000 mm): PTH pad 1 [/+3V3] of J3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(104.7400 mm, 107.0000 mm): PTH pad 10 [/+3V3] of U2
-    @(104.7400 mm, 117.0000 mm): PTH pad 10 [/+3V3] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(107.5000 mm, 103.0000 mm): PTH pad 1 [/+3V3] of C1
-    @(104.7400 mm, 107.0000 mm): PTH pad 10 [/+3V3] of U2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(107.5000 mm, 103.0000 mm): PTH pad 1 [/+3V3] of C1
-    @(119.9800 mm, 107.0000 mm): PTH pad 16 [/+3V3] of U2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(119.9800 mm, 117.0000 mm): PTH pad 16 [/+3V3] of U3
-    @(119.9800 mm, 107.0000 mm): PTH pad 16 [/+3V3] of U2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(122.1000 mm, 126.8000 mm): PTH pad 1 [/+3V3] of R17
-    @(124.0000 mm, 120.5800 mm): PTH pad 1 [/+3V3] of J1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(122.1000 mm, 126.8000 mm): PTH pad 1 [/+3V3] of R17
-    @(141.3000 mm, 139.5000 mm): PTH pad 1 [/+3V3] of D2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(124.0000 mm, 120.5800 mm): PTH pad 1 [/+3V3] of J1
-    @(119.9800 mm, 117.0000 mm): PTH pad 16 [/+3V3] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(143.2000 mm, 103.9400 mm): PTH pad 2 [/+3V3] of J4
-    @(119.9800 mm, 107.0000 mm): PTH pad 16 [/+3V3] of U2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(150.5600 mm, 108.0000 mm): PTH pad 14 [/+3V3] of U1
-    @(143.2000 mm, 103.9400 mm): PTH pad 2 [/+3V3] of J4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(104.7400 mm, 124.6200 mm): PTH pad 7 [/HAPTIC_DRV] of U3
-    @(137.2700 mm, 133.3000 mm): PTH pad 1 [/HAPTIC_DRV] of R13
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(116.2000 mm, 127.7000 mm): PTH pad 2 [/LDR_SENSE] of R21
-    @(119.0000 mm, 126.8000 mm): PTH pad 1 [/LDR_SENSE] of R20
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(119.0000 mm, 126.8000 mm): PTH pad 1 [/LDR_SENSE] of R20
-    @(140.4000 mm, 108.0000 mm): PTH pad 10 [/LDR_SENSE] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(112.8000 mm, 127.7000 mm): PTH pad 1 [/LDR_PWR] of R21
-    @(137.8600 mm, 123.2400 mm): PTH pad 8 [/LDR_PWR] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(137.8600 mm, 123.2400 mm): PTH pad 8 [/LDR_PWR] of U1
-    @(148.2800 mm, 101.4000 mm): PTH pad 5 [/LDR_PWR] of J4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(112.3600 mm, 114.6200 mm): PTH pad 4 [/SR_E] of U2
-    @(130.5500 mm, 101.8000 mm): PTH pad 1 [/SR_E] of R5
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(122.6500 mm, 123.1200 mm): PTH pad 1 [/SEG_E] of DS1
-    @(130.5500 mm, 104.3400 mm): PTH pad 2 [/SEG_E] of R5
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(117.4400 mm, 114.6200 mm): PTH pad 2 [/SR_C] of U2
-    @(124.3500 mm, 101.8000 mm): PTH pad 1 [/SR_C] of R3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(124.3500 mm, 104.3400 mm): PTH pad 2 [/SEG_C] of R3
-    @(130.2700 mm, 123.1200 mm): PTH pad 4 [/SEG_C] of DS1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(117.4400 mm, 124.6200 mm): PTH pad 2 [/DIG3_DRV] of U3
-    @(126.2700 mm, 133.3000 mm): PTH pad 1 [/DIG3_DRV] of R11
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(126.2700 mm, 135.8400 mm): PTH pad 2 [/DIG3_BASE] of R11
-    @(126.2700 mm, 139.7000 mm): PTH pad 2 [/DIG3_BASE] of Q3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(127.5400 mm, 139.7000 mm): PTH pad 3 [/DIG3] of Q3
-    @(132.8100 mm, 107.8800 mm): PTH pad 8 [/DIG3] of DS1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(109.8200 mm, 124.6200 mm): PTH pad 5 [/LED_G_DRV] of U3
-    @(136.9000 mm, 126.8000 mm): PTH pad 1 [/LED_G_DRV] of R15
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(129.6350 mm, 128.5000 mm): PTH pad 3 [/LED_G_A] of D3
-    @(136.9000 mm, 129.3400 mm): PTH pad 2 [/LED_G_A] of R15
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(143.2000 mm, 126.9000 mm): PTH pad 1 [/VBUS] of D1
-    @(155.6400 mm, 108.0000 mm): PTH pad 16 [/VBUS] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(140.4000 mm, 133.3000 mm): PTH pad 1 [/VBAT] of R18
-    @(145.7400 mm, 142.3000 mm): PTH pad 2 [/VBAT] of J2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(145.7400 mm, 126.9000 mm): PTH pad 2 [/VBAT] of D1
-    @(140.4000 mm, 133.3000 mm): PTH pad 1 [/VBAT] of R18
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(148.2800 mm, 103.9400 mm): PTH pad 6 [/AIN] of J4
-    @(151.4000 mm, 104.3000 mm): PTH pad 1 [/AIN] of C4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(108.0000 mm, 127.0000 mm): PTH pad 1 [/VBAT_SENSE] of C3
-    @(140.4000 mm, 135.8400 mm): PTH pad 2 [/VBAT_SENSE] of R18
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(137.8600 mm, 108.0000 mm): PTH pad 9 [/VBAT_SENSE] of U1
-    @(143.5000 mm, 133.3000 mm): PTH pad 1 [/VBAT_SENSE] of R19
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(140.4000 mm, 135.8400 mm): PTH pad 2 [/VBAT_SENSE] of R18
-    @(143.5000 mm, 133.3000 mm): PTH pad 1 [/VBAT_SENSE] of R19
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(151.4000 mm, 101.8000 mm): PTH pad 2 [/VBAT_SENSE] of C4
-    @(137.8600 mm, 108.0000 mm): PTH pad 9 [/VBAT_SENSE] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(130.9050 mm, 128.5000 mm): PTH pad 4 [/LED_B_A] of D3
-    @(140.0000 mm, 129.3400 mm): PTH pad 2 [/LED_B_A] of R16
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(125.1900 mm, 123.1200 mm): PTH pad 2 [/SEG_D] of DS1
-    @(127.4500 mm, 104.3400 mm): PTH pad 2 [/SEG_D] of R4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(127.7300 mm, 123.1200 mm): PTH pad 3 [/SEG_DP] of DS1
-    @(139.8500 mm, 104.3400 mm): PTH pad 2 [/SEG_DP] of R8
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(121.2500 mm, 104.3400 mm): PTH pad 2 [/SEG_B] of R2
-    @(135.3500 mm, 107.8800 mm): PTH pad 7 [/SEG_B] of DS1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(122.0400 mm, 139.7000 mm): PTH pad 3 [/DIG2] of Q2
-    @(130.2700 mm, 107.8800 mm): PTH pad 9 [/DIG2] of DS1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(127.7300 mm, 107.8800 mm): PTH pad 10 [/SEG_F] of DS1
-    @(133.6500 mm, 104.3400 mm): PTH pad 2 [/SEG_F] of R6
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(118.1500 mm, 104.3400 mm): PTH pad 2 [/SEG_A] of R1
-    @(125.1900 mm, 107.8800 mm): PTH pad 11 [/SEG_A] of DS1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(119.9800 mm, 124.6200 mm): PTH pad 1 [/DIG2_DRV] of U3
-    @(120.7700 mm, 133.3000 mm): PTH pad 1 [/DIG2_DRV] of R10
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(120.7700 mm, 135.8400 mm): PTH pad 2 [/DIG2_BASE] of R10
-    @(120.7700 mm, 139.7000 mm): PTH pad 2 [/DIG2_BASE] of Q2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(119.9800 mm, 114.6200 mm): PTH pad 1 [/SR_B] of U2
-    @(121.2500 mm, 101.8000 mm): PTH pad 1 [/SR_B] of R2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(117.4400 mm, 107.0000 mm): PTH pad 15 [/SR_A] of U2
-    @(118.1500 mm, 101.8000 mm): PTH pad 1 [/SR_A] of R1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(109.8200 mm, 114.6200 mm): PTH pad 5 [/SR_F] of U2
-    @(133.6500 mm, 101.8000 mm): PTH pad 1 [/SR_F] of R6
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(124.0000 mm, 118.0400 mm): PTH pad 2 [/SDA] of J1
-    @(148.0200 mm, 123.2400 mm): PTH pad 4 [/SDA] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(148.0200 mm, 123.2400 mm): PTH pad 4 [/SDA] of U1
-    @(145.7400 mm, 101.4000 mm): PTH pad 3 [/SDA] of J4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(124.0000 mm, 115.5000 mm): PTH pad 3 [/SCL] of J1
-    @(145.4800 mm, 123.2400 mm): PTH pad 5 [/SCL] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(145.4800 mm, 123.2400 mm): PTH pad 5 [/SCL] of U1
-    @(145.7400 mm, 103.9400 mm): PTH pad 4 [/SCL] of J4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(112.3600 mm, 107.0000 mm): PTH pad 13 [/SR_OE] of U2
-    @(112.3600 mm, 117.0000 mm): PTH pad 13 [/SR_OE] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(112.3600 mm, 117.0000 mm): PTH pad 13 [/SR_OE] of U3
-    @(122.1000 mm, 129.3400 mm): PTH pad 2 [/SR_OE] of R17
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(122.1000 mm, 129.3400 mm): PTH pad 2 [/SR_OE] of R17
-    @(140.4000 mm, 123.2400 mm): PTH pad 7 [/SR_OE] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(104.7400 mm, 114.6200 mm): PTH pad 7 [/SR_DP] of U2
-    @(139.8500 mm, 101.8000 mm): PTH pad 1 [/SR_DP] of R8
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(114.9000 mm, 114.6200 mm): PTH pad 3 [/SR_D] of U2
-    @(127.4500 mm, 101.8000 mm): PTH pad 1 [/SR_D] of R4
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(107.2800 mm, 124.6200 mm): PTH pad 6 [/LED_B_DRV] of U3
-    @(140.0000 mm, 126.8000 mm): PTH pad 1 [/LED_B_DRV] of R16
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(147.0000 mm, 132.4000 mm): PTH pad 1 [/BTN_SET] of SW2
-    @(153.5000 mm, 132.4000 mm): PTH pad 1 [/BTN_SET] of SW2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(148.0200 mm, 108.0000 mm): PTH pad 13 [/BTN_SET] of U1
-    @(147.0000 mm, 132.4000 mm): PTH pad 1 [/BTN_SET] of SW2
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(143.2000 mm, 142.3000 mm): PTH pad 3 [/CHRG] of J2
-    @(155.6400 mm, 123.2400 mm): PTH pad 1 [/CHRG] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(102.2000 mm, 107.0000 mm): PTH pad 9 [/SR_CHAIN] of U2
-    @(114.9000 mm, 117.0000 mm): PTH pad 14 [/SR_CHAIN] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(107.2800 mm, 107.0000 mm): PTH pad 11 [/SR_CLK] of U2
-    @(107.2800 mm, 117.0000 mm): PTH pad 11 [/SR_CLK] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(107.2800 mm, 117.0000 mm): PTH pad 11 [/SR_CLK] of U3
-    @(150.5600 mm, 123.2400 mm): PTH pad 3 [/SR_CLK] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(109.8200 mm, 107.0000 mm): PTH pad 12 [/SR_LATCH] of U2
-    @(109.8200 mm, 117.0000 mm): PTH pad 12 [/SR_LATCH] of U3
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(109.8200 mm, 117.0000 mm): PTH pad 12 [/SR_LATCH] of U3
-    @(142.9400 mm, 123.2400 mm): PTH pad 6 [/SR_LATCH] of U1
-[unconnected_items]: Missing connection between items
-    Local override; error
-    @(114.9000 mm, 107.0000 mm): PTH pad 14 [/SR_DATA] of U2
-    @(153.1000 mm, 123.2400 mm): PTH pad 2 [/SR_DATA] of U1
+** Found 0 unconnected pads **
 
 ** Found 0 Footprint errors **
 
