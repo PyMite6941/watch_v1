@@ -53,7 +53,7 @@ Work lowest parts first so the board lies flat.
 | 4 | Front | Diodes D1, D2 | The band (cathode) matches the printed band. |
 | 5 | Front | Capacitors C1–C4 | Either way round. |
 | 6 | Front | Transistors Q1–Q5 | Flat side matches the outline (flat faces the bottom edge). `EBC` is printed under each one: emitter, base, collector, left to right. |
-| 7 | Front | LDR R21, RGB LED D3 | `RKGB` is printed under the LED: red, cathode, green, blue, left to right — the longest leg goes in the second hole (K). Thread the legs through the printed **LED spacer** (`led_spacer.stl`, 3 mm) and push the LED down onto it, standing straight up: that puts its tip exactly where the lid's light dome expects it. Leave the spacer in. Stand the LDR about 8 mm tall. Keep R14 and R17 (either side of the LED) no taller than 9 mm, because the dome's ring passes just above them. |
+| 7 | Front | LDR R21, RGB LED D3 | `RKGB` is printed under the LED: red, cathode, green, blue, left to right — the longest leg goes in the second hole (K). Thread the legs through the printed **LED spacer** (`led_spacer.stl`, 3 mm) and push the LED down onto it, standing straight up: that puts its tip exactly where the lid's light dome expects it. Leave the spacer in. Stand the LDR about 8 mm tall. Keep R14 and R17 (either side of the LED) no taller than 9 mm, because the dome's ring passes just above them. R11 and R12 stand about 0.5 mm from the LED's rim: solder them straight up, not leaning towards it. |
 | 8 | Front | Switches SW1, SW2 | They click in. |
 | 9 | Front | J4 accessory socket | Hold it square while tacking one pin. Pin 1 is the square pad, with a `1` printed beside it. |
 | 10 | — | **Stop and test** (section 4) | |

@@ -77,9 +77,6 @@ for i in range(8):
 for i in range(5):
     PLACE[f"Q{i + 1}"] = (TOP, 0, 14.0 + 5.5 * i, 39.7)
     PLACE[f"R{9 + i}"] = (TOP, 270, 15.27 + 5.5 * i, 33.3)
-# R11 and R12 step sideways out of the way of the RGB LED's courtyard (D3 at y 29.5)
-PLACE["R11"] = (TOP, 270, 24.1, 33.3)
-PLACE["R12"] = (TOP, 270, 33.9, 33.3)
 for i, (hx, hy) in enumerate(HOLES):
     PLACE[f"H{i + 1}"] = (TOP, 0, hx, hy)
 
