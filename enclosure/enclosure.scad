@@ -26,7 +26,8 @@
  * millimetres from the board's top-left corner, looking at the display side.
  */
 
-part = "assembly";   // "base", "lid", "plate" (both, ready to print), "assembly", "fit_test"
+part = "assembly";   // "base", "lid", "plate" (both, ready to print), "assembly", "fit_test",
+                     // "led_dome", "led_spacer", "led_parts" (both LED pieces, ready to print)
 
 /* [PCB - must match the KiCad board] */
 pcb = [58, 44, 1.6];
@@ -34,7 +35,7 @@ pcb_holes = [[3, 3], [55, 3], [3, 41], [55, 41]];
 display_center = [29, 15.5];
 display_size = [50.3, 19.0];
 button_centers = [[7.75, 34.65], [50.25, 34.65]];
-led_center = [29, 28.5];
+led_center = [29, 29.5];
 ldr_center = [14.5, 27.7];
 usb_center_y = 15.62;          // centre of the SuperMini on the right-hand edge
 accessory_center = [45.74, 2.7];   // J4, the 2x3 accessory socket
@@ -50,18 +51,36 @@ usb_below_pcb = 5.1;           // USB-C centre line below the PCB underside
 wall = 2.0;
 floor_t = 1.6;
 lid_t = 1.6;
-gap = 0.4;                     // clearance between PCB edge and wall
+gap = 0.5;                     // clearance between PCB edge and wall (PCBs are cut to +-0.2 mm)
 corner_r = 3.0;
 lip_h = 1.5;                   // lid lip that drops inside the base
 lip_t = 1.2;
-lip_gap = 0.2;
+lip_gap = 0.3;                 // lid lip to wall, each side: slides in without sanding on a typical FDM printer
 
 /* [Openings] */
 window_margin = 0.3;
 window_membrane = 0.4;         // 0 = open hole; 0.4 = two clear layers over the display
 button_hole_d = 4.2;           // 6x6x13 mm tactile switch stem is 3.5 mm
-led_hole_d = 5.4;
 ldr_hole_d = 5.5;              // 0 = no hole (fine with a clear lid)
+
+/* [RGB LED light dome: a separate small print, part "led_dome"] */
+// A hollow half-hexagon dome over the 5 mm RGB LED. Its hexagonal stem passes up
+// through a hexagonal hole in the lid with a gap all the way round; a full ring
+// (the collar) under the lid joins it to the lid all the way round the circle and is
+// clamped there, so it cannot fall out or turn. The LED stands inside the stem's
+// round bore with clearance on every side, and lights the whole dome.
+led_d = 5.0;                   // LED body
+led_bore_gap = 0.3;            // LED to bore, each side
+dome_wall = 0.6;               // stem and dome wall (a 0.4 mm nozzle prints it as 1.5 lines)
+dome_fit = 0.2;                // stem to lid hole, each side
+dome_h = 2.6;                  // how far the dome stands above the lid
+dome_top_flats = 3.6;          // across the flats of the dome's flat top
+dome_top_t = 1.0;              // light-spreading thickness over the LED
+collar_t = 0.8;
+collar_d = 11.0;               // the ring under the lid; trimmed straight on the display side
+bore_chamfer = 0.6;            // lead-in at the bore's mouth that guides the LED in
+led_tip_above_pcb = 11.6;      // where the LED's tip ends up (set by the LED spacer)
+led_body_h = 8.6;              // a standard 5 mm LED: flange to tip
 usb_cutout = [13.0, 7.5];      // wide enough for a USB-C plug's plastic body
 
 /* [Charger board: TP4056 module lying on the floor against the left-hand wall] */
@@ -112,6 +131,28 @@ echo(str("outer size: ", outer[0], " x ", outer[1], " x ", total_h, " mm"));
 
 // PCB coordinates (y down, origin top-left) -> model coordinates (y up)
 function at(p) = [wall + gap + p[0], wall + gap + pcb[1] - p[1]];
+
+// LED dome, derived. Hexagons are described across their flats; hex(f) is the
+// circumradius OpenSCAD wants for a 6-sided cylinder with flats f apart.
+function hex(f) = f / (2 * cos(30));
+led_bore_d = led_d + 2 * led_bore_gap;
+stem_flats = led_bore_d + 2 * dome_wall;
+led_hole_flats = stem_flats + 2 * dome_fit;
+led_spacer_h = led_tip_above_pcb - led_body_h;
+led_ring_d = 2 * hex(led_hole_flats) + 2.4;  // keep-out round the LED for lid patterns
+// From the LED's centre to the display window's edge: the lid between them holds the
+// collar, so the collar is trimmed 0.2 mm short of it.
+led_to_window = led_center[1] - (display_center[1] + display_size[1] / 2 + window_margin);
+collar_trim = led_to_window - 0.2;
+echo(str("LED: spacer ", led_spacer_h, " mm, lid hole ", led_hole_flats, " mm across flats, ",
+         "lid wall to the window ", led_to_window - led_hole_flats / 2, " mm, collar rim on the display side ",
+         collar_trim - led_hole_flats / 2, " mm"));
+assert(led_to_window - led_hole_flats / 2 >= 0.5, "LED hole too close to the display window");
+assert(collar_trim - led_hole_flats / 2 >= 0.3, "collar has no rim on the display side");
+assert(collar_d / 2 - hex(led_hole_flats) >= 0.8, "collar too small to hold at the hole's corners");
+assert(led_tip_above_pcb > above_pcb - collar_t, "the LED tip must reach into the dome's bore");
+assert(led_tip_above_pcb + 0.6 < above_pcb + lid_t + dome_h - dome_top_t, "the LED would touch the top of the dome");
+assert(led_spacer_h >= 0, "LED spacer would be negative: lower led_tip_above_pcb");
 
 module rounded_box(size, r) {
     hull() for (x = [r, size[0] - r], y = [r, size[1] - r])
@@ -188,7 +229,8 @@ module lid() {
             cube([display_size[0] + 2 * window_margin, display_size[1] + 2 * window_margin,
                   lip_h + 1 + lid_t - window_membrane + (window_membrane > 0 ? 0 : 1)]);
         for (b = button_centers) translate(concat(at(b), [z_wall - 1])) cylinder(d = button_hole_d, h = lid_t + 2);
-        translate(concat(at(led_center), [z_wall - 1])) cylinder(d = led_hole_d, h = lid_t + 2);
+        // hexagonal hole for the LED dome's stem (flats left-right, like the dome)
+        translate(concat(at(led_center), [z_wall - 1])) cylinder(r = hex(led_hole_flats), h = lid_t + 2, $fn = 6);
         if (ldr_hole_d > 0) translate(concat(at(ldr_center), [z_wall - 1])) cylinder(d = ldr_hole_d, h = lid_t + 2);
         // accessory socket
         if (accessory_opening[0] > 0) {
@@ -217,7 +259,7 @@ module band_area() {
     difference() {
         translate([band_x[0], band_y[0]]) square([band_x[1] - band_x[0], band_y[1] - band_y[0]]);
         for (b = button_centers) translate(at(b)) circle(d = button_hole_d + 2.4);
-        translate(at(led_center)) circle(d = led_hole_d + 2.4);
+        translate(at(led_center)) circle(d = led_ring_d);
         if (ldr_hole_d > 0) translate(at(ldr_center)) circle(d = ldr_hole_d + 2.4);
     }
 }
@@ -259,6 +301,41 @@ module base_text_2d() {
     }
 }
 
+// ------------------------------------------------------------ LED dome
+// Modelled standing on its collar (z = 0 = underside of the lid), which is also
+// how it prints: collar on the bed, no supports. Clear or translucent white
+// PETG / resin; a 0.4 mm nozzle; 0.12-0.16 mm layers make the facets crisp.
+module led_dome() {
+    stem_h = collar_t + lid_t;
+    cone_h = dome_h - dome_top_t;
+    flats_at = function(z) stem_flats - (stem_flats - dome_top_flats) * z / dome_h;
+    difference() {
+        union() {
+            intersection() {                                                      // the ring under the lid
+                cylinder(d = collar_d, h = collar_t, $fn = 64);
+                translate([-collar_d, -collar_d, -1]) cube([2 * collar_d, collar_d + collar_trim, collar_t + 2]);
+            }
+            cylinder(r = hex(stem_flats), h = stem_h + 0.01, $fn = 6);            // through the lid
+            translate([0, 0, stem_h])                                             // the half-hexagon dome
+                cylinder(r1 = hex(stem_flats), r2 = hex(dome_top_flats), h = dome_h, $fn = 6);
+        }
+        // the LED's bore, then a cone that keeps the dome's walls dome_wall thick
+        translate([0, 0, -1]) cylinder(d = led_bore_d, h = stem_h + 1.01, $fn = 48);
+        translate([0, 0, -0.01]) cylinder(d1 = led_bore_d + 2 * bore_chamfer, d2 = led_bore_d, h = bore_chamfer, $fn = 48);
+        translate([0, 0, stem_h])
+            cylinder(d1 = led_bore_d, d2 = flats_at(cone_h) - 2 * dome_wall, h = cone_h, $fn = 48);
+    }
+}
+
+// Sets the LED's height while it is soldered: the LED's flange sits on it, the legs
+// go through the slot. Leave it in place.
+module led_spacer() {
+    difference() {
+        translate([-3.3, -1.6, 0]) cube([6.6, 3.2, led_spacer_h]);
+        translate([-2.4, -0.6, -1]) cube([4.8, 1.2, led_spacer_h + 2]);
+    }
+}
+
 module lid_for_printing() {
     translate([0, outer[1], total_h]) rotate([180, 0, 0]) lid();
 }
@@ -279,8 +356,12 @@ if (part == "base") base();
 else if (part == "lid") lid_for_printing();
 else if (part == "plate") { base(); translate([0, outer[1] + 14, 0]) lid_for_printing(); }
 else if (part == "fit_test") fit_test();
+else if (part == "led_dome") led_dome();
+else if (part == "led_spacer") led_spacer();
+else if (part == "led_parts") { led_dome(); translate([collar_d / 2 + 6, 0, 0]) led_spacer(); }
 else {
     base();
     %lid();
+    translate(concat(at(led_center), [z_wall - collar_t])) color("white", 0.8) led_dome();
     color("green", 0.6) translate([wall + gap, wall + gap, z_pcb]) cube(pcb);
 }

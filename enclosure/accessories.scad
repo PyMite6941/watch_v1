@@ -14,7 +14,7 @@
 part = "all";   // [all, desk_stand, probe_sleeve, probe_plug]
 
 /* [Watch - must match enclosure.scad] */
-watch = [62.8, 48.8, 25.3];   // outer x (long), y (short, strap direction), height
+watch = [63.0, 49.0, 25.3];   // outer x (long), y (short, strap direction), height
 lug = [31, 6.2, 3.5];         // strap lug width, how far it sticks out, height (at the base)
 strap = [24, 2.5];            // strap width + clearance, thickness
 

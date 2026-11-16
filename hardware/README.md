@@ -16,7 +16,7 @@ addons/                add-on packs: the Pack Base board (routed, design-rule cl
 
 **Edit `design.py`, not the KiCad files** — anything changed by hand in the schematic or in the footprint positions is overwritten the next time the scripts run. Tracks are the exception: see below.
 
-## Current state — revision 5
+## Current state — revision 6
 
 | Check | Result |
 |---|---|

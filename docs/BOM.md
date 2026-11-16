@@ -49,6 +49,7 @@ About the charge-current resistor: on the TP4056 board, find the small resistor 
 | Qty | Part | Notes |
 |---|---|---|
 | 1 | Printed base and lid | Clear PETG or clear resin — [ORDERING.md](ORDERING.md) |
+| 1 | Printed LED dome and LED spacer | `led_dome.stl` (clear or translucent white) and `led_spacer.stl` (any colour); a few grams together |
 | 4 | M2 × 16 mm pan-head screws | Self-tap into the lid; or M2 heat-set inserts and `screw_tap_d = 3.2` |
 | 1 | 22 mm one-piece strap (NATO or hook-and-loop) | Threads through both lugs |
 

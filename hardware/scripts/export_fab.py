@@ -21,7 +21,8 @@ CLI = os.environ.get("KICAD_CLI") or shutil.which("kicad-cli") or os.path.expand
 LAYERS = "F.Cu,B.Cu,F.SilkS,B.SilkS,F.Mask,B.Mask,Edge.Cuts"
 # Cosmetic findings that are expected on this board and do not affect manufacture:
 # through-hole parts share the area under the display, and silkscreen is clipped at pads.
-IGNORED = ("pth_inside_courtyard", "silk_over_copper", "silk_overlap", "silk_edge_clearance")
+IGNORED = ("pth_inside_courtyard", "silk_over_copper", "silk_overlap", "silk_edge_clearance",
+           "lib_footprint_issues")   # only says a library is not installed on this machine; the footprints are inside the board
 
 
 def run(*args):
