@@ -4,13 +4,13 @@ Must run with KiCad's bundled Python (it needs the pcbnew module):
     "%LOCALAPPDATA%\\Programs\\KiCad\\10.0\\bin\\python.exe" gen_pcb.py [--out DIR]
 
 It places every footprint, assigns nets and draws the outline, and writes
-watch_v1.pads.json. Routing is a separate step (route.py, any Python 3), so the
-full build is:
+watch_v1.pads.json. Routing is a separate step, so the full build is:
 
     kicad-python gen_pcb.py     # place, export pad geometry
-    python route.py             # autoroute -> watch_v1.routes.json
+    kicad-python freeroute.py   # Freerouting -> watch_v1.ses (or: python route.py -> watch_v1.routes.json)
     kicad-python gen_pcb.py     # place again, this time with the tracks
 
+The GitHub workflow .github/workflows/route-board.yml does all three in the cloud.
 Routes are only applied when they were made for the current placement.
 
 Board coordinates below are millimetres from the board's top-left corner,
@@ -304,8 +304,31 @@ def check(fps):
     return ok
 
 
+def add_ses_routes(board, pads_path):
+    """Import Freerouting's session file (freeroute.py), if it belongs to this placement.
+    Returns a message, or None when there is no usable session file."""
+    ses = os.path.join(OUT_DIR, "watch_v1.ses")
+    meta = ses + ".json"
+    if not (os.path.exists(ses) and os.path.exists(meta)):
+        return None
+    with open(meta, encoding="utf-8") as f:
+        want = json.load(f)["pads_sha1"]
+    with open(pads_path, "rb") as f:
+        if hashlib.sha1(f.read()).hexdigest() != want:
+            print("watch_v1.ses is for an older placement - run freeroute.py again")
+            return None
+    if not pcbnew.ImportSpecctraSES(board, ses):
+        print("could not import watch_v1.ses")
+        return None
+    vias = sum(1 for t in board.GetTracks() if t.GetClass() == "PCB_VIA")
+    return f"routed by Freerouting: {len(board.GetTracks()) - vias} track segments, {vias} vias"
+
+
 def add_routes(board, pads_path):
-    """Add the tracks from route.py, if they belong to this placement."""
+    """Add the tracks from freeroute.py or route.py, if they belong to this placement."""
+    msg = add_ses_routes(board, pads_path)
+    if msg:
+        return msg
     routes_path = os.path.join(OUT_DIR, "watch_v1.routes.json")
     if not os.path.exists(routes_path):
         return "no routes yet - run route.py, then this script again"

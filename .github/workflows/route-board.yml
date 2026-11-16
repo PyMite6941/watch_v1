@@ -1,0 +1,107 @@
+# Routes the watch board in the cloud, so nobody needs Freerouting, Java or a big
+# computer: place -> Freerouting -> place again with the tracks -> design-rule check
+# -> Gerbers. The result is pushed to the branch "routed-board" (and kept as a
+# download on the run).
+#
+# Runs by itself when the placement changes on main, or by hand:
+# GitHub › Actions › "Route the board" › Run workflow.
+name: Route the board
+
+on:
+  workflow_dispatch:
+    inputs:
+      passes:
+        description: "Freerouting optimisation passes"
+        default: "100"
+  push:
+    branches: [main]
+    paths:
+      - hardware/scripts/design.py
+      - hardware/scripts/gen_pcb.py
+      - hardware/kicad/watch_v1.pretty/**
+
+permissions:
+  contents: write
+
+concurrency:
+  group: route-board
+  cancel-in-progress: true
+
+jobs:
+  route:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    container:
+      image: kicad/kicad:10.0.8-full
+      options: --user root
+    env:
+      KICAD_SYMBOL_DIR: /usr/share/kicad/symbols
+      KICAD_FOOTPRINT_DIR: /usr/share/kicad/footprints
+      FREEROUTING_JAR: /tmp/freerouting.jar
+      FREEROUTING_MEM: 6g
+      FREEROUTING_PASSES: ${{ inputs.passes || '100' }}
+    steps:
+      - name: Tools the KiCad image may lack
+        run: command -v git && command -v curl || (apt-get update && apt-get install -y --no-install-recommends git curl ca-certificates)
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Get Freerouting 2.5.0 (checksum-verified)
+        run: |
+          curl -fsSL -o "$FREEROUTING_JAR" https://github.com/freerouting/freerouting/releases/download/v2.5.0/freerouting-2.5.0.jar
+          echo "f6f51bb02245e8e717f9359bd260cc9c5c0b1bc0acc8b7cb2cd5b8ffeb5de3c7  $FREEROUTING_JAR" | sha256sum -c -
+
+      - name: Place (unrouted)
+        working-directory: hardware/scripts
+        run: |
+          rm -f ../kicad/watch_v1.ses ../kicad/watch_v1.ses.json ../kicad/watch_v1.routes.json
+          python3 gen_pcb.py
+
+      - name: Route with Freerouting
+        working-directory: hardware/scripts
+        run: python3 freeroute.py
+
+      - name: Place again with the tracks
+        working-directory: hardware/scripts
+        run: python3 gen_pcb.py
+
+      - name: Wiring audit
+        working-directory: hardware/scripts
+        run: python3 check_wiring.py
+
+      - name: Design-rule check and Gerbers
+        working-directory: hardware/scripts
+        run: python3 export_fab.py
+
+      - name: Keep the files on the run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: routed-board
+          path: |
+            hardware/kicad/watch_v1.kicad_pcb
+            hardware/kicad/watch_v1.ses
+            hardware/kicad/watch_v1.ses.json
+            hardware/fab/watch_v1_gerbers.zip
+            hardware/fab/watch_v1_drc.rpt
+          if-no-files-found: ignore
+
+      # Pushed to the branch "routed-board"; open a pull request from it on GitHub
+      # (or let Actions do it: Settings › Actions › "Allow GitHub Actions to create pull requests").
+      - name: Push the routed board to the routed-board branch
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B routed-board
+          git add -f hardware/kicad/watch_v1.kicad_pcb hardware/kicad/watch_v1.kicad_pro hardware/kicad/watch_v1.pads.json \
+                     hardware/kicad/watch_v1.ses hardware/kicad/watch_v1.ses.json \
+                     hardware/fab/watch_v1_gerbers.zip hardware/fab/watch_v1_drc.rpt
+          git commit -m "Routed board and Gerbers" -m "Made by the Route the board workflow: Freerouting, wiring audit, design-rule check, export_fab.py."
+          git push -f origin routed-board
+          echo "Routed board pushed to the routed-board branch: open a pull request from it." >> "$GITHUB_STEP_SUMMARY"

@@ -16,7 +16,7 @@ A see-through, build-it-yourself wrist watch made as a gift for STEM teachers. A
 | Part | State |
 |---|---|
 | Circuit (`hardware/scripts/design.py`) | Done, revision 5. Schematic generated, electrical rules check passes with 0 findings. |
-| PCB | All 49 parts placed and checked; an automatic audit confirms every connection against the parts' pinouts. **Not routed yet** — see [`hardware/README.md`](hardware/README.md). No Gerbers until that is done. |
+| PCB | All 49 parts placed and checked; an automatic audit confirms every connection against the parts' pinouts. Routing and Gerbers are made in the cloud by a GitHub workflow, so builders never run a router — see [`hardware/README.md`](hardware/README.md). |
 | Enclosure | Modelled; STL files exported in `enclosure/stl/`. Not yet test-printed against a real board. |
 | Firmware 2.2.0 | Complete and compiles for the ESP32-C3 (custom apps, file space, live data, I²C bridge, weather). **Not yet run on hardware** — expect a debugging session on the first assembled watch. |
 | Watch Studio app | Done; tested against its built-in demo watch. Installers for Windows (tested) and macOS (not yet tried on a Mac) in [`installer/`](installer/README.md). Needs a real watch to be tested over USB and Bluetooth. |

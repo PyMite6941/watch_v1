@@ -4,7 +4,7 @@ Researched November 2026. Prices and customs rules move; treat the figures as a 
 
 ## Do not order yet if…
 
-- the board is still unrouted (`python hardware/scripts/export_fab.py` refuses to make Gerbers until it is), or
+- `hardware/fab/watch_v1_gerbers.zip` is missing or older than the last placement change (the cloud workflow in [`hardware/README.md`](../hardware/README.md) makes it), or
 - no watch has been proven on a breadboard, or
 - you have not measured your actual battery and charger board against the case.
 
@@ -14,11 +14,7 @@ A first order of five boards is the cheapest mistake-finder there is. Order five
 
 ### What to upload
 
-```bash
-python hardware/scripts/export_fab.py
-```
-
-writes `hardware/fab/watch_v1_gerbers.zip`. Upload that one file.
+`hardware/fab/watch_v1_gerbers.zip`, made by the cloud routing workflow. Upload that one file. (No KiCad, Java or router needed on your computer.)
 
 ### Order settings
 

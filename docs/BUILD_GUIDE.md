@@ -6,7 +6,7 @@ From a bag of parts to a working watch. Read it through once before starting; al
 
 ## 0. Before ordering anything
 
-1. Finish the board: it is placed but not routed — [`hardware/README.md`](../hardware/README.md).
+1. Get the board: the Gerbers (`hardware/fab/watch_v1_gerbers.zip`) are made in the cloud — nothing to route yourself ([`hardware/README.md`](../hardware/README.md)). Ordering: [`ORDERING.md`](ORDERING.md).
 2. Build the circuit on a breadboard and run the firmware on it (sections 2 and 5 work the same on a breadboard). This proves the design before money is spent on boards.
 3. Order boards, cases and parts — [ORDERING.md](ORDERING.md), [BOM.md](BOM.md).
 
