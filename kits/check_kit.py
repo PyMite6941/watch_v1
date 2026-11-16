@@ -1,6 +1,6 @@
 """Check a kit's Watch Studio preset before loading it onto a watch.
 
-    python kits/check_kit.py                     # every kits/*/preset.json
+    python kits/check_kit.py                     # every kits/*/preset.json, and the app's copy of them
     python kits/check_kit.py my-kit/preset.json  # just one
 
 A preset is an ordinary Watch Studio backup file holding only the settings the
@@ -48,6 +48,9 @@ def check(path):
     if b.get("watch_backup") != 1 or not isinstance(b.get("cfg"), dict):
         errors.append('not a Watch Studio backup: needs "watch_backup": 1 and a "cfg" object')
         return errors
+    for key in ("title", "about", "needs"):
+        if not isinstance(b.get(key), str) or not b[key]:
+            errors.append(f"'{key}' is missing: Watch Studio's kit gallery shows it")
     cfg = b["cfg"]
     for v in cfg.get("views", []):
         if v not in VIEWS:
@@ -108,6 +111,11 @@ def main():
         for e in errors:
             print("        " + e)
         failed += bool(errors)
+    if not sys.argv[1:]:
+        import build_gallery                    # same folder
+        if not build_gallery.current():
+            print("FAIL  app/index.html: the kit gallery is out of date - run python kits/build_gallery.py")
+            failed += 1
     return 1 if failed else 0
 
 

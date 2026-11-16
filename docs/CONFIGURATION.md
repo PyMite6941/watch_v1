@@ -16,10 +16,10 @@ Watch Studio is a small desktop app for Windows and macOS (about 0.1 MB installe
 | Tab | What it is for |
 |---|---|
 | Watch | Battery, time, sync, Wi-Fi networks, test buzz, show text, Quick setup again |
-| Settings | Screens and their order, name and greeting, time zone, brightness, timers, bells, time source, mesh group, PIN |
-| Apps | Make extra screens without programming: step timers, random pickers, countdowns, scrolling messages (`/apps/*.json`, see `firmware/watch_v1/apps.h`) |
+| Settings | Screens and their order, name and greeting, time zone, brightness, timers, bells, weather place, time source, mesh group, PIN |
+| Apps | **Kits**: ready-made set-ups (Everyday, Biology: bees, Computer science, Band, Calculus, Youth group), one click each. Then make extra screens without programming: step timers, random pickers, countdowns, scrolling messages, from scratch or from a template (exam countdown, focus timer, lab steps, talk timer, pair swap, cold call, teams, birthday). Files are `/apps/*.json`, see `firmware/watch_v1/apps.h` |
 | Files | The watch's own small file space (about 190 kB): upload, edit, download, delete |
-| Lab | Live sensor readings, record to CSV, download the sample log, I²C scan of whatever is in the accessory socket |
+| Lab | Live sensor readings with a graph of the last 10 minutes (click a reading to graph it), record to CSV, download the sample log, I²C scan of whatever is in the accessory socket |
 | Backup | Save settings and files to one `.json` file; restore it onto this or another watch. Wi-Fi passwords and the PIN are not included |
 | Console | Type raw commands (below) and see the traffic |
 

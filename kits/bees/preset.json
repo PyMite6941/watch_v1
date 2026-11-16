@@ -1,11 +1,15 @@
 {
   "watch_backup": 1,
   "kit": "bees",
+  "title": "Biology: bees",
+  "about": "Hive and habitat climate with a logged record, an inspection step timer, and the weather for deciding when to open the hive.",
+  "needs": "Environment pack (BME280) for temperature, humidity and pressure; Wi-Fi for weather",
   "cfg": {
     "views": [
       "time",
       "date",
       "temp",
+      "weather",
       "humidity",
       "pressure",
       "timer",

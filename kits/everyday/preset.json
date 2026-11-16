@@ -1,0 +1,21 @@
+{
+  "watch_backup": 1,
+  "kit": "everyday",
+  "title": "Everyday",
+  "about": "A good start for anyone: clock, date, weather, timer, stopwatch and a focus timer (25 minutes on, 5 off).",
+  "needs": "Nothing; Wi-Fi for weather",
+  "cfg": {
+    "views": [
+      "time",
+      "date",
+      "weather",
+      "timer",
+      "stopwatch",
+      "battery"
+    ],
+    "timer_s": 300
+  },
+  "files": {
+    "/apps/10-focus.json": "{\"type\":\"sequence\",\"title\":\"FOCU\",\"repeat\":true,\"steps\":[{\"label\":\"FOCU\",\"s\":1500},{\"label\":\"brEA\",\"s\":300}]}"
+  }
+}

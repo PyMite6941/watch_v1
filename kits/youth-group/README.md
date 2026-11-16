@@ -13,7 +13,7 @@ For someone who runs a youth group, club or camp. Needs no pack: it's the classr
 
 ## The preset
 
-- **Screens:** time, date, timer (5 min), stopwatch, counter, dice.
+- **Screens:** time, date, weather, timer (5 min), stopwatch, counter, dice. Weather needs Wi-Fi and a place (Watch Studio › Settings › Weather).
 - **Apps:**
   - `GAnE`: game rounds: 5 minutes play, 1 minute rest, repeating. It buzzes at each change.
   - `GrUP`: random number 1–4. Each person presses SET to find out which team they're on. Change `max` for more teams.
