@@ -1,10 +1,14 @@
 {
   "watch_backup": 1,
   "kit": "youth-group",
+  "title": "Youth group",
+  "about": "Game rounds, team picker, head-count tally, dice and the weather for outdoor plans.",
+  "needs": "Nothing; Wi-Fi for weather",
   "cfg": {
     "views": [
       "time",
       "date",
+      "weather",
       "timer",
       "stopwatch",
       "counter",

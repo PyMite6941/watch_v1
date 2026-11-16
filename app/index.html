@@ -76,6 +76,17 @@
   .warn { color:var(--bad); font-size:13px; }
   .step { display:grid; grid-template-columns: 90px 1fr 1fr auto; gap:8px; align-items:center; margin:4px 0; }
   meter { width:100%; }
+  .kits { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:10px; }
+  .kit { border:1px solid var(--line); border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:6px; }
+  .kit h3 { margin:0; }
+  .kit p { margin:0; font-size:14px; }
+  .kit .apps { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+  .kit .seg svg { width:12px; height:20px; }
+  .kit .seg { padding:3px 5px; gap:2px; }
+  .kit button { margin-top:auto; align-self:flex-start; }
+  .tile { cursor:pointer; }
+  .tile.on { border-color:var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  #labChart { width:100%; height:220px; display:block; margin-top:12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); }
   header.top { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
 </style>
 </head>
@@ -250,6 +261,12 @@
   <!-- =============================== APPS ============================== -->
   <div id="tab-apps" class="tab hide">
     <section>
+      <h2>Kits</h2>
+      <p class="sub">Ready-made set-ups: screens, settings and apps chosen for one kind of person. Loading a kit changes only what it lists and adds its apps; the watch's name, time zone, Wi-Fi and PIN stay as they are. What to build and print for each: <a href="https://github.com/PyMite6941/watch_v1/tree/main/kits" target="_blank" rel="noopener">kits on GitHub</a>.</p>
+      <div class="kits" id="kitList"></div>
+      <p id="kitLine"><small></small></p>
+    </section>
+    <section>
       <h2>Your apps</h2>
       <p class="sub">Each app is an extra screen on the watch, after the built-in ones. No programming: pick a kind, fill it in, save. Up to 8.</p>
       <table id="appList"></table>
@@ -260,6 +277,7 @@
         <button data-new="countdown">Countdown to a date</button>
         <button data-new="message">Scrolling message</button>
       </div>
+      <div class="row" style="margin-top:8px" id="templates"><span>Or start from:</span></div>
     </section>
     <section id="appEditor" class="hide">
       <h2 id="appEdTitle">App</h2>
@@ -345,6 +363,8 @@
         <small id="labCount"></small>
       </div>
       <div class="tiles" id="tiles" style="margin-top:12px"></div>
+      <canvas id="labChart" class="hide" aria-label="Graph of the chosen reading"></canvas>
+      <small id="labChartNote" class="hide">Click a reading to graph it. The graph shows the last 10 minutes.</small>
       <h3>Buttons pressed on the watch</h3>
       <pre id="btnLog">—</pre>
     </section>
@@ -858,6 +878,42 @@ function checkApp() {
 
 // --------------------------------------------------------------------- lab
 let streaming = false, recording = false, recorded = [], tiles = {};
+const readings = {};                // key -> [[ms, value], ...] for the graph
+let chartKey = null;
+const CHART_MS = 10 * 60 * 1000;
+function drawChart() {
+  const cv = $("labChart"), pts = (readings[chartKey] || []).filter(p => p[0] > Date.now() - CHART_MS);
+  cv.classList.toggle("hide", !chartKey);
+  if (!chartKey) return;
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  cv.width = w * dpr; cv.height = h * dpr;
+  const g = cv.getContext("2d"), css = getComputedStyle(document.documentElement);
+  g.scale(dpr, dpr);
+  g.clearRect(0, 0, w, h);
+  g.font = "12px system-ui, sans-serif";
+  g.fillStyle = css.getPropertyValue("--mute");
+  g.fillText(FIELDS[chartKey][0] + " (" + FIELDS[chartKey][1] + ")", 10, 16);
+  if (pts.length < 2) { g.fillText("waiting for readings...", 10, 34); return; }
+  let lo = Math.min(...pts.map(p => p[1])), hi = Math.max(...pts.map(p => p[1]));
+  if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
+  const pad = (hi - lo) * 0.1; lo -= pad; hi += pad;
+  const t0 = pts[0][0], t1 = pts[pts.length - 1][0], L = 52, R = w - 10, T = 26, B = h - 22;
+  const x = t => L + (R - L) * (t1 > t0 ? (t - t0) / (t1 - t0) : 1), y = v => B - (B - T) * (v - lo) / (hi - lo);
+  g.strokeStyle = css.getPropertyValue("--line"); g.lineWidth = 1;
+  g.beginPath(); g.moveTo(L, T); g.lineTo(L, B); g.lineTo(R, B); g.stroke();
+  const fmt = v => Math.abs(hi - lo) < 10 ? v.toFixed(2) : v.toFixed(0);
+  g.textAlign = "right"; g.fillText(fmt(hi), L - 6, T + 4); g.fillText(fmt(lo), L - 6, B);
+  g.fillText(Math.round((t1 - t0) / 1000) + " s", R, h - 6);
+  g.strokeStyle = css.getPropertyValue("--accent"); g.lineWidth = 2; g.lineJoin = "round";
+  g.beginPath();
+  pts.forEach((p, i) => i ? g.lineTo(x(p[0]), y(p[1])) : g.moveTo(x(p[0]), y(p[1])));
+  g.stroke();
+}
+function chooseChart(key) {
+  chartKey = chartKey === key ? null : key;
+  for (const k in tiles) tiles[k].parentElement.classList.toggle("on", k === chartKey);
+  drawChart();
+}
 const FIELDS = { temp_c: ["Temperature", "°C"], humidity: ["Humidity", "%"], hpa: ["Air pressure", "hPa"], light_mv: ["Light", "mV"], batt_mv: ["Battery", "mV"] };
 function onEvent(msg) {
   if (msg.ev === "btn") {
@@ -871,12 +927,82 @@ function onEvent(msg) {
         const t = document.createElement("div");
         t.className = "tile";
         t.innerHTML = "<span>" + FIELDS[key][0] + "</span><b></b><span>" + FIELDS[key][1] + "</span>";
+        t.onclick = () => chooseChart(key);
         $("tiles").appendChild(t);
         tiles[key] = t.querySelector("b");
+        $("labChartNote").classList.remove("hide");
+        if (!chartKey) chooseChart(key);
       }
       tiles[key].textContent = msg[key];
+      const v = Number(msg[key]);
+      if (Number.isFinite(v)) {
+        const h = readings[key] || (readings[key] = []);
+        h.push([Date.now(), v]);
+        while (h.length && h[0][0] < Date.now() - CHART_MS) h.shift();
+      }
     }
+    drawChart();
     if (recording) { recorded.push(msg); $("labCount").textContent = recorded.length + " readings recorded"; }
+  }
+}
+
+// -------------------------------------------------------------------- kits
+// The kits' presets, copied from kits/*/preset.json by kits/build_gallery.py.
+/* KITS:BEGIN */
+const KITS = [
+  {"watch_backup":1,"kit":"everyday","title":"Everyday","about":"A good start for anyone: clock, date, weather, timer, stopwatch and a focus timer (25 minutes on, 5 off).","needs":"Nothing; Wi-Fi for weather","cfg":{"views":["time","date","weather","timer","stopwatch","battery"],"timer_s":300},"files":{"/apps/10-focus.json":"{\"type\":\"sequence\",\"title\":\"FOCU\",\"repeat\":true,\"steps\":[{\"label\":\"FOCU\",\"s\":1500},{\"label\":\"brEA\",\"s\":300}]}"}},
+  {"watch_backup":1,"kit":"bees","title":"Biology: bees","about":"Hive and habitat climate with a logged record, an inspection step timer, and the weather for deciding when to open the hive.","needs":"Environment pack (BME280) for temperature, humidity and pressure; Wi-Fi for weather","cfg":{"views":["time","date","temp","weather","humidity","pressure","timer","battery"],"log_min":30,"timer_s":600},"files":{"/apps/10-busy.json":"{\"type\":\"message\",\"title\":\"bEE\",\"text\":\"bUSY AS A bEE\"}","/apps/20-beeday.json":"{\"type\":\"countdown\",\"title\":\"bdAY\",\"date\":\"2027-05-20\"}","/apps/30-inspect.json":"{\"type\":\"sequence\",\"title\":\"InSP\",\"repeat\":false,\"steps\":[{\"label\":\"SUIt\",\"s\":120},{\"label\":\"LItE\",\"s\":60},{\"label\":\"OPEn\",\"s\":60},{\"label\":\"CHEC\",\"s\":600},{\"label\":\"CLOS\",\"s\":120}]}"}},
+  {"watch_backup":1,"kit":"computer-science","title":"Computer science","about":"Pair-programming swaps, cold-calling, a binary message to decode, and the watch itself as a JSON/I²C/SQL teaching device.","needs":"Nothing; any pack makes the data lessons richer","cfg":{"views":["time","seconds","date","counter","timer","stopwatch","dice"],"timer_s":300},"files":{"/apps/10-binary.json":"{\"type\":\"message\",\"title\":\"bIn\",\"text\":\"01001000 01001001\"}","/apps/20-pair.json":"{\"type\":\"sequence\",\"title\":\"PAIr\",\"repeat\":true,\"steps\":[{\"label\":\"dr 1\",\"s\":600},{\"label\":\"dr 2\",\"s\":600}]}","/apps/30-call.json":"{\"type\":\"picker\",\"title\":\"CALL\",\"max\":30}"}},
+  {"watch_backup":1,"kit":"band","title":"Band","about":"Tuner, a silent metronome that taps the wrist, a warm-up sequence and a random section picker.","needs":"Sound pack (MAX4466) for the tuner","cfg":{"views":["time","tuner","metronome","timer","stopwatch"],"bpm":100,"tune_a4":440},"files":{"/apps/10-warmup.json":"{\"type\":\"sequence\",\"title\":\"UArn\",\"repeat\":false,\"steps\":[{\"label\":\"brth\",\"s\":60},{\"label\":\"LOnG\",\"s\":120},{\"label\":\"SCAL\",\"s\":180},{\"label\":\"tUnE\",\"s\":60}]}","/apps/20-section.json":"{\"type\":\"picker\",\"title\":\"SECt\",\"no_repeat\":true,\"items\":[\"FLUt\",\"CLAr\",\"ALtO\",\"tEnr\",\"bArI\",\"trPt\",\"HOrn\",\"trbn\",\"tUbA\",\"PErC\"]}"}},
+  {"watch_backup":1,"kit":"calculus","title":"Calculus","about":"Air pressure as an altimeter (a derivative you can walk), an AP free-response pacing timer and a cold-call picker.","needs":"Environment pack (BME280 or BMP280) for pressure","cfg":{"views":["time","date","pressure","temp","stopwatch","timer"],"timer_s":900},"files":{"/apps/10-piday.json":"{\"type\":\"countdown\",\"title\":\"PI\",\"date\":\"2027-03-14\"}","/apps/20-frq.json":"{\"type\":\"sequence\",\"title\":\"FrQ\",\"repeat\":false,\"steps\":[{\"label\":\"FrQ1\",\"s\":900},{\"label\":\"FrQ2\",\"s\":900},{\"label\":\"FrQ3\",\"s\":900},{\"label\":\"FrQ4\",\"s\":900},{\"label\":\"FrQ5\",\"s\":900},{\"label\":\"FrQ6\",\"s\":900}]}","/apps/30-call.json":"{\"type\":\"picker\",\"title\":\"CALL\",\"max\":30}"}},
+  {"watch_backup":1,"kit":"youth-group","title":"Youth group","about":"Game rounds, team picker, head-count tally, dice and the weather for outdoor plans.","needs":"Nothing; Wi-Fi for weather","cfg":{"views":["time","date","weather","timer","stopwatch","counter","dice"],"dice":6,"timer_s":300},"files":{"/apps/10-still.json":"{\"type\":\"message\",\"title\":\"bE\",\"text\":\"bE StILL\"}","/apps/20-groups.json":"{\"type\":\"picker\",\"title\":\"GrUP\",\"max\":4}","/apps/30-game.json":"{\"type\":\"sequence\",\"title\":\"GAnE\",\"repeat\":true,\"steps\":[{\"label\":\"PLAY\",\"s\":300},{\"label\":\"rESt\",\"s\":60}]}"}}
+];
+/* KITS:END */
+function drawKits() {
+  $("kitList").innerHTML = KITS.map((k, i) => {
+    const screens = (k.cfg.views || []).map(v => (VIEWS[v] || v).replace("*", "")).join(", ");
+    const apps = Object.values(k.files || {}).map(s => { const a = JSON.parse(s); return '<span title="' + esc(describe(a)) + '">' + segHtml(a.title) + "</span>"; }).join("");
+    return '<div class="kit"><h3>' + esc(k.title) + "</h3><p>" + esc(k.about) + "</p>" +
+      "<p><small><b>Screens:</b> " + esc(screens) + "</small></p>" +
+      (apps ? '<div class="apps"><small><b>Apps:</b></small>' + apps + "</div>" : "") +
+      "<p><small><b>Needs:</b> " + esc(k.needs) + "</small></p>" +
+      '<button class="small" data-kit="' + i + '">Load onto the watch</button></div>';
+  }).join("");
+  for (const b of $("kitList").querySelectorAll("[data-kit]")) b.onclick = () => run(() => loadKit(KITS[b.dataset.kit]));
+}
+async function loadKit(k) {
+  if (!link) throw new Error("Connect a watch first (or try the demo watch)");
+  const kitFiles = Object.keys(k.files || {}).map(p => p.split("/").pop());
+  const others = (await listDir("/apps")).filter(f => f.name.endsWith(".json") && !kitFiles.includes(f.name)).map(f => f.name);
+  if (!confirm("Load the " + k.title + " kit?\n\nScreens become: " + k.cfg.views.join(", ") + ".\nAdds " + kitFiles.length + " app(s).")) return;
+  if (others.length + kitFiles.length > 8) {
+    if (!confirm("The watch holds 8 apps. To make room, remove your other " + others.length + " app(s)?\n\n" + others.join("\n"))) return;
+    for (const name of others) await ok(send({ cmd: "fs_delete", path: "/apps/" + name }));
+  }
+  const n = await restoreBackup(k);
+  await loadApps();
+  $("kitLine").innerHTML = "<small>Loaded the " + esc(k.title) + " kit: " + n + " app(s). Countdown dates are examples: check them under Your apps.</small>";
+}
+
+// One-click starting points for the app editor. Countdown dates start a month ahead.
+function inDays(n) { return new Date(Date.now() + n * 86400000).toISOString().slice(0, 10); }
+const TEMPLATES = [
+  ["Exam countdown", "exam", () => ({ type: "countdown", title: "ExAn", date: inDays(30) })],
+  ["Focus timer 25/5", "focus", () => ({ type: "sequence", title: "FOCU", repeat: true, steps: [{ label: "FOCU", s: 1500 }, { label: "brEA", s: 300 }] })],
+  ["Lab steps", "lab", () => ({ type: "sequence", title: "LAb", repeat: false, steps: [{ label: "rEAd", s: 120 }, { label: "SEt", s: 300 }, { label: "rUn", s: 600 }, { label: "CLEA", s: 300 }] })],
+  ["Talk + questions", "talk", () => ({ type: "sequence", title: "tALk", repeat: false, steps: [{ label: "tALk", s: 300 }, { label: "QUES", s: 120 }] })],
+  ["Pair swap", "pair", () => ({ type: "sequence", title: "PAIr", repeat: true, steps: [{ label: "dr 1", s: 600 }, { label: "dr 2", s: 600 }] })],
+  ["Cold call 1-30", "call", () => ({ type: "picker", title: "CALL", max: 30, no_repeat: true })],
+  ["Teams of 4", "teams", () => ({ type: "picker", title: "tEAn", max: 4 })],
+  ["Birthday", "birthday", () => ({ type: "message", title: "bdAY", text: "HAPPY bIrtHdAY" })],
+];
+function drawTemplates() {
+  for (const [label, file, make] of TEMPLATES) {
+    const b = document.createElement("button");
+    b.className = "small";
+    b.textContent = label;
+    b.onclick = () => editApp(make(), file);
+    $("templates").appendChild(b);
   }
 }
 
@@ -1103,6 +1229,9 @@ $("btnReboot").onclick = () => run(() => ok(send({ cmd: "reboot" })));
 $("btnFactory").onclick = () => { if (confirm("Erase every setting and saved Wi-Fi network on the watch?")) run(() => ok(send({ cmd: "factory_reset" }))); };
 $("btnRaw").onclick = () => run(async () => { await send(JSON.parse($("raw").value || '{"cmd":"info"}')); });
 drawChips();
+drawKits();
+drawTemplates();
+window.addEventListener("resize", drawChart);
 
 // Installable and usable offline when served from a web address (not when opened as a file).
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(() => {});

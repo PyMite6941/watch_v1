@@ -1,6 +1,9 @@
 {
   "watch_backup": 1,
   "kit": "band",
+  "title": "Band",
+  "about": "Tuner, a silent metronome that taps the wrist, a warm-up sequence and a random section picker.",
+  "needs": "Sound pack (MAX4466) for the tuner",
   "cfg": {
     "views": [
       "time",

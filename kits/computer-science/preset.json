@@ -1,6 +1,9 @@
 {
   "watch_backup": 1,
   "kit": "computer-science",
+  "title": "Computer science",
+  "about": "Pair-programming swaps, cold-calling, a binary message to decode, and the watch itself as a JSON/I\u00b2C/SQL teaching device.",
+  "needs": "Nothing; any pack makes the data lessons richer",
   "cfg": {
     "views": [
       "time",

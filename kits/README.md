@@ -7,7 +7,7 @@ Each kit folder has:
 | File | What it is |
 |---|---|
 | `README.md` | What to make, what to print, and ideas for using it |
-| `preset.json` | Screens, settings and custom apps. Load it with Watch Studio |
+| `preset.json` | Screens, settings and custom apps. Watch Studio has a copy of every kit: Apps › Kits › *Load onto the watch* |
 | (sometimes) scripts | Extra things to do with the watch from a computer |
 
 A kit picks from four things:
@@ -21,6 +21,7 @@ A kit picks from four things:
 
 | Kit | Pack | Lid pattern | Accessories |
 |---|---|---|---|
+| [Everyday](everyday/README.md) | None needed | Any | Desk stand |
 | [Biology: bees](bees/README.md) | Environment (BME280), optionally on a cable as a hive probe; sound pack for wingbeats | `honeycomb` | Probe sleeve + plug, desk stand |
 | [Computer science](computer-science/README.md) | Any pack: the I²C scan and the serial protocol are the lesson. Python scripts included | `binary` | Desk stand |
 | [Band](band/README.md) | Sound (MAX4466) for the tuner | `staff` | Desk stand (it fits a music-stand ledge) |
@@ -33,7 +34,7 @@ A kit picks from four things:
 2. **Case:** open `enclosure/enclosure.scad` in OpenSCAD. In the Customizer, under *Personal touches*, pick the `lid_pattern` and type the `base_text`. Then export the lid and base. The `enclosure/stl/` folder already has a lid for each pattern (`lid_honeycomb.stl`, `lid_binary.stl`, `lid_staff.stl`, `lid_sine.stl`). Those lids have no text under the base, so export your own base if you want text there.
 3. **Accessories:** the STLs are in `enclosure/stl/`: `desk_stand.stl`, `probe_sleeve.stl` and `probe_plug.stl`.
 4. **Pack:** build it on a Pack Base ([`hardware/addons/`](../hardware/addons/README.md)). Remove the module's power LED first, or it will drain the battery.
-5. **Preset:** connect the watch in Watch Studio. Choose **Backup › Restore from a backup file…** and pick the kit's `preset.json`.
+5. **Preset:** connect the watch in Watch Studio, open **Apps › Kits** and press *Load onto the watch* on the kit. (Or **Backup › Restore from a backup file…** with the kit's `preset.json`.) If the watch would end up with more than 8 apps, it offers to remove the others first.
    - The preset only replaces the settings it lists, plus the apps it brings.
    - Name, time zone, Wi-Fi and PIN stay as they are, so run Quick setup as well.
    - Restoring writes the kit's apps. Apps already on the watch with other file names stay, up to the limit of 8.
@@ -63,7 +64,10 @@ Then check it:
 ```
 python kits/check_kit.py                 # every kit
 python kits/check_kit.py my-kit/preset.json
+python kits/build_gallery.py             # copy the kits into Watch Studio
 ```
+
+A preset needs `title`, `about` and `needs` too: the gallery in Watch Studio shows them. `check_kit.py` also fails when Watch Studio's copy of the kits is out of date.
 
 It catches what the watch would get wrong:
 

@@ -16,7 +16,7 @@
 
 Load `preset.json` with Watch Studio › Backup › Restore from a backup file….
 
-- **Screens:** time, date, temperature, humidity, pressure, timer (10 min), battery.
+- **Screens:** time, date, temperature, weather (the forecast, from Wi-Fi), humidity, pressure, timer (10 min), battery. Weather needs a place set in Watch Studio › Settings › Weather.
 - **Log** a sample every 30 minutes. Download it as a spreadsheet from Watch Studio.
 - **Apps:**
   - `InSP`: a hive inspection sequence: suit up (2 min), light the smoker (1 min), open (1 min), check frames (10 min), close (2 min). It buzzes at each step, so there's no need to look at a clock with gloves on.

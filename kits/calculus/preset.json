@@ -1,6 +1,9 @@
 {
   "watch_backup": 1,
   "kit": "calculus",
+  "title": "Calculus",
+  "about": "Air pressure as an altimeter (a derivative you can walk), an AP free-response pacing timer and a cold-call picker.",
+  "needs": "Environment pack (BME280 or BMP280) for pressure",
   "cfg": {
     "views": [
       "time",
