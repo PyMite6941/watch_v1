@@ -114,6 +114,8 @@ It runs by itself whenever `design.py`, `gen_pcb.py` or the footprints change on
 
 `gen_pcb.py` imports `watch_v1.ses` only when it was made for the current placement (it records a fingerprint of the pads in `watch_v1.ses.json`), so a stale route is never applied to a moved part.
 
+Freerouting's result varies from run to run: the same placement can route completely once and leave a connection or two the next time. So `freeroute.py` tries up to four times (`FREEROUTING_ATTEMPTS`) and keeps the best. Once a complete route is committed, the workflow keeps it for as long as the placement does not change (`freeroute.py --if-needed`). The fingerprint is taken in the workflow's KiCad, so a committed route is reused there but not by a different KiCad version on your own computer.
+
 ### Other ways, for experimenting
 
 - **Freerouting on your own computer:** `set FREEROUTING_JAR=…freerouting-2.5.0.jar`, then run `freeroute.py` and `gen_pcb.py` with KiCad's Python. It wants about 1 GB of free memory (`FREEROUTING_MEM`).
