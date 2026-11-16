@@ -22,7 +22,7 @@ Do this first; it is the one fiddly surface-mount job.
 
 Easier to do before it is soldered down.
 
-1. Install [Arduino IDE 2](https://www.arduino.cc/en/software). In *Boards Manager* install **esp32 by Espressif Systems** (version 3.x). In *Library Manager* install **ArduinoJson** (version 7).
+1. Install [Arduino IDE 2](https://www.arduino.cc/en/software). In *Boards Manager* install **esp32 by Espressif Systems** (version 3.x). In *Library Manager* install **ArduinoJson** (version 7), and **Adafruit SSD1306** (it asks to add **Adafruit GFX** too: say yes) for the optional OLED screen pack.
 2. Open `firmware/watch_v1/watch_v1.ino`.
 3. *Tools* menu:
    - Board: **ESP32C3 Dev Module**

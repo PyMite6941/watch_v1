@@ -51,6 +51,22 @@ static const char *wxWord(uint8_t code) {
   return "----";
 }
 
+// The same, in words, for the OLED screen (oled.h).
+static const char *wxPhrase(uint8_t code) {
+  if (code == 0) return "Clear";
+  if (code == 1) return "Mostly clear";
+  if (code == 2) return "Partly cloudy";
+  if (code == 3) return "Cloudy";
+  if (code == 45 || code == 48) return "Fog";
+  if (code >= 51 && code <= 57) return "Drizzle";
+  if (code == 66 || code == 67) return "Freezing rain";
+  if (code >= 61 && code <= 65) return "Rain";
+  if ((code >= 71 && code <= 77) || code == 85 || code == 86) return "Snow";
+  if (code >= 80 && code <= 82) return "Showers";
+  if (code >= 95) return "Thunderstorm";
+  return "Unknown";
+}
+
 static bool wxConfigured() {
   return settings.wx_url[0] && (settings.wx_city[0] || settings.wx_lat != 0 || settings.wx_lon != 0);
 }
