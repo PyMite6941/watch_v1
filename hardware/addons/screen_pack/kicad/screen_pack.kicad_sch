@@ -5,9 +5,9 @@
 	(uuid "03476c36-5a24-55ff-8028-1f2e0f6a9f3d")
 	(paper "A4")
 	(title_block
-		(title "Watch V1 - Screen Pack (OLED carrier)")
+		(title "Watch V1 - Screen Pack (OLED strip on the lid)")
 		(date "2026-11-12")
-		(rev "r1")
+		(rev "r2")
 	)
 	(lib_symbols
 		(symbol "Connector_Generic:Conn_02x03_Odd_Even"
@@ -847,7 +847,7 @@
 			)
 		)
 		(property "Value"
-			"OLED row A (G V CL DA)"
+			"OLED column A (DA CL V G)"
 			(at 114.3 83.82 0)
 			(effects
 				(font
@@ -856,7 +856,7 @@
 			)
 		)
 		(property "Footprint"
-			"Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
+			"Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 			(at 114.3 76.2 0)
 			(hide yes)
 			(effects
@@ -917,7 +917,7 @@
 		)
 		(uuid "05bcd016-06d9-56af-ac00-9d982aabd1ad")
 	)
-	(label "GND"
+	(label "SDA"
 		(at 104.14 73.66 180)
 		(effects
 			(font
@@ -938,7 +938,7 @@
 		)
 		(uuid "baf2c377-1aa8-54d3-aaa6-0aceb59997aa")
 	)
-	(label "+3V3"
+	(label "SCL"
 		(at 104.14 76.2 180)
 		(effects
 			(font
@@ -959,7 +959,7 @@
 		)
 		(uuid "5be4bbe1-01ef-5024-8f3e-5a985fc2ce4e")
 	)
-	(label "SCL"
+	(label "+3V3"
 		(at 104.14 78.74 180)
 		(effects
 			(font
@@ -980,7 +980,7 @@
 		)
 		(uuid "398beb23-db19-5f7f-b4a8-dc5add6dd324")
 	)
-	(label "SDA"
+	(label "GND"
 		(at 104.14 81.28 180)
 		(effects
 			(font
@@ -1009,7 +1009,7 @@
 			)
 		)
 		(property "Value"
-			"OLED row B (V G CL DA)"
+			"OLED column B (DA CL G V)"
 			(at 177.8 83.82 0)
 			(effects
 				(font
@@ -1018,7 +1018,7 @@
 			)
 		)
 		(property "Footprint"
-			"Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical"
+			"Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical"
 			(at 177.8 76.2 0)
 			(hide yes)
 			(effects
@@ -1079,7 +1079,7 @@
 		)
 		(uuid "f812ba83-a36c-5ed2-9f1e-5bdc12af1543")
 	)
-	(label "+3V3"
+	(label "SDA"
 		(at 167.64 73.66 180)
 		(effects
 			(font
@@ -1100,7 +1100,7 @@
 		)
 		(uuid "ebe17145-e274-53df-a3e1-7b73670ea567")
 	)
-	(label "GND"
+	(label "SCL"
 		(at 167.64 76.2 180)
 		(effects
 			(font
@@ -1121,7 +1121,7 @@
 		)
 		(uuid "fb5f4608-aa94-568f-8902-23234c011213")
 	)
-	(label "SCL"
+	(label "GND"
 		(at 167.64 78.74 180)
 		(effects
 			(font
@@ -1142,7 +1142,7 @@
 		)
 		(uuid "be945667-383c-575e-aa94-79e2f16d1bdb")
 	)
-	(label "SDA"
+	(label "+3V3"
 		(at 167.64 81.28 180)
 		(effects
 			(font
@@ -1346,7 +1346,7 @@
 		)
 		(uuid "f9a111bf-07ce-5bb8-a67d-6a84e690ef45")
 	)
-	(text "J2: OLED row A, GND first"
+	(text "J2: OLED column A, GND first"
 		(exclude_from_sim no)
 		(at 96.52 58.42 0)
 		(effects
@@ -1356,9 +1356,9 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "a626f01e-11f0-5915-a1e8-aacbff6512b5")
+		(uuid "1c7ecbd8-c2c1-5482-9582-796873e42f25")
 	)
-	(text "J3: OLED row B, VCC first"
+	(text "J3: OLED column B, VCC first"
 		(exclude_from_sim no)
 		(at 160.02 58.42 0)
 		(effects
@@ -1368,7 +1368,7 @@
 			)
 			(justify left bottom)
 		)
-		(uuid "723b04e7-c168-5485-b3d7-2d9308bfd63b")
+		(uuid "9aa5f4cc-5dc5-5de5-bd08-4748c392d656")
 	)
 	(text "Power flags (ERC only)"
 		(exclude_from_sim no)
