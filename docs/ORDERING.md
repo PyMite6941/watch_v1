@@ -16,6 +16,15 @@ A first order of five boards is the cheapest mistake-finder there is. Order five
 
 `hardware/fab/watch_v1_gerbers.zip`, made by the cloud routing workflow. Upload that one file. (No KiCad, Java or router needed on your computer.)
 
+The add-on boards each have their own zip, ready in the repository:
+
+| Board | Upload | Size |
+|---|---|---|
+| Pack Base (sensor packs) | `hardware/addons/pack_base/fab/pack_base_gerbers.zip` | 20 × 18.6 mm |
+| Screen Pack (OLED) | `hardware/addons/screen_pack/fab/screen_pack_gerbers.zip` | 20 × 17 mm |
+
+Every zip is the standard set factories ask for: copper, solder mask and silkscreen for both sides, drill files (plated and unplated holes separately), and the board outline on its own layer (`*-Edge_Cuts.gm1`). The outline layer is the only one with the board shape on it, which is what factories such as Elecrow require for routed edges and slots. Each zip is well under 1 MB; the usual upload limit is 30 MB, zip or rar. Upload the zip as it is; do not unpack it.
+
 ### Order settings
 
 | Setting | Value |
@@ -36,6 +45,7 @@ A first order of five boards is the cheapest mistake-finder there is. Order five
 | Factory | Good for | Notes |
 |---|---|---|
 | [JLCPCB](https://jlcpcb.com/) | Lowest price | Advertises from $2 for five 2-layer boards up to 100 × 100 mm; the real cost is shipping. One June 2026 notice mentions price adjustments for raw materials. Has its own 3D-printing arm, so boards and cases can share a parcel. |
+| [Elecrow](https://www.elecrow.com/) | Another low-cost option | Takes the same zip (zip or rar, up to 30 MB). The quote page's board picture is only a preview; they build from the Gerbers. Changes to an order must be emailed the same day. |
 | [PCBWay](https://www.pcbway.com/) | Service, special options | Usually a few dollars more for the same board; good support if a file is questioned. Also prints. |
 | A local board house or university fab lab | Speed, no customs | Worth asking a school or university workshop: a single-evening turnaround beats two weeks of post. |
 
@@ -47,7 +57,7 @@ Rules depend on the country you are shipping to, so check yours before paying:
 
 - **Duty-free allowances for small parcels are shrinking.** Several countries have recently ended or cut the allowance that used to let low-value parcels in free, so even a $5 board order may now be charged VAT or sales tax and duty, often plus a courier handling fee.
 - **Look for duty-paid shipping** at the factory's checkout. It removes the surprise bill on delivery.
-- **Combine everything into as few parcels as possible.** Watch boards, Pack Bases and printed cases from the same company can share one parcel, and handling fees are per parcel.
+- **Combine everything into as few parcels as possible.** Watch boards, Pack Bases, Screen Packs and printed cases from the same company can share one parcel, and handling fees are per parcel.
 - **Typical timing:** 2–3 days to make, then 3–5 days by express courier or 1–3 weeks by economy post.
 - **A local service** found through [find-a-printer.vercel.app](https://find-a-printer.vercel.app) avoids customs entirely.
 

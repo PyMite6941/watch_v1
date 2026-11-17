@@ -53,6 +53,7 @@ Anyone near a watch in link mode could connect by Bluetooth. Set a PIN and Bluet
 | `bpm` | Metronome tempo | 30–240 / 100 |
 | `tune_a4` | Tuner reference pitch, Hz | 400–480 / 440 |
 | `oled` | OLED screen on the socket: 0 none, 1 128×32, 2 128×64, 3 64×32 ([ADDONS.md](ADDONS.md)) | 0–3 / 1 |
+| `oled_flip` | Turn the OLED picture upside down | `false` |
 | `fahrenheit` | Temperature in °F | `false` |
 | `log_min` | Save a sensor sample every N minutes (0 = off) | 0–1440 / 0 |
 | `alerts` | Bell times, `"HH:MM"`, at most 16 | empty |
@@ -152,6 +153,8 @@ For scripts, other tools, or curiosity. The same commands work over USB and Blue
 | `fs_read` | `path`, `offset` | Up to a few hundred bytes from `offset`: `data`, `size`, `eof` |
 | `fs_write` | `path`, `data`, `append` | Write (or with `append`, add to) a file. Send big files in pieces |
 | `fs_delete` | `path` | Delete a file |
+| `oled_show` | `path`, `ms` | Show that screen design on the OLED for `ms` (1000–120000, default 15000), whatever is on screen ([OLED_SCREENS.md](OLED_SCREENS.md)) |
+| `oled_shot` | | The OLED's current picture, drawn even with no panel plugged in: `w`, `h`, `panel`, `design` (`f:<path>` or `b:<n>` for a built-in one), `data` (base64, rows of 8 pixels a byte, left pixel in the top bit) |
 | `i2c_scan` | | `found`: addresses answering on the accessory socket's I²C bus |
 | `i2c_read` | `addr`, `reg`, `len` | Read `len` (1–32) bytes, after writing register `reg` if given: `data` |
 | `i2c_write` | `addr`, `data` | Write a list of bytes |

@@ -1,0 +1,26 @@
+** Drc report for screen_pack.kicad_pcb **
+** Created on 2026-11-16T21:11:40 **
+** Report includes: Errors, Warnings, Exclusions **
+
+** Found 2 DRC violations **
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(120.0000 mm, 117.0000 mm): Segment on Edge.Cuts
+    @(106.0800 mm, 114.4300 mm): Segment of J1 on B.Silkscreen
+[silk_edge_clearance]: Silkscreen clipped by board edge
+    Rule: board setup constraints silk; warning
+    @(120.0000 mm, 117.0000 mm): Segment on Edge.Cuts
+    @(113.9200 mm, 111.7800 mm): Segment of J1 on B.Silkscreen
+
+** Found 0 unconnected pads **
+
+** Found 0 Footprint errors **
+
+** Ignored checks **
+    - Footprint has no courtyard defined
+    - Track endpoint not centered on via
+    - Tuning profile track geometries
+    - Footprint doesn't match symbol's footprint filters
+    - Footprint component type doesn't match footprint pads
+
+** End of Report **

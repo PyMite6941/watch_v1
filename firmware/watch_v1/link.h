@@ -16,6 +16,7 @@
 #include "mesh.h"
 #include "env.h"
 #include "apps.h"
+#include "oled.h"
 
 #define NUS_SERVICE "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 #define NUS_RX      "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"   // computer -> watch
@@ -65,6 +66,7 @@ static String linkHandle(const String &line, bool &trusted) {
     out["peers"] = meshPeerCount();
     out["env"] = envAddr != 0;
     out["apps"] = appCount;
+    out["oled"] = oled != nullptr;
     out["locked"] = !trusted;
   } else if (!trusted) {
     out["err"] = "locked: send {\"cmd\":\"auth\",\"pin\":\"...\"} first";
@@ -242,6 +244,7 @@ static String linkHandle(const String &line, bool &trusted) {
         f.close();
         out["ok"] = true;
         if (!strncmp(path, "/apps/", 6)) appsScan();
+        if (!strncmp(path, "/oled/", 6)) oledForget();
       } else {
         out["err"] = "write failed";
       }
@@ -249,7 +252,29 @@ static String linkHandle(const String &line, bool &trusted) {
   } else if (!strcmp(cmd, "fs_delete")) {
     const char *path = in["path"] | "";
     out["ok"] = fsPathOk(path) && LittleFS.remove(path);
-    if (out["ok"]) appsScan(); else out["err"] = "no such file";
+    if (out["ok"]) { appsScan(); oledForget(); } else out["err"] = "no such file";
+  } else if (!strcmp(cmd, "oled_show")) {
+    // Try a screen design on the OLED for a while: {"cmd":"oled_show","path":"/oled/_try.json","ms":15000}
+    const char *path = in["path"] | "";
+    uint32_t ms = constrain((long)(in["ms"] | 15000L), 1000L, 120000L);
+    if (!settings.oled) out["err"] = "no OLED set up (setting oled is 0)";
+    else if (!fsPathOk(path) || !oledShowFile(path, ms)) out["err"] = "no such file";
+    else out["ok"] = true;
+  } else if (!strcmp(cmd, "oled_shot")) {
+    // What the OLED shows now (drawn even with no panel plugged in), for Watch Studio to compare.
+    if (!settings.oled) {
+      out["err"] = "no OLED set up (setting oled is 0)";
+    } else {
+      bool drawn = oledRenderNow();
+      String data;
+      oledBase64(oledBuf, ((oledW() + 7) >> 3) * oledH(), data);
+      out["ok"] = true;
+      out["w"] = oledW();
+      out["h"] = oledH();
+      out["panel"] = oled != nullptr;
+      out["design"] = drawn ? oledDocSrc : "";
+      out["data"] = data;
+    }
   } else if (!strcmp(cmd, "i2c_scan")) {
     // Which addresses answer on the accessory socket's I2C bus.
     JsonArray found = out["found"].to<JsonArray>();

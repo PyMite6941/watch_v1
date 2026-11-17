@@ -1,0 +1,60 @@
+# Checks that the watch's OLED renderer (firmware/watch_v1/oled_render.h, C++) and
+# Watch Studio's preview (app/oled.js) draw exactly the same pixels, so what a
+# teacher designs on the computer is what the watch shows.
+#
+# It builds the C++ renderer on Linux with the same font and JSON libraries the
+# watch uses, renders a few hundred screens with both, and compares.
+name: OLED preview matches the watch
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - firmware/watch_v1/oled_render.h
+      - firmware/watch_v1/oled_assets.h
+      - app/oled.js
+      - app/oled-assets.js
+      - tools/oled/**
+      - .github/workflows/oled-parity.yml
+  push:
+    branches: [main]
+    paths:
+      - firmware/watch_v1/oled_render.h
+      - app/oled.js
+      - tools/oled/**
+
+permissions:
+  contents: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Libraries the watch is built with
+        run: |
+          git clone -q --depth 1 --branch v7.4.3 https://github.com/bblanchon/ArduinoJson /tmp/ArduinoJson
+          git clone -q --depth 1 --branch 1.12.6 https://github.com/adafruit/Adafruit-GFX-Library /tmp/gfx
+
+      - name: Assets are up to date with their sources
+        run: |
+          ln -s /tmp/gfx /tmp/Adafruit_GFX_Library
+          ARDUINO_LIBS=/tmp python3 tools/oled/build_assets.py
+          git diff --exit-code -- app/oled-assets.js firmware/watch_v1/oled_assets.h || (echo "::error::Run python tools/oled/build_assets.py and commit the result"; exit 1)
+
+      - name: Build the watch's renderer for this computer
+        working-directory: tools/oled/parity
+        run: g++ -std=c++17 -O2 -Wall -Wno-unused-function -I stub -I /tmp/ArduinoJson/src -I /tmp/gfx -I ../../../firmware/watch_v1 parity.cpp -o parity
+
+      - name: Draw and compare
+        working-directory: tools/oled/parity
+        run: |
+          node run.js make
+          ./parity cases.json > out.txt
+          node run.js check out.txt

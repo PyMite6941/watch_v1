@@ -59,7 +59,7 @@ About the charge-current resistor: on the TP4056 board, find the small resistor 
 |---|---|---|
 | Environment | BME280 3.3 V I²C breakout, 2×3 male header, perfboard scrap | Temperature, humidity, pressure, logging |
 | Sound | MAX4466 microphone amplifier board, 2×3 male header, perfboard scrap | Tuner |
-| Screen | SSD1306 I²C OLED (0.91" 128×32 is the default; Qwiic version for the cable option) on a Pack Base, or a Qwiic cable | The current screen in words: full date, weather, messages |
+| Screen | SSD1306 I²C OLED (0.91" 128×32 is the default) on a Screen Pack board with a 4-pin 2.54 mm female header and a 2×3 male header; or a Qwiic OLED on a Pack Base's Qwiic socket | The current screen in words and pictures: full date, weather, messages, teacher-designed screens ([OLED_SCREENS.md](OLED_SCREENS.md)) |
 
 Wiring is in [ADDONS.md](ADDONS.md).
 

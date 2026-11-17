@@ -15,7 +15,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 APP = os.path.join(ROOT, "app")
 DIST = os.path.join(ROOT, "dist")
-APP_FILES = ["index.html", "icon.svg", "icon.png", "manifest.webmanifest", "sw.js"]  # as installer/build.py
+APP_FILES = ["index.html", "icon.svg", "icon.png", "manifest.webmanifest", "sw.js", "oled.js", "oled-assets.js"]  # as installer/build.py
 
 
 def tool(name):

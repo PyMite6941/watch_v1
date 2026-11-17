@@ -105,6 +105,7 @@ static void settingsToJson(JsonObject o, bool withSecrets) {
   o["tune_a4"] = settings.tune_a4;
   o["bpm"] = settings.bpm;
   o["oled"] = settings.oled;
+  o["oled_flip"] = settings.oled_flip;
   o["hello"] = settings.hello;
   o["wx_url"] = settings.wx_url;
   o["wx_city"] = settings.wx_city;
@@ -152,6 +153,7 @@ static bool settingsFromJson(JsonObjectConst o, bool withSecrets) {
   NUM("tune_a4", tune_a4, 400, 480)
   NUM("bpm", bpm, 30, 240)
   NUM("oled", oled, 0, 3)
+  BOOL("oled_flip", oled_flip)
   STR("hello", hello)
   STR("wx_url", wx_url)
   STR("wx_city", wx_city)

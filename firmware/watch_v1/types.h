@@ -68,6 +68,7 @@ struct Settings {
   uint16_t tune_a4;             // tuner reference pitch, Hz
   uint16_t bpm;                 // metronome
   uint8_t  oled;                // OLED on the socket: 0 off, 1 128x32, 2 128x64, 3 64x32 (oled.h)
+  bool     oled_flip;           // turn the OLED picture upside down
   char     hello[5];            // four characters shown when the watch is switched on ("" = nothing)
   char     wx_url[128];         // weather service (weather.h); "" = no weather
   char     wx_city[40];         // where: a city name, or ...

@@ -109,37 +109,33 @@ This is the newest and least-proven feature: the pitch maths is standard, but it
 
 ### Screen pack — a small OLED that says it in words
 
-The four LED digits stay the watch's main display. A small SSD1306 OLED on the socket repeats the current screen in words and longer numbers:
+The four LED digits stay the watch's main display. A small SSD1306 OLED on the socket shows the current screen in words and pictures:
 
-- the full date ("Monday 16 Nov");
+- the time with the date, the weather and the battery around it;
 - the whole weather ("Partly cloudy, high 21 low 12, rain 20%");
 - a message app's full text;
 - temperature, humidity and pressure together;
 - the tuner's note, cents and frequency;
-- a sequence app's step ("FOCU: step 1 of 2").
+- a step timer's step, with a progress bar.
 
-It is switched off when the watch sleeps, so it draws next to nothing then, and redraws only when the text changes, at most four times a second.
+Every one of those is a **design** that teachers can change, or replace with their own, in Watch Studio › Screens: a class-bell countdown, a name badge, the school logo. How it works and the file format are in [OLED_SCREENS.md](OLED_SCREENS.md).
+
+It is switched off when the watch sleeps, so it draws next to nothing then. While the watch is awake it is sent a new picture only when a pixel changes, at most four times a second.
 
 | Part | Notes |
 |---|---|
 | SSD1306 OLED, I²C, 3.3 V | 0.91" 128×32 (the default), 0.96" 128×64, or 0.49" 64×32. Address `0x3C` or `0x3D`; the watch finds either. **Not** the SPI versions (7 pins) or SH1106 1.3" boards. |
-| A Pack Base, or a Qwiic cable | See below |
+| A Screen Pack board, a Pack Base, or a Qwiic cable | See below |
 
-**Two ways to fit it.**
+**Three ways to fit it.**
 
-1. **Plug-in, anywhere on a cable (easiest):** an OLED with a Qwiic / STEMMA QT socket (SparkFun, Adafruit and copies), plugged into the Pack Base's Qwiic socket J5 with a Qwiic cable. The screen can then sit wherever it is wanted: on the strap, on the desk stand, on a lanyard. No soldering on the screen side, and the plug only fits one way round.
-2. **Soldered onto the Pack Base:** a plain 4-pin OLED board in the breakout row J2. **Check the order printed on the OLED first.** J2 is `V G SCL SDA`. Many OLED boards are `G V SCL SDA` (GND first), and plugging one of those straight in swaps the power, which can destroy the screen. If yours starts with `G`/`GND`, cross the first two pins with short wires instead of soldering it straight in.
+1. **Screen Pack board (neatest):** a small board made for the job ([hardware/addons](../hardware/addons/README.md#the-screen-pack-board)). It has two 4-hole rows, one for each pin order cheap OLEDs come in (`G V CL DA` and `V G CL DA`). Solder a 4-pin female header into the row that matches the letters on your OLED, and the screen plugs in and out. Because the right row is chosen by reading the letters, the power cannot be swapped by accident.
+2. **Plug-in, anywhere on a cable:** an OLED with a Qwiic / STEMMA QT socket (SparkFun, Adafruit and copies), plugged into the Pack Base's Qwiic socket J5 with a Qwiic cable. The screen can then sit wherever it is wanted: on the strap, on the desk stand, on a lanyard.
+3. **Soldered onto the Pack Base:** a plain 4-pin OLED board in the breakout row J2. **Check the order printed on the OLED first.** J2 is `V G SCL SDA`. Many OLED boards are `G V SCL SDA` (GND first), and plugging one of those straight in swaps the power, which can destroy the screen. If yours starts with `G`/`GND`, cross the first two pins with short wires instead of soldering it straight in.
 
-| OLED pin | Pack Base | Socket pin |
-|---|---|---|
-| VCC | J2 `V` (or Qwiic) | 2 (3V3) through JP1 |
-| GND | J2 `G` | 1 (GND) |
-| SCL | J2 `SCL` | 4 (SCL) |
-| SDA | J2 `SDA` | 3 (SDA) |
+In Watch Studio, *Settings › OLED screen on the socket* picks the size (`oled` setting: 0 none, 1 128×32, 2 128×64, 3 64×32), and *OLED picture upside down* turns it round if it ends up mounted that way. The watch skips the screen if none answers, so leaving the setting on costs nothing. The firmware needs two more libraries: see [`BUILD_GUIDE.md`](BUILD_GUIDE.md) step 1.
 
-In Watch Studio, *Setup › OLED screen on the socket* picks the size (`oled` setting: 0 none, 1 128×32, 2 128×64, 3 64×32). The watch skips the screen if none answers, so leaving the setting on costs nothing. The firmware needs two more libraries: see [`BUILD_GUIDE.md`](BUILD_GUIDE.md) step 1.
-
-Not yet tried on real hardware: the drawing code compiles against the Adafruit SSD1306 library, and the panel sizes come from that library's own settings.
+Not yet tried on real hardware. The drawing code compiles for the watch, and on every change it is checked to draw exactly what Watch Studio's preview draws.
 
 ### Designing your own pack
 

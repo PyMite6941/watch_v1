@@ -87,6 +87,18 @@
   .tile { cursor:pointer; }
   .tile.on { border-color:var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
   #labChart { width:100%; height:220px; display:block; margin-top:12px; border:1px solid var(--line); border-radius:8px; background:var(--bg); }
+  .oledbox { background:#05070a; border-radius:10px; padding:10px; display:inline-block; max-width:100%; overflow:auto; }
+  .oledbox canvas { display:block; image-rendering:pixelated; touch-action:none; }
+  #scrCanvas { cursor:crosshair; }
+  .scr-grid { display:grid; grid-template-columns: minmax(0, 1fr) 280px; gap:14px; align-items:start; }
+  @media (max-width: 760px) { .scr-grid { grid-template-columns: 1fr; } }
+  #scrItems td { cursor:pointer; }
+  #scrItems tr.on td { background:color-mix(in srgb, var(--accent) 16%, transparent); }
+  #scrProps .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .starters { display:grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap:8px; }
+  .starter { border:1px solid var(--line); border-radius:8px; padding:6px; cursor:pointer; text-align:center; font-size:13px; background:var(--bg); }
+  .starter canvas { width:100%; image-rendering:pixelated; border-radius:4px; display:block; margin-bottom:4px; }
+  .starter:hover { border-color:var(--accent); }
   header.top { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
 </style>
 </head>
@@ -125,6 +137,7 @@
     <button data-tab="home" class="on">Watch</button>
     <button data-tab="setup">Settings</button>
     <button data-tab="apps">Apps</button>
+    <button data-tab="screens">Screens</button>
     <button data-tab="files">Files</button>
     <button data-tab="lab">Lab</button>
     <button data-tab="backup">Backup</button>
@@ -201,6 +214,7 @@
         <div><label>Bluetooth PIN (blank = none)</label><input type="password" id="pinSet" maxlength="8" placeholder="unchanged"></div>
       </div>
       <label class="check"><input type="checkbox" id="h24"> 24-hour clock</label>
+      <label class="check"><input type="checkbox" id="oled_flip"> OLED picture upside down</label>
       <label class="check"><input type="checkbox" id="auto_bright"> Brightness follows the light sensor</label>
       <label class="check"><input type="checkbox" id="haptic"> Vibrate on button presses</label>
       <label class="check"><input type="checkbox" id="fahrenheit"> Temperature in Fahrenheit</label>
@@ -325,6 +339,77 @@
     </section>
   </div>
 
+  <!-- ============================= SCREENS ============================= -->
+  <!-- Designs for the OLED screen pack. Format: docs/OLED_SCREENS.md. Drawing: oled.js (the watch draws the same pixels). -->
+  <div id="tab-screens" class="tab hide">
+    <section>
+      <h2>OLED screens</h2>
+      <p class="sub" id="scrPanelText">With the Screen Pack plugged in, the watch shows its screens in words and pictures on a small OLED. Design your own here; anything you leave alone uses the watch's built-in design.</p>
+      <table id="scrList"></table>
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="btnScrNew">New screen</button>
+        <button id="btnScrShot">Show the watch's OLED now</button>
+        <button id="btnScrRefresh">Refresh</button>
+      </div>
+      <div id="scrShotBox" class="hide" style="margin-top:10px">
+        <div class="oledbox"><canvas id="scrShot"></canvas></div>
+        <p><small id="scrShotText"></small></p>
+      </div>
+    </section>
+
+    <section id="scrStart" class="hide">
+      <h2>Start from…</h2>
+      <p class="sub">Pick a design to change, or a blank screen.</p>
+      <div class="starters" id="scrStarters"></div>
+    </section>
+
+    <section id="scrEditor" class="hide">
+      <div class="grid">
+        <div><label>Name</label><input type="text" id="scrName" maxlength="28"></div>
+        <div><label>Use it for</label><select id="scrFor"></select></div>
+      </div>
+      <div class="scr-grid" style="margin-top:12px">
+        <div>
+          <div class="oledbox"><canvas id="scrCanvas" aria-label="The screen design. Click a part to pick it, drag to move it."></canvas></div>
+          <p><small>Click a part to pick it, drag to move it, arrow keys nudge it by a pixel. Shown with example values; on the watch they are live.</small></p>
+          <div class="row">
+            <button class="small" data-add="text">+ Text</button>
+            <button class="small" data-add="icon">+ Icon</button>
+            <button class="small" data-add="battery">+ Battery</button>
+            <button class="small" data-add="bar">+ Progress bar</button>
+            <button class="small" data-add="box">+ Box</button>
+            <button class="small" data-add="line">+ Line</button>
+            <button class="small" data-add="circle">+ Circle</button>
+            <button class="small" id="btnScrImage">+ Picture…</button>
+            <input type="file" id="scrImageFile" accept="image/*" class="hide">
+          </div>
+          <label class="check"><input type="checkbox" id="scrInv"> Invert the whole screen (dark on lit)</label>
+          <label class="check"><input type="checkbox" id="scrGrid" checked> Show pixel grid</label>
+        </div>
+        <div>
+          <h3 style="margin-top:0">Parts, back to front</h3>
+          <table id="scrItems"></table>
+          <div class="row" style="margin-top:6px">
+            <button class="small" id="btnScrUp">Forward</button>
+            <button class="small" id="btnScrDown">Back</button>
+            <button class="small" id="btnScrDup">Copy</button>
+            <button class="small" id="btnScrDel">Delete</button>
+          </div>
+          <div id="scrProps"></div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="primary" id="btnScrSave">Save to the watch</button>
+        <button id="btnScrTry">Try on the watch for 15 s</button>
+        <button id="btnScrDownload">Download</button>
+        <button id="btnScrUpload">Open a file…</button>
+        <input type="file" id="scrUploadFile" accept=".json" class="hide">
+        <button id="btnScrClose">Close</button>
+      </div>
+      <details style="margin-top:10px"><summary><small>Words that fill themselves in</small></summary><table id="scrFields" style="margin-top:6px"></table></details>
+    </section>
+  </div>
+
   <!-- ============================== FILES ============================== -->
   <div id="tab-files" class="tab hide">
     <section>
@@ -421,9 +506,11 @@
 
 <!-- Personal touches. The installers (installer/) and the Java app (java-app/) supply their own; the copy in app/ is empty. -->
 <script src="config.js"></script>
+<script src="oled-assets.js"></script>
+<script src="oled.js"></script>
 <script>
 "use strict";
-const STUDIO_VERSION = "1.1";
+const STUDIO_VERSION = "1.2";
 const CONFIG = Object.assign({ forName: "", message: "", from: "", accent: "green", theme: "auto" }, window.STUDIO_CONFIG || {});
 const $ = id => document.getElementById(id);
 const NUS = { service: "6e400001-b5a3-f393-e0a9-e50e24dcca9e", rx: "6e400002-b5a3-f393-e0a9-e50e24dcca9e", tx: "6e400003-b5a3-f393-e0a9-e50e24dcca9e" };
@@ -437,7 +524,7 @@ const ZONES = [["", "custom"], ["PST8PDT,M3.2.0,M11.1.0", "Los Angeles"], ["MST7
   ["AEST-10AEDT,M10.1.0,M4.1.0/3", "Sydney"]];
 const TEXT = ["name", "hello", "tz", "ntp", "time_url", "time_key", "mesh_group", "time_src", "wx_url", "wx_city"];
 const NUMS = ["awake_s", "bright_min", "bright_max", "timer_s", "dice", "bpm", "tune_a4", "oled", "log_min", "alert_warn_min", "resync_h", "mesh_ch", "wx_lat", "wx_lon", "wx_min"];
-const BOOLS = ["h24", "auto_bright", "haptic", "fahrenheit", "usb_awake", "mesh"];
+const BOOLS = ["oled_flip", "h24", "auto_bright", "haptic", "fahrenheit", "usb_awake", "mesh"];
 const I2C_NAMES = { 0x68: "DS3231 clock (or MPU6050)", 0x57: "clock module memory / MAX30102", 0x76: "BME280 / BMP280", 0x77: "BME280 / BMP280",
   0x3C: "SSD1306 display", 0x23: "BH1750 light", 0x10: "VEML7700 light", 0x62: "SCD40 CO2", 0x29: "VL53L0X distance", 0x18: "LIS3DH motion",
   0x69: "MPU6050 motion", 0x48: "ADS1115 analogue inputs", 0x20: "MCP23017 extra pins", 0x40: "PCA9685 servo driver" };
@@ -657,6 +744,7 @@ function showTab(name) {
   for (const b of $("tabs").children) b.classList.toggle("on", b.dataset.tab === name);
   if (name === "apps") run(loadApps);
   if (name === "files") run(loadFiles);
+  if (name === "screens") run(loadScreens);
 }
 
 // ------------------------------------------------------------- watch + wifi
@@ -1023,6 +1111,352 @@ async function restoreBackup(b) {
   return Object.keys(b.files || {}).length;
 }
 
+// ------------------------------------------------------------ OLED screens
+// Designs live in /oled/<name>.json on the watch (docs/OLED_SCREENS.md).
+// OLED.render (oled.js) draws them exactly as the watch does.
+const PANELS = { 1: [128, 32], 2: [128, 64], 3: [64, 32] };
+const FIELD_HELP = [
+  ["time", "the time, 10:42"], ["hh", "hours"], ["mm", "minutes"], ["ss", "seconds"], ["ampm", "AM or PM (blank on a 24-hour clock)"],
+  ["day", "Monday"], ["dy", "Mon"], ["dd", "day of the month, 16"], ["mon", "Nov"], ["month", "November"], ["year", "2026"], ["date", "Mon 16 Nov"],
+  ["batt", "battery %"], ["charging", "1 while charging"], ["wx_temp", "temperature outside, 31°C (blank without weather)"],
+  ["wx", "Partly cloudy"], ["wx_icon", "weather icon name"], ["hi", "today's high"], ["lo", "today's low"], ["rain", "chance of rain %"],
+  ["temp", "Environment Pack temperature"], ["hum", "humidity"], ["hpa", "air pressure"], ["unit", "C or F"],
+  ["bell", "time to the next bell (blank after the last)"], ["timer", "countdown timer"], ["timer_pct", "timer progress %"],
+  ["sw", "stopwatch"], ["tally", "tally counter"], ["dice", "last dice roll"], ["bpm", "metronome speed"], ["note", "tuner note, A4"], ["cents", "tuner cents, +3"],
+  ["name", "the watch's name"], ["value", "this screen's main number or word"], ["label", "what it is, in words"], ["icon", "this screen's icon"],
+  ["view", "which screen is showing"], ["title", "the app's title"], ["text", "a message app's text"], ["step", "step timer: 2/5"],
+  ["step_pct", "step timer: how far through this step, %"], ["sec_pct", "how far through this minute, %"]];
+const PCT_FIELDS = ["{sec_pct}", "{step_pct}", "{timer_pct}", "{batt}", "{rain}"];
+const SCREEN_FOR = { time: "Time", seconds: "Seconds", date: "Date", battery: "Battery", stopwatch: "Stopwatch", timer: "Timer",
+  counter: "Tally counter", dice: "Dice", period: "Next bell", mesh: "Mesh", temp: "Temperature", humidity: "Humidity",
+  pressure: "Air pressure", tuner: "Tuner", metronome: "Metronome", weather: "Weather", app: "Every app", set: "Setting the time",
+  overlay: "Quick flash after a button" };
+let scr = null, scrPath = null, scrSel = -1, scrPanel = [128, 32], scrApps = [];
+
+// Example values for the preview, from this computer's clock.
+function demoField(k) {
+  const d = new Date(), h24 = !!(lastCfg && lastCfg.h24), H = d.getHours(), h = h24 ? H : (H % 12 || 12);
+  const p2 = n => String(n).padStart(2, "0");
+  const DAY = d.toLocaleDateString("en-GB", { weekday: "long" }), MON = d.toLocaleDateString("en-GB", { month: "long" });
+  const unit = lastCfg && lastCfg.fahrenheit ? "F" : "C";
+  const v = { time: (h24 ? p2(h) : h) + ":" + p2(d.getMinutes()), hh: p2(h), mm: p2(d.getMinutes()), ss: p2(d.getSeconds()),
+    ampm: h24 ? "" : H >= 12 ? "PM" : "AM", day: DAY, dy: DAY.slice(0, 3), dd: String(d.getDate()), mon: MON.slice(0, 3), month: MON,
+    year: String(d.getFullYear()), date: DAY.slice(0, 3) + " " + d.getDate() + " " + MON.slice(0, 3), batt: "74", charging: "0",
+    wx_temp: (unit === "F" ? 88 : 31) + "°" + unit, wx: "Partly cloudy", wx_icon: "partly", hi: unit === "F" ? "91" : "33", lo: unit === "F" ? "77" : "25",
+    rain: "40", temp: "23.4°" + unit, hum: "48%", hpa: "1012", unit, bell: "12:05", timer: "04:59", timer_pct: "35", sw: "01:23.4",
+    tally: "17", dice: "4", bpm: "100", note: "A4", cents: "+3", name: (lastCfg && lastCfg.name) || "Room 12",
+    value: "10:42", label: "Monday 16 Nov", icon: "clock", view: "time", title: "LAB", text: "Quiz on Friday!", step: "2/5",
+    step_pct: "60", sec_pct: String(Math.round(d.getSeconds() * 100 / 60)) };
+  const f = scr ? scr.for || "" : "";
+  if (f === "time" || f === "seconds") { v.value = f === "time" ? v.time : p2(H) + ":" + v.mm + ":" + v.ss; v.label = DAY + " " + d.getDate() + " " + MON.slice(0, 3); }
+  else if (f === "weather") { v.value = v.wx_temp; v.label = "Partly cloudy, high " + v.hi + " low " + v.lo + ", rain 40%"; v.icon = "partly"; }
+  else if (f === "period") { v.value = v.bell; v.label = "Until the next bell"; v.icon = "bell"; }
+  else if (f === "timer") { v.value = v.timer; v.label = "Timer running"; v.icon = "hourglass"; }
+  else if (f === "battery") { v.value = "74%"; v.label = "Battery 3.98 V"; v.icon = "bolt"; }
+  else if (f === "counter") { v.value = "17"; v.label = "Tally"; v.icon = "tally"; }
+  else if (f === "temp") { v.value = v.temp; v.label = v.temp + "  48% humidity  1012 hPa"; v.icon = "thermo"; }
+  else if (f === "overlay") { v.value = "+1"; v.label = ""; v.icon = ""; }
+  else if (f === "set") { v.value = "Set"; v.label = "SET changes, MODE moves on, hold MODE saves"; v.icon = "pencil"; }
+  else if (f.startsWith("app")) { v.value = "04:59"; v.label = "LAB: step 2 of 5"; v.icon = "list"; }
+  return k in v ? v[k] : undefined;
+}
+let lastCfg = null;
+
+function scrPanelNow() { return PANELS[(lastCfg && lastCfg.oled) || 1] || PANELS[1]; }
+
+async function loadScreens() {
+  lastCfg = (await ok(send({ cmd: "get" }))).cfg;
+  scrPanel = scrPanelNow();
+  $("scrPanelText").innerHTML = lastCfg.oled
+    ? "This watch is set for a <b>" + scrPanel[0] + " × " + scrPanel[1] + "</b> OLED (Settings › OLED screen). Screens you design here replace the watch's built-in ones; remove one to go back."
+    : "<span class='warn'>The OLED is switched off in Settings › OLED screen. Pick its size there first.</span>";
+  scrApps = (await listDir("/apps/")).filter(f => !f.dir && f.name.endsWith(".json")).map(f => f.name.replace(/\.json$/, ""));
+  const files = (await listDir("/oled/")).filter(f => !f.dir && f.name.endsWith(".json") && f.name[0] !== "_");
+  const rows = [];
+  for (const f of files) {
+    let d = null;
+    try { d = JSON.parse(await readFile("/oled/" + f.name)); } catch (e) { /* shown as unreadable */ }
+    const fits = d && d.w === scrPanel[0] && d.h === scrPanel[1];
+    rows.push("<tr><td><canvas data-thumb='" + esc(f.name) + "' style='width:128px;image-rendering:pixelated;background:#05070a;border-radius:4px'></canvas></td><td><b>" + esc(d ? d.name || f.name : f.name) + "</b><br><small>" +
+      (d ? esc(forLabel(d.for)) + " · " + d.w + "×" + d.h + (fits ? "" : " · <span class='warn'>not this panel's size: not used</span>") : "<span class='warn'>not a screen file</span>") +
+      "</small></td><td class='r'>" + (d ? "<button class='small' data-edit='" + esc(f.name) + "'>Edit</button> " : "") +
+      "<button class='small' data-del='" + esc(f.name) + "'>Remove</button></td></tr>");
+    if (d) scrThumbs[f.name] = d;
+  }
+  $("scrList").innerHTML = rows.join("") || "<tr><td><small>No screens of your own yet: the watch uses its built-in ones.</small></td></tr>";
+  for (const c of $("scrList").querySelectorAll("canvas[data-thumb]")) {
+    const d = scrThumbs[c.dataset.thumb];
+    OLED.paint(c, OLED.render(d, demoField, d.w, d.h), { scale: 2 });
+  }
+  for (const b of $("scrList").querySelectorAll("[data-edit]")) b.onclick = () => openScreen(scrThumbs[b.dataset.edit], "/oled/" + b.dataset.edit);
+  for (const b of $("scrList").querySelectorAll("[data-del]")) b.onclick = () => {
+    if (confirm("Remove " + b.dataset.del + " from the watch? Its screen goes back to the built-in design."))
+      run(async () => { await ok(send({ cmd: "fs_delete", path: "/oled/" + b.dataset.del })); await loadScreens(); });
+  };
+}
+const scrThumbs = {};
+const forLabel = f => !f ? "?" : f.startsWith("app:") ? "App “" + f.slice(4) + "”" : SCREEN_FOR[f] || f;
+
+function showStarters() {
+  const [w, h] = scrPanel, size = w + "x" + h, list = [];
+  list.push({ v: 1, name: "Blank", for: "time", w, h, items: [] });
+  for (const [k, d] of Object.entries((OLED.BUILTIN[size]) || {})) list.push(Object.assign(JSON.parse(JSON.stringify(d)), { name: "Built-in: " + d.name, for: k === "card" ? "date" : k }));
+  for (const d of (OLED.STARTERS[size] || [])) list.push(JSON.parse(JSON.stringify(d)));
+  $("scrStarters").innerHTML = "";
+  for (const d of list) {
+    const el = document.createElement("div");
+    el.className = "starter";
+    const c = document.createElement("canvas");
+    scr = d;
+    OLED.paint(c, OLED.render(d, demoField, w, h), { scale: 2 });
+    el.appendChild(c);
+    el.appendChild(document.createTextNode(d.name));
+    el.onclick = () => { $("scrStart").classList.add("hide"); openScreen(JSON.parse(JSON.stringify(d)), null); if (d.name === "Blank" || d.name.startsWith("Built-in")) $("scrName").value = ""; };
+    $("scrStarters").appendChild(el);
+  }
+  scr = null;
+  $("scrStart").classList.remove("hide");
+  $("scrEditor").classList.add("hide");
+}
+
+function openScreen(d, path) {
+  scr = Object.assign({ v: 1, name: "", for: "time", w: scrPanel[0], h: scrPanel[1], items: [] }, d);
+  scr.items = Array.isArray(scr.items) ? scr.items : [];
+  scrPath = path;
+  scrSel = scr.items.length ? 0 : -1;
+  $("scrName").value = scr.name || "";
+  $("scrInv").checked = !!scr.inv;
+  const opts = Object.entries(SCREEN_FOR).map(([k, v]) => [k, v]).concat(scrApps.map(a => ["app:" + a, "App “" + a + "” only"]));
+  if (!opts.some(o => o[0] === scr.for)) opts.push([scr.for, forLabel(scr.for)]);
+  $("scrFor").innerHTML = opts.map(o => "<option value='" + esc(o[0]) + "'>" + esc(o[1]) + "</option>").join("");
+  $("scrFor").value = scr.for;
+  $("scrStart").classList.add("hide");
+  $("scrEditor").classList.remove("hide");
+  scrDraw();
+  $("scrEditor").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+const SCALE = () => Math.max(2, Math.min(6, Math.floor(Math.min(560, $("scrEditor").clientWidth - 330) / scr.w))) || 4;
+function scrDraw(keepProps) {
+  if (!scr) return;
+  const g = OLED.render(scr, demoField, scr.w, scr.h), s = SCALE(), c = $("scrCanvas");
+  OLED.paint(c, g, { scale: s, grid: $("scrGrid").checked });
+  if (scrSel >= 0 && scr.items[scrSel]) {              // outline of the picked part
+    const b = OLED.bounds(scr.items[scrSel], demoField, g), ctx = c.getContext("2d");
+    ctx.strokeStyle = "#ffb000"; ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
+    ctx.strokeRect(b.x * s - 1.5, b.y * s - 1.5, b.w * s + 2, b.h * s + 2);
+  }
+  $("scrItems").innerHTML = scr.items.map((it, i) => "<tr data-i='" + i + "'" + (i === scrSel ? " class='on'" : "") + "><td>" + esc(itemName(it)) + "</td></tr>").join("")
+    || "<tr><td><small>Nothing yet: add a part.</small></td></tr>";
+  for (const tr of $("scrItems").querySelectorAll("tr[data-i]")) tr.onclick = () => { scrSel = +tr.dataset.i; scrDraw(); };
+  if (!keepProps) drawProps();
+}
+function itemName(it) {
+  const K = { text: "Text", icon: "Icon", battery: "Battery", bar: "Bar", box: "Box", line: "Line", circle: "Circle", bmp: "Picture" };
+  let s = K[it.k] || it.k;
+  if (it.k === "text") s += ": " + (it.s || "").slice(0, 24);
+  if (it.k === "icon") s += ": " + it.n;
+  if (it.k === "bar") s += ": " + it.v;
+  if (it.if) s += "  (only if " + it.if + ")";
+  return s;
+}
+
+// Which inputs each kind of part has: [key, label, type, options]
+const PROPS = {
+  text: [["s", "Text ({time}, {wx_temp}…)", "text"], ["font", "Font", "font"], ["fit", "Shrink to fit", "fit"], ["a", "Line up", "sel", [["l", "left of x"], ["c", "centred on x"], ["r", "right of x"]]],
+         ["x", "x", "num"], ["y", "y (bottom of the letters)", "num"], ["mw", "Widest (pixels)", "num"], ["wrap", "Lines", "num"], ["u", "CAPITALS", "check"]],
+  icon: [["n", "Icon", "icon"], ["z", "Size", "sel", [[8, "8 px"], [16, "16 px"], [32, "32 px (16 doubled)"]]], ["x", "x", "num"], ["y", "y", "num"]],
+  battery: [["x", "x", "num"], ["y", "y", "num"], ["w", "Width", "num"], ["h", "Height", "num"]],
+  bar: [["v", "Shows", "pct"], ["x", "x", "num"], ["y", "y", "num"], ["w", "Width", "num"], ["h", "Height", "num"], ["r", "Corner radius", "num"], ["o", "Outline (5 px tall or more)", "check"]],
+  box: [["x", "x", "num"], ["y", "y", "num"], ["w", "Width", "num"], ["h", "Height", "num"], ["r", "Corner radius", "num"], ["fill", "Filled", "check"]],
+  line: [["x", "From x", "num"], ["y", "From y", "num"], ["x2", "To x", "num"], ["y2", "To y", "num"]],
+  circle: [["x", "Centre x", "num"], ["y", "Centre y", "num"], ["r", "Radius", "num"], ["fill", "Filled", "check"]],
+  bmp: [["x", "x", "num"], ["y", "y", "num"]],
+};
+const fallback = id => id >= 2 ? Array.from({ length: id - 1 }, (_, i) => id - i).concat(0) : [id];
+
+function drawProps() {
+  const box = $("scrProps"), it = scr.items[scrSel];
+  if (!it) { box.innerHTML = ""; return; }
+  const fonts = Array.isArray(it.f) ? it.f : [it.f ?? 0];
+  let html = "<h3>" + esc(itemName(it).split(":")[0]) + "</h3><div class='grid'>";
+  for (const [key, label, type, opts] of PROPS[it.k] || []) {
+    const id = "sp_" + key, val = it[key];
+    const wide = type === "text" || type === "pct" || type === "icon" ? " style='grid-column:1/-1'" : "";
+    if (type === "num") html += "<div><label for='" + id + "'>" + label + "</label><input type='number' id='" + id + "' value='" + (val ?? "") + "'></div>";
+    else if (type === "text") html += "<div" + wide + "><label for='" + id + "'>" + label + "</label><input type='text' id='" + id + "' value='" + esc(val ?? "") + "'></div>";
+    else if (type === "check") html += "<div><label class='check'><input type='checkbox' id='" + id + "'" + (val === undefined ? (key === "o" ? " checked" : "") : val ? " checked" : "") + "> " + label + "</label></div>";
+    else if (type === "fit") html += "<div><label class='check'><input type='checkbox' id='" + id + "'" + (fonts.length > 1 ? " checked" : "") + "> " + label + "</label></div>";
+    else if (type === "font") html += "<div><label for='" + id + "'>" + label + "</label><select id='" + id + "'>" + OLED.FONTS.map((n, i) => "<option value='" + i + "'" + (i === fonts[0] ? " selected" : "") + ">" + esc(n) + "</option>").join("") + "</select></div>";
+    else if (type === "sel") html += "<div><label for='" + id + "'>" + label + "</label><select id='" + id + "'>" + opts.map(o => "<option value='" + o[0] + "'" + (String(o[0]) === String(val ?? opts[0][0]) ? " selected" : "") + ">" + o[1] + "</option>").join("") + "</select></div>";
+    else if (type === "icon") {
+      const names = ["{icon}", "{wx_icon}"].concat(OLED.ICON_NAMES);
+      html += "<div" + wide + "><label for='" + id + "'>" + label + "</label><select id='" + id + "'>" + names.map(n => "<option" + (n === val ? " selected" : "") + ">" + esc(n) + "</option>").join("") + "</select></div>";
+    } else if (type === "pct") {
+      html += "<div" + wide + "><label for='" + id + "'>" + label + "</label><select id='" + id + "'>" +
+        PCT_FIELDS.map(n => "<option" + (n === val ? " selected" : "") + ">" + n + "</option>").join("") + "</select></div>";
+    }
+  }
+  html += "<div><label for='sp_c'>Colour</label><select id='sp_c'><option value='1'>Lit</option><option value='0'" + (it.c === 0 ? " selected" : "") + ">Dark (cut out)</option></select></div>";
+  html += "<div><label for='sp_if'>Only when</label><select id='sp_if'><option value=''>Always</option>" +
+    FIELD_HELP.map(f => f[0]).flatMap(n => [n, "!" + n]).map(n => "<option value='" + n + "'" + (n === (it.if || "") ? " selected" : "") + ">" + (n[0] === "!" ? n.slice(1) + " is blank" : n + " has a value") + "</option>").join("") + "</select></div>";
+  html += "</div>";
+  if (it.k === "text") html += "<p><small>Tip: “Shrink to fit” tries smaller fonts until the text fits the width.</small></p>";
+  box.innerHTML = html;
+  for (const el of box.querySelectorAll("input,select")) el.oninput = el.onchange = () => readProps();
+}
+function readProps() {
+  const it = scr.items[scrSel];
+  if (!it) return;
+  for (const [key, , type] of PROPS[it.k] || []) {
+    const el = $("sp_" + key);
+    if (!el) continue;
+    if (type === "num") { if (el.value === "") delete it[key]; else it[key] = Math.round(Number(el.value)); }
+    else if (type === "check") it[key] = el.checked ? 1 : 0;
+    else if (type === "sel" && key === "z") it[key] = Number(el.value);
+    else if (type !== "font" && type !== "fit") it[key] = el.value;
+  }
+  if (it.k === "text") { const id = Number($("sp_font").value); it.f = $("sp_fit").checked ? fallback(id) : id; }
+  if ($("sp_c").value === "0") it.c = 0; else delete it.c;
+  if ($("sp_if").value) it.if = $("sp_if").value; else delete it.if;
+  scrDraw(true);
+}
+
+function addItem(k) {
+  const [w, h] = [scr.w, scr.h], cx = w >> 1, cy = h >> 1;
+  const NEW = {
+    text: { k: "text", s: "{time}", f: fallback(4), a: "c", x: cx, y: cy + 6, mw: w },
+    icon: { k: "icon", n: "star", z: 16, x: 2, y: cy - 8 },
+    battery: { k: "battery", x: w - 28, y: 1, w: 26, h: 9 },
+    bar: { k: "bar", v: "{sec_pct}", x: 0, y: h - 6, w, h: 6, r: 2 },
+    box: { k: "box", x: 4, y: 4, w: w - 8, h: h - 8, r: 4 },
+    line: { k: "line", x: 0, y: cy, x2: w - 1, y2: cy },
+    circle: { k: "circle", x: cx, y: cy, r: Math.min(10, cy - 1) },
+  };
+  scr.items.push(NEW[k]);
+  scrSel = scr.items.length - 1;
+  scrDraw();
+}
+
+// A picture from the computer -> 1-bit, fitted to the panel (dithered so photos keep their shading).
+function addPicture(file) {
+  const img = new Image();
+  img.onload = () => {
+    const k = Math.min(scr.w / img.width, scr.h / img.height, 1), w = Math.max(1, Math.round(img.width * k)), h = Math.max(1, Math.round(img.height * k));
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const ctx = c.getContext("2d");
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    const px = ctx.getImageData(0, 0, w, h).data, lum = new Float32Array(w * h);
+    let sum = 0;
+    for (let i = 0; i < w * h; i++) { lum[i] = 0.299 * px[i * 4] + 0.587 * px[i * 4 + 1] + 0.114 * px[i * 4 + 2]; sum += lum[i]; }
+    // Light background (a drawing, a logo on white): light = off, so the lines light up.
+    const invert = sum / (w * h) > 128;
+    const photo = confirm("Shade it with dots (good for photos)?\nOK = dots, Cancel = plain black and white (good for logos and drawings)");
+    const data = OLED.dither(lum, w, h, 128, photo ? "dither" : "threshold", invert);
+    scr.items.push({ k: "bmp", x: (scr.w - w) >> 1, y: (scr.h - h) >> 1, w, h, d: OLED.toB64(data) });
+    scrSel = scr.items.length - 1;
+    scrDraw();
+    URL.revokeObjectURL(img.src);
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+function scrSlug(name) { return (name || "screen").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30) || "screen"; }
+function scrFinal() {
+  scr.name = $("scrName").value.trim() || forLabel($("scrFor").value);
+  scr.for = $("scrFor").value;
+  scr.w = scrPanel[0]; scr.h = scrPanel[1];
+  if ($("scrInv").checked) scr.inv = true; else delete scr.inv;
+  return JSON.stringify({ v: 1, name: scr.name, for: scr.for, w: scr.w, h: scr.h, inv: scr.inv, items: scr.items });
+}
+
+let scrDrag = null;
+function scrPoint(e) { const r = $("scrCanvas").getBoundingClientRect(), s = $("scrCanvas").width / r.width / SCALE(); return [Math.floor((e.clientX - r.left) * s), Math.floor((e.clientY - r.top) * s)]; }
+function scrPick(x, y) {
+  const g = { w: scr.w, h: scr.h };
+  for (let i = scr.items.length - 1; i >= 0; i--) {
+    const b = OLED.bounds(scr.items[i], demoField, g);
+    if (x >= b.x - 1 && y >= b.y - 1 && x <= b.x + b.w && y <= b.y + b.h) return i;
+  }
+  return -1;
+}
+function scrMove(it, dx, dy) {
+  it.x = (it.x || 0) + dx; it.y = (it.y || 0) + dy;
+  if (it.k === "line") { it.x2 = (it.x2 ?? it.x) + dx; it.y2 = (it.y2 ?? it.y) + dy; }
+}
+
+function screensWiring() {
+  $("btnScrNew").onclick = () => { scrPanel = scrPanelNow(); showStarters(); };
+  $("btnScrRefresh").onclick = () => run(loadScreens);
+  $("btnScrShot").onclick = () => run(async () => {
+    const r = await ok(send({ cmd: "oled_shot" }));
+    OLED.paint($("scrShot"), OLED.fromBytes(OLED.b64(r.data), r.w, r.h), { scale: 3 });
+    $("scrShotText").textContent = (r.panel ? "What the OLED shows now" : "What the OLED would show now (no panel found on the socket)") +
+      (r.design ? ", from " + (r.design.startsWith("f:") ? r.design.slice(2) : "the built-in design") : "") + ".";
+    $("scrShotBox").classList.remove("hide");
+  });
+  for (const b of document.querySelectorAll("[data-add]")) b.onclick = () => addItem(b.dataset.add);
+  $("btnScrImage").onclick = () => $("scrImageFile").click();
+  $("scrImageFile").onchange = e => { if (e.target.files[0]) addPicture(e.target.files[0]); e.target.value = ""; };
+  $("scrInv").onchange = () => { scr.inv = $("scrInv").checked; scrDraw(true); };
+  $("scrGrid").onchange = () => scrDraw(true);
+  $("scrFor").onchange = () => { scr.for = $("scrFor").value; scrDraw(true); };
+  const swap = (a, b) => { if (b < 0 || b >= scr.items.length) return; [scr.items[a], scr.items[b]] = [scr.items[b], scr.items[a]]; scrSel = b; scrDraw(); };
+  $("btnScrUp").onclick = () => swap(scrSel, scrSel + 1);
+  $("btnScrDown").onclick = () => swap(scrSel, scrSel - 1);
+  $("btnScrDup").onclick = () => { if (scrSel < 0) return; const c = JSON.parse(JSON.stringify(scr.items[scrSel])); scrMove(c, 4, 4); scr.items.push(c); scrSel = scr.items.length - 1; scrDraw(); };
+  $("btnScrDel").onclick = () => { if (scrSel < 0) return; scr.items.splice(scrSel, 1); scrSel = Math.min(scrSel, scr.items.length - 1); scrDraw(); };
+  const c = $("scrCanvas");
+  c.tabIndex = 0;
+  c.onpointerdown = e => {
+    const [x, y] = scrPoint(e);
+    scrSel = scrPick(x, y);
+    scrDraw();
+    if (scrSel >= 0) { scrDrag = { x, y }; c.setPointerCapture(e.pointerId); }
+  };
+  c.onpointermove = e => {
+    if (!scrDrag) return;
+    const [x, y] = scrPoint(e);
+    if (x === scrDrag.x && y === scrDrag.y) return;
+    scrMove(scr.items[scrSel], x - scrDrag.x, y - scrDrag.y);
+    scrDrag = { x, y };
+    scrDraw(true);
+  };
+  c.onpointerup = () => { if (scrDrag) { scrDrag = null; drawProps(); } };
+  c.onkeydown = e => {
+    const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (e.key === "Delete" && scrSel >= 0) { $("btnScrDel").click(); e.preventDefault(); }
+    if (!d || scrSel < 0) return;
+    e.preventDefault();
+    scrMove(scr.items[scrSel], d[0], d[1]);
+    scrDraw();
+  };
+  $("btnScrSave").onclick = () => run(async () => {
+    const text = scrFinal();
+    const path = scrPath || "/oled/" + scrSlug(scr.name) + ".json";
+    if (!scrPath && (await listDir("/oled/")).some(f => "/oled/" + f.name === path) && !confirm(path + " is already on the watch. Replace it?")) return;
+    await writeFile(path, text);
+    scrPath = path;
+    await loadScreens();
+  });
+  $("btnScrTry").onclick = () => run(async () => {
+    await writeFile("/oled/_try.json", scrFinal());
+    await ok(send({ cmd: "oled_show", path: "/oled/_try.json", ms: 15000 }));
+  });
+  $("btnScrDownload").onclick = () => download(scrSlug($("scrName").value) + ".json", scrFinal());
+  $("btnScrUpload").onclick = () => $("scrUploadFile").click();
+  $("scrUploadFile").onchange = async e => {
+    const f = e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    try { openScreen(JSON.parse(await f.text()), null); } catch (err) { setStatus("That file is not a screen design: " + err.message, true); }
+  };
+  $("btnScrClose").onclick = () => { scr = null; $("scrEditor").classList.add("hide"); };
+  $("scrFields").innerHTML = FIELD_HELP.map(f => "<tr><td><code>{" + f[0] + "}</code></td><td>" + esc(f[1]) + "</td></tr>").join("");
+  setInterval(() => { if (scr && !scrDrag && !$("scrEditor").classList.contains("hide")) scrDraw(true); }, 1000);   // the clock ticks
+}
+screensWiring();
+
 // ----------------------------------------------------------- the demo watch
 // A stand-in that answers the same commands, so the app can be explored (and
 // tested) with no hardware. It keeps its state for as long as the page is open.
@@ -1032,7 +1466,7 @@ class SimWatch {
     this.cfg = { name: "Demo", hello: "HI", tz: guessZone(), h24: true, awake_s: 5, auto_bright: true, bright_min: 20, bright_max: 255, haptic: true,
       views: ["time", "date", "battery", "stopwatch", "timer"], wifi: [{ ssid: "Staffroom" }], time_src: "http", ntp: "pool.ntp.org", time_url: "https://pymite6941.is-a.bot/api/watch", time_key: "unix", wx_url: "https://pymite6941.is-a.bot/api/watch", wx_city: "", wx_lat: 0, wx_lon: 0, wx_min: 60,
       resync_h: 168, usb_awake: true, pin_set: false, mesh: false, mesh_ch: 1, mesh_group: "class", timer_s: 300, dice: 6, alerts: ["08:30", "09:20"],
-      alert_days: 62, alert_warn_min: 5, log_min: 0, fahrenheit: false, tune_a4: 440, bpm: 100, oled: 1 };
+      alert_days: 62, alert_warn_min: 5, log_min: 0, fahrenheit: false, tune_a4: 440, bpm: 100, oled: 1, oled_flip: false };
     this.files = { "/apps/10-lab.json": JSON.stringify({ type: "sequence", title: "LAb1", repeat: false, steps: [{ label: "StAn", s: 120 }, { label: "rInS", s: 30 }, { label: "drY", s: 60 }] }),
                    "/apps/20-pick.json": JSON.stringify({ type: "picker", title: "PICk", items: ["AnnA", "bEn", "CArL", "dAnA"], no_repeat: true }) };
     this.timer = null;
@@ -1042,9 +1476,9 @@ class SimWatch {
   handle(q) {
     const c = this.cfg, r = { ok: true };
     switch (q.cmd) {
-      case "info": return { ok: true, fw: "2.2.0-demo", name: c.name, mac: "DE:M0:00:00:00:01", battery_mv: 3980, battery_pct: 74, charging: false, rtc: true,
+      case "info": return { ok: true, fw: "2.4.0-demo", name: c.name, mac: "DE:M0:00:00:00:01", battery_mv: 3980, battery_pct: 74, charging: false, rtc: true,
         time: Math.round(Date.now() / 1000), time_valid: true, last_sync: Math.round(Date.now() / 1000) - 7200, usb: true, peers: 2, env: true,
-        apps: Object.keys(this.files).filter(p => p.startsWith("/apps/")).length, locked: false };
+        apps: Object.keys(this.files).filter(p => p.startsWith("/apps/")).length, oled: !!c.oled, locked: false };
       case "get": r.cfg = JSON.parse(JSON.stringify(c)); return r;
       case "set": for (const k in q.cfg || {}) if (k !== "wifi" && k !== "pin") c[k] = q.cfg[k]; if ("pin" in (q.cfg || {})) c.pin_set = !!q.cfg.pin; return r;
       case "wifi_add": if (!q.ssid) return { ok: false, err: "need ssid" }; c.wifi = c.wifi.filter(w => w.ssid !== q.ssid).concat({ ssid: q.ssid }).slice(0, 5); return r;
@@ -1071,6 +1505,24 @@ class SimWatch {
         const off = q.offset || 0; r.data = s.slice(off, off + 400); r.size = s.length; r.eof = off + 400 >= s.length; return r; }
       case "fs_write": this.files[q.path] = (q.append ? this.files[q.path] || "" : "") + (q.data || ""); return r;
       case "fs_delete": if (!(q.path in this.files)) return { ok: false, err: "no such file" }; delete this.files[q.path]; return r;
+      case "oled_show": if (!c.oled) return { ok: false, err: "no OLED set up (setting oled is 0)" };
+        if (!(q.path in this.files)) return { ok: false, err: "no such file" };
+        this.preview = q.path; this.previewUntil = Date.now() + (q.ms || 15000); return r;
+      case "oled_shot": {
+        if (!c.oled) return { ok: false, err: "no OLED set up (setting oled is 0)" };
+        const [w, h] = PANELS[c.oled];
+        let d = null, src = "";
+        if (this.preview && Date.now() < this.previewUntil) { try { d = JSON.parse(this.files[this.preview]); src = "f:" + this.preview; } catch (e) {} }
+        if (!d) for (const p in this.files) {
+          if (!p.startsWith("/oled/") || p.startsWith("/oled/_")) continue;
+          try { const x = JSON.parse(this.files[p]); if (x.for === "time" && x.w === w && x.h === h) { d = x; src = "f:" + p; } } catch (e) {}
+        }
+        if (!d) { d = OLED.BUILTIN[w + "x" + h].time; src = "b:0"; }
+        const was = scr; scr = d;
+        const g = OLED.render(d, demoField, w, h);
+        scr = was;
+        return { ok: true, w, h, panel: true, design: src, data: OLED.toB64(OLED.toBytes(g)) };
+      }
       case "i2c_scan": r.found = [0x57, 0x68, 0x76]; return r;
       case "stream": clearInterval(this.timer);
         if (q.ms) this.timer = setInterval(() => {

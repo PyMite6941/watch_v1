@@ -1,0 +1,66 @@
+{
+  "_about": "Ready-made designs offered in Watch Studio's Screens tab as a starting point. Not stored on the watch. Format: docs/OLED_SCREENS.md",
+  "128x32": [
+    {"name": "Big clock", "for": "time", "items": [
+      {"k": "text", "s": "{time}", "f": [5, 4], "a": "c", "x": 64, "y": 26, "mw": 128},
+      {"k": "bar", "v": "{sec_pct}", "x": 0, "y": 30, "w": 128, "h": 2, "o": 0}
+    ]},
+    {"name": "Class bell", "for": "period", "items": [
+      {"k": "icon", "n": "bell", "z": 16, "x": 0, "y": 8},
+      {"k": "text", "s": "{bell}", "f": [5, 4, 3], "a": "c", "x": 74, "y": 26, "mw": 104, "if": "bell"},
+      {"k": "text", "s": "No more bells", "f": [3, 2, 0], "a": "c", "x": 74, "y": 21, "mw": 104, "if": "!bell"}
+    ]},
+    {"name": "Name badge", "for": "time", "items": [
+      {"k": "box", "x": 0, "y": 0, "w": 128, "h": 32, "r": 5, "fill": 1},
+      {"k": "text", "s": "{name}", "f": [4, 3, 2, 0], "a": "c", "x": 64, "y": 19, "mw": 120, "c": 0},
+      {"k": "text", "s": "{time}", "f": 1, "a": "c", "x": 64, "y": 28, "c": 0}
+    ]},
+    {"name": "Weather", "for": "weather", "items": [
+      {"k": "icon", "n": "{wx_icon}", "z": 32, "x": 0, "y": 0},
+      {"k": "text", "s": "{wx_temp}", "f": [3, 0], "x": 38, "y": 17, "mw": 50},
+      {"k": "text", "s": "H{hi} L{lo}", "f": 1, "a": "r", "x": 128, "y": 9, "if": "wx_temp"},
+      {"k": "text", "s": "{rain}%", "f": 1, "a": "r", "x": 128, "y": 18, "if": "wx_temp"},
+      {"k": "text", "s": "{wx}", "f": 0, "x": 38, "y": 31, "mw": 90}
+    ]},
+    {"name": "Focus steps", "for": "app", "items": [
+      {"k": "text", "s": "{title}", "f": 1, "u": 1, "x": 0, "y": 6},
+      {"k": "text", "s": "Step {step}", "f": 1, "u": 1, "a": "r", "x": 128, "y": 6, "mw": 80, "if": "step"},
+      {"k": "text", "s": "{value}", "f": [4, 3, 0], "a": "c", "x": 64, "y": 25, "mw": 128},
+      {"k": "bar", "v": "{step_pct}", "x": 0, "y": 29, "w": 128, "h": 3, "o": 0}
+    ]},
+    {"name": "Shout-out", "for": "overlay", "items": [
+      {"k": "icon", "n": "star", "z": 16, "x": 0, "y": 8},
+      {"k": "icon", "n": "star", "z": 16, "x": 112, "y": 8},
+      {"k": "text", "s": "{value}", "f": [4, 3, 2, 0], "a": "c", "x": 64, "y": 24, "mw": 92}
+    ]}
+  ],
+  "128x64": [
+    {"name": "Big clock", "for": "time", "items": [
+      {"k": "text", "s": "{time}", "f": [6, 5], "a": "c", "x": 64, "y": 40, "mw": 128},
+      {"k": "text", "s": "{day} {dd} {month}", "f": [2, 0], "a": "c", "x": 64, "y": 58, "mw": 128},
+      {"k": "bar", "v": "{sec_pct}", "x": 0, "y": 0, "w": 128, "h": 2, "o": 0}
+    ]},
+    {"name": "Class bell", "for": "period", "items": [
+      {"k": "icon", "n": "bell", "z": 32, "x": 48, "y": 0},
+      {"k": "text", "s": "{bell}", "f": [5, 4, 3], "a": "c", "x": 64, "y": 62, "mw": 128, "if": "bell"},
+      {"k": "text", "s": "No more bells", "f": [3, 2, 0], "a": "c", "x": 64, "y": 54, "mw": 128, "if": "!bell"}
+    ]},
+    {"name": "Name badge", "for": "time", "items": [
+      {"k": "box", "x": 0, "y": 0, "w": 128, "h": 46, "r": 6, "fill": 1},
+      {"k": "text", "s": "{name}", "f": [5, 4, 3, 0], "a": "c", "x": 64, "y": 32, "mw": 120, "c": 0},
+      {"k": "text", "s": "{time}", "f": [3, 0], "a": "c", "x": 64, "y": 62}
+    ]},
+    {"name": "Weather", "for": "weather", "items": [
+      {"k": "icon", "n": "{wx_icon}", "z": 32, "x": 0, "y": 4},
+      {"k": "text", "s": "{wx_temp}", "f": [5, 4, 0], "x": 40, "y": 30, "mw": 88},
+      {"k": "text", "s": "{wx}", "f": [2, 0], "x": 0, "y": 52, "mw": 128},
+      {"k": "text", "s": "H{hi} L{lo} Rain {rain}%", "f": 0, "x": 0, "y": 63, "mw": 128, "if": "wx_temp"}
+    ]},
+    {"name": "Focus steps", "for": "app", "items": [
+      {"k": "text", "s": "{title}", "f": 3, "x": 0, "y": 13},
+      {"k": "text", "s": "Step {step}", "f": 0, "a": "r", "x": 128, "y": 12, "mw": 64, "if": "step"},
+      {"k": "text", "s": "{value}", "f": [5, 4, 0], "a": "c", "x": 64, "y": 48, "mw": 128},
+      {"k": "bar", "v": "{step_pct}", "x": 0, "y": 56, "w": 128, "h": 8, "r": 3}
+    ]}
+  ]
+}

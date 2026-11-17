@@ -2,7 +2,7 @@
 
 Plug-in boards for the watch's accessory socket. What the socket is and what it can do is in [docs/ADDONS.md](../../docs/ADDONS.md); this folder holds the boards and the plan for making packs cheaply.
 
-**Status: sketch.** The Pack Base board below is designed, routed and passes KiCad's design-rule check, and its factory files are exported. It has not been ordered, built or plugged into a watch.
+**Status: sketch.** The Pack Base and Screen Pack boards below are designed and routed. Both pass KiCad's design-rule check (0 problems), their schematics pass the electrical-rule check, and their factory files are exported. Neither has been ordered, built or plugged into a watch.
 
 | Folder / file | What it is |
 |---|---|
@@ -12,6 +12,10 @@ Plug-in boards for the watch's accessory socket. What the socket is and what it 
 | `pack_base/kicad/pack_base.kicad_sch` | The schematic: 0 electrical-rule findings, and its nets match the board's |
 | `pack_base/fab/pack_base_gerbers.zip` | Upload this to the PCB factory |
 | `pack_base/render_top.png`, `render_bottom.png` | Pictures of both sides |
+| `screen_pack/gen_screen_pack.py`, `gen_screen_pack_sch.py` | The same for the Screen Pack (an OLED carrier) |
+| `screen_pack/kicad/` | Its board and schematic |
+| `screen_pack/fab/screen_pack_gerbers.zip` | Upload this to the PCB factory |
+| `screen_pack/render_top.png`, `render_bottom.png` | Pictures of both sides |
 
 ## The idea: one board for every pack
 
@@ -76,6 +80,45 @@ The minimum order is usually 5 boards. For more, choose the factory's own paneli
 4. Qwiic socket, if wanted: solder it last. It is surface-mount with pins 1 mm apart. That is doable with flux and a fine tip, or the PCB factory can fit it.
 5. Before the first plug-in, measure resistance between J1 pins 1 and 2: it must not be near 0 Ω.
 
+## The Screen Pack board
+
+A carrier for a small I²C OLED, so a screen plugs onto the watch like any other pack. What it shows, and how teachers design their own screens, is in [docs/OLED_SCREENS.md](../../docs/OLED_SCREENS.md).
+
+20 × 17 mm, 2 layers, all through-hole: three headers and nothing else.
+
+```
+   top side                                 underneath
+   ┌─────────────────────────┐              ┌─────────────────────────┐
+   │     G   V   CL  DA      │              │     SCREEN PACK r1      │
+   │ A   ○   ○   ○   ○       │  row A (J2)  │                         │
+   │     V   G   CL  DA      │              │     ONE ROW ONLY:       │
+   │ B   ○   ○   ○   ○       │  row B (J3)  │     MATCH THE OLED      │
+   │      ● 1  ○ 3  ○ 5      │              │   2x3 male header (J1)  │
+   └──────○ 2──○ 4──○ 6──────┘              └─────────────────────────┘
+          edge nearest the display
+```
+
+- **J1** is exactly the Pack Base's plug: a 2×3 male header underneath, its pins over the watch's socket. The generator checks this against the watch board's coordinates every time it runs, and checks that the board's edge stops short of the display window.
+- **Two OLED rows, because cheap OLED boards come with two pin orders.** Row A is `GND VCC SCL SDA` (most 0.91" and 0.96" boards); row B is `VCC GND SCL SDA`. **Fit a 4-pin female header in the one row whose letters match the ones printed on your OLED, and leave the other row empty.** The OLED then plugs into it with its own pins and lies flat over the board. Choosing the row by its letters is what stops the power being swapped, which is the usual way these screens get destroyed.
+- The OLED runs from the watch's 3V3. AUX and AIN (pins 5 and 6) are not connected.
+- **Not checked against a real module:** OLED modules differ in size (a 0.91" board is wider than this carrier) and in where their pins sit, and no module outline has been measured for this design. Only the standard 2.54 mm pin pitch is assumed. The screen overhangs the board; check that it clears the case and the buttons before ordering many.
+
+To rebuild after a change:
+
+```bash
+"%LOCALAPPDATA%\Programs\KiCad\10.0\bin\python.exe" hardware/addons/screen_pack/gen_screen_pack.py --fab
+python hardware/addons/screen_pack/gen_screen_pack_sch.py
+```
+
+Order it like the Pack Base: upload `screen_pack/fab/screen_pack_gerbers.zip` with the default settings, ideally in the same basket as the watch boards.
+
+### Building it
+
+1. J1 first: plastic underneath, solder on top, trim flush.
+2. Read the four letters on your OLED's pins. Solder a 4-pin female header (2.54 mm) into row **A** if they start `GND`, row **B** if they start `VCC`.
+3. Before the first plug-in, measure between J1 pins 1 and 2: it must not be near 0 Ω.
+4. Plug the OLED in, set *Settings › OLED screen* to its size, and press *Screens › Show the watch's OLED now*.
+
 ## Catalogue
 
 "Works now" means the firmware already has a screen for it. "Scan only" means it shows up in Watch Studio's I²C scan, but it needs a small driver before the watch can display its readings. The price bands are rough guesses for cheap marketplace listings, not checked quotes, so compare before buying:
@@ -119,6 +162,7 @@ The watch has a 150 mAh battery and sleeps on microamps. Many cheap breakout boa
 
 ## Not done yet
 
+- [ ] Order and build Screen Packs; measure a real 0.91" and 0.96" OLED module and check how it sits over the watch
 - [ ] Order and build Pack Bases; check the fit on a printed case (header depth, edge clear of the display window)
 - [ ] Measure sleep current with each module, on 3V3 and on AUX
 - [ ] Firmware drivers: AHT20, BH1750, MPU6050, then the rest of the catalogue
