@@ -23,7 +23,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 APP = os.path.join(ROOT, "app")
 INST = os.path.join(ROOT, "installer")
 DIST = os.path.join(ROOT, "dist")
-APP_FILES = ["index.html", "icon.svg", "icon.png", "manifest.webmanifest", "sw.js"]
+APP_FILES = ["index.html", "icon.svg", "icon.png", "manifest.webmanifest", "sw.js", "oled.js", "oled-assets.js"]
 
 # ------------------------------------------------------------------ icon
 # app/icon.svg, as shapes on a 96 x 96 grid: (kind, x, y, w, h, radius, colour).

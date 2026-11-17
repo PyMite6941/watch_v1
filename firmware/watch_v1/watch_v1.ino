@@ -48,8 +48,8 @@
 #include "env.h"
 #include "tuner.h"
 #include "apps.h"
-#include "link.h"
 #include "oled.h"
+#include "link.h"
 
 // ------------------------------------------------------------------ glyphs
 // bit0 = a, bit1 = b, ... bit6 = g, bit7 = dp
@@ -685,10 +685,26 @@ static void renderView() {
 }
 
 // ------------------------------------------------------------- OLED (oled.h)
-// The current screen in words: `big` is the value, `small` says what it is.
-static void oledCompose(char *big, size_t nb, char *small, size_t ns) {
+#define DEGREE "\xC2\xB0"                  // UTF-8 for the degree sign; the OLED fonts draw it
+
+// WMO weather code -> icon name (tools/oled/icons.txt).
+static const char *wxIcon(uint8_t code, bool day) {
+  if (code <= 1) return day ? "sun" : "moon";
+  if (code == 2) return "partly";
+  if (code == 3) return "cloud";
+  if (code == 45 || code == 48) return "fog";
+  if ((code >= 71 && code <= 77) || code == 85 || code == 86) return "snow";
+  if (code >= 95) return "storm";
+  if (code >= 51 && code <= 82) return "rain";
+  return "cloud";
+}
+
+// The current screen in words: `big` is the value, `small` says what it is, `icon` a picture.
+static void oledCompose(char *big, size_t nb, char *small, size_t ns, const char **icon) {
   static const char *const DAYS[7] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
   static const char *const MONTHS[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+  static const char *const ICONS[VIEW_COUNT] = { "clock", "clock", "calendar", "bolt", "stopwatch", "hourglass", "tally",
+    "dice", "bell", "people", "thermo", "drop", "gauge", "note", "metronome", "sun" };
   struct tm t;
   localNow(t);
   char date[32];
@@ -696,6 +712,7 @@ static void oledCompose(char *big, size_t nb, char *small, size_t ns) {
   char unit = settings.fahrenheit ? 'F' : 'C';
   big[0] = small[0] = 0;
   uint8_t v = view();
+  *icon = v < VIEW_COUNT ? ICONS[v] : "list";
   bool clockView = v == VIEW_TIME || v == VIEW_SECONDS || v == VIEW_DATE || v == VIEW_PERIOD;
   if (clockView && !timeValid()) {
     snprintf(big, nb, "--:--");
@@ -760,13 +777,13 @@ static void oledCompose(char *big, size_t nb, char *small, size_t ns) {
     case VIEW_TEMP: case VIEW_HUMIDITY: case VIEW_PRESSURE: {
       if (!envNow.ok) { snprintf(big, nb, "--"); snprintf(small, ns, "No sensor on the socket"); break; }
       float temp = settings.fahrenheit ? envNow.tempC * 9 / 5 + 32 : envNow.tempC;
-      if (v == VIEW_TEMP) snprintf(big, nb, "%.1f\xF8%c", temp, unit);
+      if (v == VIEW_TEMP) snprintf(big, nb, "%.1f" DEGREE "%c", temp, unit);
       else if (v == VIEW_HUMIDITY && envNow.hasHumidity) snprintf(big, nb, "%.0f%%", envNow.humidity);
       else if (v == VIEW_HUMIDITY) snprintf(big, nb, "--");
       else snprintf(big, nb, "%.0f hPa", envNow.hPa);
       if (envNow.hasHumidity)
-        snprintf(small, ns, "%.1f\xF8%c  %.0f%% humidity  %.0f hPa", temp, unit, envNow.humidity, envNow.hPa);
-      else snprintf(small, ns, "%.1f\xF8%c  %.0f hPa", temp, unit, envNow.hPa);
+        snprintf(small, ns, "%.1f" DEGREE "%c  %.0f%% humidity  %.0f hPa", temp, unit, envNow.humidity, envNow.hPa);
+      else snprintf(small, ns, "%.1f" DEGREE "%c  %.0f hPa", temp, unit, envNow.hPa);
       break;
     }
     case VIEW_TUNER: {
@@ -786,9 +803,10 @@ static void oledCompose(char *big, size_t nb, char *small, size_t ns) {
       snprintf(small, ns, "%s", metroOn ? "Metronome on" : "Metronome: press SET");
       break;
     case VIEW_WEATHER:
+      *icon = wxFresh() ? wxIcon(wx.code, wx.isDay) : "cloud";
       if (!wxConfigured()) { snprintf(big, nb, "Weather"); snprintf(small, ns, "Set a place in Watch Studio"); break; }
       if (!wxFresh()) { snprintf(big, nb, "--"); snprintf(small, ns, "Hold SET to fetch the weather"); break; }
-      snprintf(big, nb, "%d\xF8%c", wxDegrees(wx.temp), unit);
+      snprintf(big, nb, "%d" DEGREE "%c", wxDegrees(wx.temp), unit);
       if (wx.high != WX_NONE && wx.low != WX_NONE)
         snprintf(small, ns, "%s, high %d low %d, rain %u%%", wxPhrase(wx.code), wxDegrees(wx.high),
                  wxDegrees(wx.low), (unsigned)wx.rain);
@@ -798,6 +816,7 @@ static void oledCompose(char *big, size_t nb, char *small, size_t ns) {
       int8_t idx = appIndex();
       appLoad(idx);
       if (app.type == APP_MESSAGE) {
+        *icon = "chat";
         snprintf(big, nb, "%s", app.title);
         snprintf(small, ns, "%s", app.text);
       } else if (app.type == APP_SEQUENCE && seqApp == idx) {
@@ -805,10 +824,12 @@ static void oledCompose(char *big, size_t nb, char *small, size_t ns) {
         snprintf(big, nb, "%02ld:%02ld", sec / 60, sec % 60);
         snprintf(small, ns, "%s: step %u of %u", app.title, (unsigned)seqStep + 1, (unsigned)app.n);
       } else if (app.type == APP_PICKER && pickApp == idx && pickLast >= 0) {
+        *icon = "star";
         if (app.n && pickLast < app.n && app.items[pickLast].label[0]) snprintf(big, nb, "%s", app.items[pickLast].label);
         else snprintf(big, nb, "%d", (int)pickLast + 1);
         snprintf(small, ns, "%s", app.title);
       } else if (app.type == APP_COUNTDOWN && timeValid()) {
+        *icon = "calendar";
         long left = (long)(app.date - time(nullptr));
         if (left <= 0) snprintf(big, nb, "Done");
         else snprintf(big, nb, "%ld days", (left + 86399) / 86400);
@@ -822,19 +843,129 @@ static void oledCompose(char *big, size_t nb, char *small, size_t ns) {
   }
 }
 
-static void oledUpdate(uint32_t now) {
-  if (!oled) return;
-  char big[24], small[100];
-  if (setMode) {
-    snprintf(big, sizeof(big), "Set");
-    snprintf(small, sizeof(small), "SET changes, MODE moves on, hold MODE saves");
-  } else if (now < overlayUntil) {
-    snprintf(big, sizeof(big), "%s", overlay);
-    small[0] = 0;
-  } else {
-    oledCompose(big, sizeof(big), small, sizeof(small));
+// Which screen design the OLED should use now (oled.h).
+static void oledKey(char *key, size_t n) {
+  if (setMode) { snprintf(key, n, "set"); return; }
+  if (millis() < overlayUntil) { snprintf(key, n, "overlay"); return; }
+  uint8_t v = view();
+  if (v < VIEW_COUNT) { snprintf(key, n, "%s", VIEW_NAMES[v]); return; }
+  int8_t idx = appIndex();
+  const char *path = idx >= 0 && idx < appCount ? appFiles[idx] : "";
+  const char *stem = strrchr(path, '/');
+  stem = stem ? stem + 1 : path;
+  const char *dot = strrchr(stem, '.');
+  int len = dot ? (int)(dot - stem) : (int)strlen(stem);
+  snprintf(key, n, "app:%.*s", len, stem);
+}
+
+// The value of a {field} in a screen design. false = no such field (it then shows as typed).
+// The full list is in docs/OLED_SCREENS.md; keep it and Watch Studio's demo values in step.
+static bool oledField(const char *k, char *out, size_t n) {
+  static const char *const DAYS[7] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+  static const char *const MONTHS[12] = { "January", "February", "March", "April", "May", "June", "July", "August",
+    "September", "October", "November", "December" };
+  static uint32_t frame = 0xFFFFFFFF;
+  static char big[24], small[100];
+  static const char *icon = "";
+  static struct tm t;
+  if (frame != oledFrame) {                          // once per picture
+    frame = oledFrame;
+    localNow(t);
+    if (setMode) {
+      snprintf(big, sizeof(big), "Set");
+      snprintf(small, sizeof(small), "SET changes, MODE moves on, hold MODE saves");
+      icon = "pencil";
+    } else if (millis() < overlayUntil) {
+      snprintf(big, sizeof(big), "%s", overlay);
+      small[0] = 0;
+      icon = "";
+    } else {
+      oledCompose(big, sizeof(big), small, sizeof(small), &icon);
+    }
   }
-  oledShow(big, small);
+  bool tv = timeValid();
+  char unit = settings.fahrenheit ? 'F' : 'C';
+  bool inApp = view() == VIEW_APP;
+  int8_t idx = appIndex();
+  out[0] = 0;
+#define IS(name) (!strcmp(k, name))
+  if (IS("value")) snprintf(out, n, "%s", big);
+  else if (IS("label")) snprintf(out, n, "%s", small);
+  else if (IS("icon")) snprintf(out, n, "%s", icon);
+  else if (IS("view")) snprintf(out, n, "%s", view() < VIEW_COUNT ? VIEW_NAMES[view()] : "app");
+  else if (IS("name")) snprintf(out, n, "%s", settings.name);
+  else if (IS("time")) {
+    int h = settings.h24 ? t.tm_hour : (t.tm_hour % 12 ? t.tm_hour % 12 : 12);
+    if (!tv) snprintf(out, n, "--:--");
+    else snprintf(out, n, settings.h24 ? "%02d:%02d" : "%d:%02d", h, t.tm_min);
+  }
+  else if (IS("hh")) { if (tv) snprintf(out, n, "%02d", settings.h24 ? t.tm_hour : (t.tm_hour % 12 ? t.tm_hour % 12 : 12)); }
+  else if (IS("mm")) { if (tv) snprintf(out, n, "%02d", t.tm_min); }
+  else if (IS("ss")) { if (tv) snprintf(out, n, "%02d", t.tm_sec); }
+  else if (IS("ampm")) { if (tv && !settings.h24) snprintf(out, n, "%s", t.tm_hour >= 12 ? "PM" : "AM"); }
+  else if (IS("sec_pct")) { if (tv) snprintf(out, n, "%d", t.tm_sec * 100 / 60); }
+  else if (IS("day")) { if (tv) snprintf(out, n, "%s", DAYS[t.tm_wday]); }
+  else if (IS("dy")) { if (tv) snprintf(out, n, "%.3s", DAYS[t.tm_wday]); }
+  else if (IS("dd")) { if (tv) snprintf(out, n, "%d", t.tm_mday); }
+  else if (IS("mon")) { if (tv) snprintf(out, n, "%.3s", MONTHS[t.tm_mon]); }
+  else if (IS("month")) { if (tv) snprintf(out, n, "%s", MONTHS[t.tm_mon]); }
+  else if (IS("year")) { if (tv) snprintf(out, n, "%d", 1900 + t.tm_year); }
+  else if (IS("date")) { if (tv) snprintf(out, n, "%.3s %d %.3s", DAYS[t.tm_wday], t.tm_mday, MONTHS[t.tm_mon]); }
+  else if (IS("batt")) snprintf(out, n, "%u", (unsigned)batteryPercent(batteryMilliVolts()));
+  else if (IS("charging")) snprintf(out, n, "%d", isCharging() ? 1 : 0);
+  else if (IS("unit")) snprintf(out, n, "%c", unit);
+  else if (IS("wx_temp")) { if (wxFresh()) snprintf(out, n, "%d" DEGREE "%c", wxDegrees(wx.temp), unit); }
+  else if (IS("wx")) { if (wxFresh()) snprintf(out, n, "%s", wxPhrase(wx.code)); }
+  else if (IS("wx_icon")) snprintf(out, n, "%s", wxFresh() ? wxIcon(wx.code, wx.isDay) : "cloud");
+  else if (IS("hi")) { if (wxFresh() && wx.high != WX_NONE) snprintf(out, n, "%d", wxDegrees(wx.high)); }
+  else if (IS("lo")) { if (wxFresh() && wx.low != WX_NONE) snprintf(out, n, "%d", wxDegrees(wx.low)); }
+  else if (IS("rain")) { if (wxFresh()) snprintf(out, n, "%u", (unsigned)wx.rain); }
+  else if (IS("temp")) { if (envNow.ok) snprintf(out, n, "%.1f" DEGREE "%c", settings.fahrenheit ? envNow.tempC * 9 / 5 + 32 : envNow.tempC, unit); }
+  else if (IS("hum")) { if (envNow.ok && envNow.hasHumidity) snprintf(out, n, "%.0f%%", envNow.humidity); }
+  else if (IS("hpa")) { if (envNow.ok) snprintf(out, n, "%.0f", envNow.hPa); }
+  else if (IS("bell")) {
+    long left = tv ? secondsToNextBell(false) : -1;
+    if (left >= 3600) snprintf(out, n, "%ld:%02ld:%02ld", left / 3600, left / 60 % 60, left % 60);
+    else if (left >= 0) snprintf(out, n, "%02ld:%02ld", left / 60, left % 60);
+  }
+  else if (IS("timer")) {
+    long sec = timerEndMs ? (long)((timerEndMs - nowMs() + 999) / 1000) : (long)settings.timer_s;
+    snprintf(out, n, "%02ld:%02ld", sec / 60, sec % 60);
+  }
+  else if (IS("timer_pct")) {
+    long ms = timerEndMs ? (long)(timerEndMs - nowMs()) : 0;
+    snprintf(out, n, "%ld", timerEndMs && settings.timer_s ? 100 - ms / (10L * settings.timer_s) : 0L);
+  }
+  else if (IS("sw")) {
+    int64_t ms = stopwatchMs();
+    snprintf(out, n, "%02d:%02d.%d", (int)(ms / 60000), (int)(ms / 1000 % 60), (int)(ms / 100 % 10));
+  }
+  else if (IS("tally")) snprintf(out, n, "%d", (int)tally);
+  else if (IS("dice")) { if (lastRoll) snprintf(out, n, "%d", (int)lastRoll); }
+  else if (IS("bpm")) snprintf(out, n, "%u", (unsigned)settings.bpm);
+  else if (IS("note") || IS("cents")) {
+    static const char *const NOTES[12] = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+    if (pitchNow.ok) {
+      if (IS("note")) snprintf(out, n, "%s%d", NOTES[pitchNow.note % 12], (int)pitchNow.octave);
+      else snprintf(out, n, "%+d", (int)pitchNow.cents);
+    }
+  }
+  else if (IS("title")) { if (inApp) { appLoad(idx); snprintf(out, n, "%s", app.title); } }
+  else if (IS("text")) { if (inApp) { appLoad(idx); if (app.type == APP_MESSAGE) snprintf(out, n, "%s", app.text); } }
+  else if (IS("step") || IS("step_pct")) {
+    if (inApp && seqApp == idx) {
+      appLoad(idx);
+      if (IS("step")) snprintf(out, n, "%u/%u", (unsigned)seqStep + 1, (unsigned)app.n);
+      else {
+        long total = seqStep < app.n ? app.items[seqStep].seconds * 1000L : 0;
+        long left = (long)(seqEndMs - nowMs());
+        snprintf(out, n, "%ld", total > 0 ? 100 - left * 100 / total : 0L);
+      }
+    }
+  }
+  else return false;
+#undef IS
+  return true;
 }
 
 static void renderSet() {

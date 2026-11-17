@@ -1,0 +1,57 @@
+{
+  "_about": "The watch's own OLED screens, one set per panel size. 'time' is the clock, 'card' every other screen (value + label), 'overlay' the short flash after a button press. A file in /oled on the watch with the same 'for' replaces one. Format: docs/OLED_SCREENS.md. After editing run: python tools/oled/build_assets.py",
+  "128x32": {
+    "time": {"name": "Clock", "items": [
+      {"k": "text", "s": "{time}", "f": [5, 4, 3], "x": 0, "y": 28, "mw": 90},
+      {"k": "text", "s": "{dy} {dd}", "f": 1, "u": 1, "a": "c", "x": 111, "y": 6},
+      {"k": "icon", "n": "{wx_icon}", "z": 8, "x": 93, "y": 10, "if": "wx_temp"},
+      {"k": "text", "s": "{wx_temp}", "f": 0, "x": 103, "y": 17, "mw": 25, "if": "wx_temp"},
+      {"k": "battery", "x": 98, "y": 22, "w": 26, "h": 9},
+      {"k": "icon", "n": "bolt", "z": 8, "x": 89, "y": 23, "if": "charging"}
+    ]},
+    "card": {"name": "Card", "items": [
+      {"k": "icon", "n": "{icon}", "z": 16, "x": 0, "y": 2},
+      {"k": "text", "s": "{value}", "f": [4, 3, 2, 0], "a": "c", "x": 72, "y": 19, "mw": 108},
+      {"k": "text", "s": "{label}", "f": 0, "a": "c", "x": 72, "y": 31, "mw": 110}
+    ]},
+    "overlay": {"name": "Flash", "items": [
+      {"k": "text", "s": "{value}", "f": [5, 4, 3, 0], "a": "c", "x": 64, "y": 28, "mw": 128}
+    ]}
+  },
+  "128x64": {
+    "time": {"name": "Clock", "items": [
+      {"k": "text", "s": "{day} {dd} {mon}", "f": 1, "u": 1, "x": 0, "y": 7, "mw": 76},
+      {"k": "icon", "n": "bolt", "z": 8, "x": 92, "y": 0, "if": "charging"},
+      {"k": "battery", "x": 102, "y": 0, "w": 26, "h": 9},
+      {"k": "line", "x": 0, "y": 12, "x2": 127, "y2": 12},
+      {"k": "text", "s": "{time}", "f": [6, 5, 4], "a": "c", "x": 62, "y": 48, "mw": 116},
+      {"k": "text", "s": "{ampm}", "f": 1, "a": "r", "x": 89, "y": 7, "if": "ampm"},
+      {"k": "icon", "n": "{wx_icon}", "z": 8, "x": 0, "y": 55, "if": "wx_temp"},
+      {"k": "text", "s": "{wx_temp} {hi}/{lo}", "f": 0, "x": 11, "y": 63, "mw": 72, "if": "wx_temp"},
+      {"k": "icon", "n": "bell", "z": 8, "x": 86, "y": 55, "if": "bell"},
+      {"k": "text", "s": "{bell}", "f": 0, "a": "r", "x": 128, "y": 63, "if": "bell"}
+    ]},
+    "card": {"name": "Card", "items": [
+      {"k": "icon", "n": "{icon}", "z": 16, "x": 0, "y": 0},
+      {"k": "text", "s": "{time}", "f": 0, "a": "r", "x": 128, "y": 8},
+      {"k": "text", "s": "{value}", "f": [5, 4, 3, 0], "a": "c", "x": 64, "y": 42, "mw": 128},
+      {"k": "text", "s": "{label}", "f": 0, "a": "c", "x": 64, "y": 54, "mw": 128, "wrap": 2}
+    ]},
+    "overlay": {"name": "Flash", "items": [
+      {"k": "text", "s": "{value}", "f": [6, 5, 4, 0], "a": "c", "x": 64, "y": 46, "mw": 128}
+    ]}
+  },
+  "64x32": {
+    "time": {"name": "Clock", "items": [
+      {"k": "text", "s": "{time}", "f": [4, 3, 0], "a": "c", "x": 32, "y": 19, "mw": 64},
+      {"k": "text", "s": "{dy} {dd} {mon}", "f": 1, "u": 1, "a": "c", "x": 32, "y": 30, "mw": 64}
+    ]},
+    "card": {"name": "Card", "items": [
+      {"k": "text", "s": "{value}", "f": [4, 3, 0], "a": "c", "x": 32, "y": 19, "mw": 64},
+      {"k": "text", "s": "{label}", "f": 1, "u": 1, "a": "c", "x": 32, "y": 30, "mw": 64}
+    ]},
+    "overlay": {"name": "Flash", "items": [
+      {"k": "text", "s": "{value}", "f": [4, 3, 0], "a": "c", "x": 32, "y": 24, "mw": 64}
+    ]}
+  }
+}

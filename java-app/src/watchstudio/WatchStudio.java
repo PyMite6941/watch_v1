@@ -51,7 +51,7 @@ import javax.swing.WindowConstants;
 public final class WatchStudio {
     /** Fixed, so the browser keeps the app's saved state and USB permissions between runs. */
     static final int DEFAULT_PORT = 47821;
-    static final String[] FILES = {"index.html", "icon.svg", "icon.png", "manifest.webmanifest", "sw.js"};
+    static final String[] FILES = {"index.html", "icon.svg", "icon.png", "manifest.webmanifest", "sw.js", "oled.js", "oled-assets.js"};
     static final Map<String, String> TYPES = new HashMap<>();
 
     static {

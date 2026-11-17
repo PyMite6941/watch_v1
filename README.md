@@ -60,7 +60,8 @@ java-app/              the same app as a Java program; build.py makes dist/Watch
 vercel.json            serves app/ as a web site on Vercel
 hardware/scripts/      design.py is the circuit; the other scripts generate KiCad files from it
 hardware/kicad/        generated KiCad 10 project (schematic, board, libraries)
-hardware/addons/       add-on packs: the Pack Base board that every pack is built on
+hardware/addons/       add-on boards: the Pack Base (sensor packs) and the Screen Pack (OLED)
+tools/oled/            OLED screen icons, built-in designs and the C/JS parity test
 enclosure/             OpenSCAD model (case with optional engraving, accessories) and exported STL files
 kits/                  ready-made setups for one person each: preset, pack, case pattern, ideas
 docs/                  guides

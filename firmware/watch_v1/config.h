@@ -7,7 +7,7 @@
 // See docs/CONFIGURATION.md.
 #pragma once
 
-#define FW_VERSION "2.3.0"
+#define FW_VERSION "2.4.0"
 
 // ---------- Pins (ESP32-C3 SuperMini exposes ONLY GPIO0-10, 20, 21) ----------
 #define PIN_VBAT_SENSE 0   // ADC1_CH0, battery through 100k/100k divider; accessory AIN rides on it via C4

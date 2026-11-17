@@ -41,3 +41,9 @@ hardware/addons/*/fab/gerbers/
 
 # kits/computer-science/log_to_sqlite.py output
 watch_log.db
+
+# tools/oled/parity/run.js output
+tools/oled/parity/cases.json
+tools/oled/parity/out.txt
+tools/oled/parity/parity
+tools/oled/parity/parity.exe
