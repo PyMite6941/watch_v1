@@ -1,0 +1,78 @@
+{
+  "_about": [
+    "Themed clock faces offered in Watch Studio (Screens > New screen). Not built into the watch:",
+    "a teacher picks one and Studio saves it to /oled/ as an ordinary design with the pictures inside.",
+    "'pictures' are expanded with 'layouts': picture on the left, the clock on the right.",
+    "'anim' names the field that swaps to the picture's second frame (art.txt '@name~frame').",
+    "The other faces are written out in full. build_assets.py turns {\"k\":\"bmp\",\"art\":\"bee\"} into the bitmap."
+  ],
+  "layouts": {
+    "128x32": {"art": [0, 0, 32], "items": [
+      {"k": "text", "s": "{time}", "f": [4, 3, 0], "a": "c", "x": 80, "y": 20, "mw": 94},
+      {"k": "text", "s": "{ampm}", "f": 1, "a": "r", "x": 127, "y": 5, "if": "ampm"},
+      {"k": "text", "s": "{dy} {dd} {mon}", "f": 1, "u": 1, "a": "c", "x": 80, "y": 30, "mw": 94}
+    ]},
+    "128x64": {"art": [0, 8, 48], "items": [
+      {"k": "text", "s": "{greet}", "f": [2, 1], "a": "c", "x": 89, "y": 13, "mw": 78},
+      {"k": "text", "s": "{time}", "f": [6, 5, 4], "a": "c", "x": 89, "y": 44, "mw": 78},
+      {"k": "text", "s": "{date}", "f": [2, 0], "a": "c", "x": 89, "y": 61, "mw": 78}
+    ]}
+  },
+  "pictures": [
+    {"name": "Bee", "group": "Animals", "art": "bee", "frame": "flap", "anim": "tick"},
+    {"name": "Fox", "group": "Animals", "art": "fox", "frame": "blink", "anim": "blink"},
+    {"name": "Cat", "group": "Animals", "art": "cat", "frame": "blink", "anim": "blink"},
+    {"name": "Dog", "group": "Animals", "art": "dog", "frame": "blink", "anim": "blink"},
+    {"name": "Owl", "group": "Animals", "art": "owl", "frame": "blink", "anim": "blink"},
+    {"name": "Rabbit", "group": "Animals", "art": "rabbit", "frame": "blink", "anim": "blink"},
+    {"name": "Maths graph", "group": "Subjects", "art": "graph"},
+    {"name": "Science atom", "group": "Subjects", "art": "atom"},
+    {"name": "Music notes", "group": "Subjects", "art": "music"},
+    {"name": "Open book", "group": "Subjects", "art": "book"},
+    {"name": "Seedling", "group": "Subjects", "art": "sprout"}
+  ],
+  "128x32": [
+    {"name": "Maths clock", "group": "Number fun", "for": "time", "items": [
+      {"k": "text", "s": "What time is it?", "f": 1, "u": 1, "a": "c", "x": 64, "y": 5},
+      {"k": "text", "s": "{hh_math} : {mm_math}", "f": [3, 2, 0], "a": "c", "x": 64, "y": 21, "mw": 128},
+      {"k": "line", "x": 30, "y": 25, "x2": 97, "y2": 25},
+      {"k": "text", "s": "= {time}", "f": 1, "a": "c", "x": 64, "y": 31}
+    ]},
+    {"name": "Binary clock", "group": "Number fun", "for": "time", "items": [
+      {"k": "text", "s": "HRS", "f": 1, "x": 0, "y": 12},
+      {"k": "text", "s": "MIN", "f": 1, "x": 0, "y": 28},
+      {"k": "text", "s": "{hh_bin}", "f": [3, 0], "x": 22, "y": 14},
+      {"k": "text", "s": "{mm_bin}", "f": [3, 0], "x": 22, "y": 30},
+      {"k": "line", "x": 97, "y": 0, "x2": 97, "y2": 31},
+      {"k": "text", "s": "0x{hh_hex}", "f": 1, "a": "c", "x": 113, "y": 12},
+      {"k": "text", "s": "0x{mm_hex}", "f": 1, "a": "c", "x": 113, "y": 28}
+    ]},
+    {"name": "Roman clock", "group": "Number fun", "for": "time", "items": [
+      {"k": "text", "s": "{hh_rom} : {mm_rom}", "f": [4, 3, 2, 0], "a": "c", "x": 64, "y": 20, "mw": 128},
+      {"k": "text", "s": "{day}", "f": 1, "u": 1, "a": "c", "x": 64, "y": 30}
+    ]}
+  ],
+  "128x64": [
+    {"name": "Maths clock", "group": "Number fun", "for": "time", "items": [
+      {"k": "text", "s": "What time is it?", "f": [2, 0], "a": "c", "x": 64, "y": 12},
+      {"k": "text", "s": "{hh_math}", "f": [4, 3, 0], "a": "r", "x": 58, "y": 38, "mw": 58},
+      {"k": "text", "s": ":", "f": 4, "a": "c", "x": 64, "y": 37},
+      {"k": "text", "s": "{mm_math}", "f": [4, 3, 0], "x": 70, "y": 38, "mw": 58},
+      {"k": "line", "x": 16, "y": 45, "x2": 111, "y2": 45},
+      {"k": "text", "s": "= {time}", "f": [3, 0], "a": "c", "x": 64, "y": 62}
+    ]},
+    {"name": "Binary clock", "group": "Number fun", "for": "time", "items": [
+      {"k": "text", "s": "BINARY TIME", "f": 1, "a": "c", "x": 64, "y": 6},
+      {"k": "text", "s": "HRS", "f": 1, "x": 0, "y": 24},
+      {"k": "text", "s": "MIN", "f": 1, "x": 0, "y": 46},
+      {"k": "text", "s": "{hh_bin}", "f": [4, 3], "x": 20, "y": 27},
+      {"k": "text", "s": "{mm_bin}", "f": [4, 3], "x": 20, "y": 49, "mw": 108},
+      {"k": "text", "s": "0x{hh_hex}{mm_hex} = {time}", "f": 0, "a": "c", "x": 64, "y": 63, "mw": 128}
+    ]},
+    {"name": "Roman clock", "group": "Number fun", "for": "time", "items": [
+      {"k": "text", "s": "{hh_rom}", "f": [5, 4, 3], "a": "c", "x": 64, "y": 27, "mw": 128},
+      {"k": "text", "s": "{mm_rom}", "f": [5, 4, 3], "a": "c", "x": 64, "y": 52, "mw": 128},
+      {"k": "text", "s": "{day}", "f": 1, "u": 1, "a": "c", "x": 64, "y": 63}
+    ]}
+  ]
+}

@@ -858,6 +858,42 @@ static void oledKey(char *key, size_t n) {
   snprintf(key, n, "app:%.*s", len, stem);
 }
 
+// The clock written as a sum, for the maths face: 42 -> "6x7", "36+6", "6^2+6", "84/2", "50-8".
+// It changes every minute (seed) but stays put within one. ASCII only: the fonts have no x or root signs.
+static void oledMath(int n, uint32_t seed, char *out, size_t sz) {
+  seed = seed * 2654435761u + (uint32_t)n * 40503u;
+  uint32_t r = seed >> 8;
+  for (uint8_t tries = 0; tries < 5; tries++, r = r * 1103515245u + 12345u) {
+    switch ((r >> 16) % 5) {
+      case 0: if (n >= 2) { int a = 1 + (int)(r % (n - 1)); snprintf(out, sz, "%d+%d", a, n - a); return; } break;
+      case 1: {
+        int f[8], k = 0;
+        for (int d = 2; d * d <= n && k < 8; d++) if (n % d == 0) f[k++] = d;
+        if (k) { int d = f[r % k]; snprintf(out, sz, "%dx%d", d, n / d); return; }
+      } break;
+      case 2: { int s = 1; while ((s + 1) * (s + 1) <= n) s++;
+        if (s >= 2) { if (n - s * s) snprintf(out, sz, "%d^2+%d", s, n - s * s); else snprintf(out, sz, "%d^2", s); return; } } break;
+      case 3: { int b = 1 + (int)(r % 9); snprintf(out, sz, "%d-%d", n + b, b); return; }
+      case 4: { int d = 2 + (int)(r % 4); snprintf(out, sz, "%d/%d", n * d, d); return; }
+    }
+  }
+  snprintf(out, sz, "%d-%d", n + 3, 3);
+}
+
+static void oledRoman(int n, char *out, size_t sz) {
+  static const int V[] = { 50, 40, 10, 9, 5, 4, 1 };
+  static const char *const S[] = { "L", "XL", "X", "IX", "V", "IV", "I" };
+  out[0] = 0;
+  if (n <= 0) { snprintf(out, sz, "N"); return; }        // nulla: the Roman word for nothing
+  for (int i = 0; i < 7; i++) while (n >= V[i]) { strlcat(out, S[i], sz); n -= V[i]; }
+}
+
+static void oledBinary(int n, int bits, char *out, size_t sz) {
+  int i = 0;
+  for (int b = bits - 1; b >= 0 && i + 1 < (int)sz; b--) out[i++] = (n >> b) & 1 ? '1' : '0';
+  out[i] = 0;
+}
+
 // The value of a {field} in a screen design. false = no such field (it then shows as typed).
 // The full list is in docs/OLED_SCREENS.md; keep it and Watch Studio's demo values in step.
 static bool oledField(const char *k, char *out, size_t n) {
@@ -911,6 +947,20 @@ static bool oledField(const char *k, char *out, size_t n) {
   else if (IS("month")) { if (tv) snprintf(out, n, "%s", MONTHS[t.tm_mon]); }
   else if (IS("year")) { if (tv) snprintf(out, n, "%d", 1900 + t.tm_year); }
   else if (IS("date")) { if (tv) snprintf(out, n, "%.3s %d %.3s", DAYS[t.tm_wday], t.tm_mday, MONTHS[t.tm_mon]); }
+  else if (IS("tick")) { if ((millis() / 1000) & 1) snprintf(out, n, "1"); }            // every other second
+  else if (IS("blink")) { if (millis() % 7000 < 450) snprintf(out, n, "1"); }          // a short blink every 7 s
+  else if (IS("greet")) { if (tv) snprintf(out, n, "Good %s", t.tm_hour < 12 ? "morning" : t.tm_hour < 17 ? "afternoon" : "evening"); }
+  else if (!strncmp(k, "hh_", 3) || !strncmp(k, "mm_", 3)) {
+    if (!tv) return true;
+    bool hr = k[0] == 'h';
+    int v = hr ? (settings.h24 ? t.tm_hour : (t.tm_hour % 12 ? t.tm_hour % 12 : 12)) : t.tm_min;
+    const char *kind = k + 3;
+    if (!strcmp(kind, "math")) oledMath(v, (uint32_t)(t.tm_yday * 1440 + t.tm_hour * 60 + t.tm_min) + (hr ? 7 : 0), out, n);
+    else if (!strcmp(kind, "bin")) oledBinary(v, hr ? (settings.h24 ? 5 : 4) : 6, out, n);
+    else if (!strcmp(kind, "hex")) snprintf(out, n, "%02X", v);
+    else if (!strcmp(kind, "rom")) oledRoman(v, out, n);
+    else return false;
+  }
   else if (IS("batt")) snprintf(out, n, "%u", (unsigned)batteryPercent(batteryMilliVolts()));
   else if (IS("charging")) snprintf(out, n, "%d", isCharging() ? 1 : 0);
   else if (IS("unit")) snprintf(out, n, "%c", unit);

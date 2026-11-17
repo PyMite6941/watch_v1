@@ -12,7 +12,18 @@ With a Screen Pack (or any SSD1306 OLED) on the accessory socket, the watch show
 3. Click a part to pick it and drag it to move it. Arrow keys nudge it by one pixel. The panel on the right changes the text, font, size and so on.
 4. **+ Picture…** turns any image (a school logo, a mascot) into OLED dots. Photos look best with dots (dithering); logos and line drawings with plain black and white.
 5. **Use it for** chooses which watch screen it replaces: the time, the next bell, the weather, every app, one app, and so on.
-6. **Try on the watch for 15 s** shows it on the real OLED without saving. **Save to the watch** keeps it.
+6. **When** can limit a design to certain times and days: a school-day face from 07:30 to 15:30 Monday to Friday, and a different one for evenings and weekends.
+7. **Try on the watch for 15 s** shows it on the real OLED without saving. **Save to the watch** keeps it.
+
+### Themed clock faces
+
+**New screen** offers ready-made clock faces, grouped:
+
+- **Animals:** bee (its wings flap), fox, cat, dog, owl and rabbit (they blink every few seconds).
+- **Subjects:** maths graph, science atom, music notes, open book, seedling.
+- **Number fun:** a maths clock that writes the time as sums ("3x4 : 6^2+6", new sums every minute), a binary and hex clock, and a Roman-numeral clock.
+
+Each is an ordinary design: pick one, change anything, save. The pictures travel inside the saved file, so they cost the watch's firmware nothing. **+ Ready-made picture** adds any of the pictures to any design. There are versions for 128×32 and 128×64 panels; 64×32 panels have none yet.
 
 **Show the watch's OLED now** asks the watch to draw its current OLED picture and send it back. It works even with no panel plugged in, so a design can be checked before the hardware arrives.
 
@@ -25,6 +36,8 @@ For the screen on show, the watch looks for the first of these:
 1. a file in `/oled/` whose `for` is that screen (`time`, `weather`, `app:quiz`, `set`, `overlay`…);
 2. for an app, a file whose `for` is `app` (every app);
 3. the built-in design for that screen, or the built-in "card" (icon, value, label).
+
+In step 1, a file with `when` that applies right now wins over one without `when`. Outside its times it is skipped. A file with `when` is never used until the watch knows the time.
 
 Only files made for the panel's size are used (`w` and `h` must match the setting `oled`). Files whose names start with `_` are skipped: Studio's "try" file is `/oled/_try.json`.
 
@@ -46,6 +59,7 @@ Only files made for the panel's size are used (`w` and `h` must match the settin
 | `for` | Which screen it replaces: a screen name from the `views` setting, `app` (every app), `app:<file name without .json>` (one app), `set` (setting the time) or `overlay` (the short flash after a button press) |
 | `w`, `h` | Panel size in pixels: 128×32, 128×64 or 64×32 |
 | `inv` | `true` swaps lit and dark over the whole screen |
+| `when` | Optional: `{"from": "07:30", "to": "15:30", "days": "12345"}`. Days are digits, Monday = 1 … Sunday = 7; leave `days` out for every day. `from` later than `to` runs over midnight; equal means all day |
 | `items` | The parts, drawn in order: later ones go on top |
 
 Coordinates are pixels from the top-left corner. Numbers are whole numbers between −4096 and 4096. Anything after the decimal point is dropped.
@@ -102,6 +116,12 @@ They come from the Adafruit GFX library. Studio carries a copy in `app/oled-asse
 | `title`, `text`, `step`, `step_pct` | In an app: its title, a message app's text, a step timer's "2/5" and how far through the current step, % |
 | `value`, `label`, `icon` | What the built-in card shows for the current screen: the main number or word, what it is in words, and a fitting icon |
 | `view` | The current screen's name |
+| `greet` | Good morning / Good afternoon / Good evening |
+| `tick`, `blink` | `1` every other second; `1` for a moment every 7 s. Use them with `if` to swap two pictures, for flapping wings or blinking eyes |
+| `hh_math`, `mm_math` | The hour and minutes as a sum: `3x4`, `9+3`, `2^2+8`, `24/2`, `15-3`. A new sum every minute |
+| `hh_bin`, `mm_bin` | In binary: 4 digits for a 12-hour clock's hour, 5 for 24-hour, 6 for minutes |
+| `hh_hex`, `mm_hex` | In hexadecimal, two digits |
+| `hh_rom`, `mm_rom` | In Roman numerals; `N` (nulla) for zero |
 
 ### Icons
 
@@ -115,7 +135,9 @@ Built in, 16 px: clock, calendar, hourglass, stopwatch, tally, dice, bell, peopl
 |---|---|
 | `tools/oled/icons.txt` | The icons as text art (`#` lit, `.` dark). Edit freely |
 | `tools/oled/builtin.json` | The watch's built-in designs |
-| `tools/oled/starters.json` | The ready-made designs in Studio |
+| `tools/oled/starters.json` | The ready-made classroom designs in Studio |
+| `tools/oled/faces.json` | The themed clock faces: one layout per panel size, applied to every picture |
+| `tools/oled/draw_art.py` | Draws the faces' pictures from simple shapes at 32 and 48 px and writes `art.txt`. Hand-drawn pictures go in `art_hand.txt` |
 | `tools/oled/build_assets.py` | Turns those, plus the GFX fonts, into `firmware/watch_v1/oled_assets.h` and `app/oled-assets.js`. Run it after changing any of them |
 | `firmware/watch_v1/oled_render.h` | The watch's renderer |
 | `app/oled.js` | Studio's renderer: a line-by-line twin of `oled_render.h` |

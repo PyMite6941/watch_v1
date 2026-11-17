@@ -299,7 +299,7 @@ const OLED = (() => {
   return {
     FONTS: FONTS.map(f => f.name), ICON_NAMES: [...new Set(Object.keys(ICONS).map(k => k.split("@")[0]))].sort(),
     hasIcon: (name, size) => !!ICONS[name + "@" + size], BUILTIN: A.builtin,
-    STARTERS: A.starters || {}, render, paint, toBytes, fromBytes, toB64, b64, dither, bounds, expand,
+    STARTERS: A.starters || {}, ART: A.art || {}, render, paint, toBytes, fromBytes, toB64, b64, dither, bounds, expand,
   };
 })();
 if (typeof module !== "undefined") module.exports = OLED;
