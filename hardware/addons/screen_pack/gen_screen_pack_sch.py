@@ -27,16 +27,16 @@ PROJECT = "screen_pack"
 
 SYMBOLS = {
     "J1": ("Connector_Generic:Conn_02x03_Odd_Even", "Watch plug (underneath)"),
-    "J2": ("Connector_Generic:Conn_01x04", "OLED row A (G V CL DA)"),
-    "J3": ("Connector_Generic:Conn_01x04", "OLED row B (V G CL DA)"),
+    "J2": ("Connector_Generic:Conn_01x04", "OLED column A (DA CL V G)"),
+    "J3": ("Connector_Generic:Conn_01x04", "OLED column B (DA CL G V)"),
 }
 
 POS = {"J1": (50.8, 76.2), "J2": (114.3, 76.2), "J3": (177.8, 76.2)}
 
 TITLES = [
     (30.48, 58.42, "J1: to the watch's socket J4"),
-    (96.52, 58.42, "J2: OLED row A, GND first"),
-    (160.02, 58.42, "J3: OLED row B, VCC first"),
+    (96.52, 58.42, "J2: OLED column A, GND first"),
+    (160.02, 58.42, "J3: OLED column B, VCC first"),
     (30.48, 175.26, "Power flags (ERC only)"),
 ]
 
@@ -71,7 +71,7 @@ def parts():
 
 def main():
     sch = gen_sch.build(parts=parts(), pos=POS, titles=TITLES, notes=NOTES, power_nets=["+3V3", "GND"],
-                        project=PROJECT, title="Watch V1 - Screen Pack (OLED carrier)",
+                        project=PROJECT, title="Watch V1 - Screen Pack (OLED strip on the lid)",
                         rev=sp.REV, note=NOTE, paper="A4", key=PROJECT, flag_y=185.42)
     os.makedirs(sp.OUT_DIR, exist_ok=True)
     with open(os.path.join(sp.OUT_DIR, PROJECT + ".kicad_sch"), "w", encoding="utf-8", newline="\n") as f:

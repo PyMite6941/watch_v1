@@ -21,7 +21,7 @@ The add-on boards each have their own zip, ready in the repository:
 | Board | Upload | Size |
 |---|---|---|
 | Pack Base (sensor packs) | `hardware/addons/pack_base/fab/pack_base_gerbers.zip` | 20 × 18.6 mm |
-| Screen Pack (OLED) | `hardware/addons/screen_pack/fab/screen_pack_gerbers.zip` | 20 × 17 mm |
+| Screen Pack (OLED strip) | `hardware/addons/screen_pack/fab/screen_pack_gerbers.zip` | 40.5 × 10.9 mm |
 
 Every zip is the standard set factories ask for: copper, solder mask and silkscreen for both sides, drill files (plated and unplated holes separately), and the board outline on its own layer (`*-Edge_Cuts.gm1`). The outline layer is the only one with the board shape on it, which is what factories such as Elecrow require for routed edges and slots. Each zip is well under 1 MB; the usual upload limit is 30 MB, zip or rar. Upload the zip as it is; do not unpack it.
 
@@ -63,13 +63,13 @@ Rules depend on the country you are shipping to, so check yours before paying:
 
 ## The case
 
-Four printed parts in `enclosure/stl/`: `base.stl`, `lid.stl`, `led_dome.stl` (the hexagonal light dome over the RGB LED) and `led_spacer.stl` (sets the LED's height). Print `fit_test.stl` first. Clearances are set for a first print to fit without sanding: 0.5 mm round the board, 0.3 mm round the lid's lip, 0.2 mm round the dome's stem, 0.3 mm round the LED.
+Five printed parts in `enclosure/stl/`: `base.stl`, `lid.stl`, `led_dome.stl` (the hexagonal light dome over the RGB LED), `led_spacer.stl` (sets the LED's height) and `screen_clip.stl` (holds the Screen Pack's OLED on the lid; print it upside down, top on the bed). Print `fit_test.stl` first. Clearances are set for a first print to fit without sanding: 0.5 mm round the board, 0.3 mm round the lid's lip, 0.2 mm round the dome's stem, 0.3 mm round the LED.
 
 Optional extras in the same folder: lids with an engraved pattern (`lid_honeycomb`, `lid_binary`, `lid_staff`, `lid_sine`), a desk stand (`desk_stand.stl`, about 25 g) and a vented sensor probe case (`probe_sleeve.stl` + `probe_plug.stl`). Which suits whom: [`kits/`](../kits/README.md).
 
 ### Print it yourself, or locally
 
-Any ordinary filament printer can make it: no supports, 0.2 mm layers. About 30 g of filament for the pair.
+Any ordinary filament printer can make it: no supports, 0.2 mm layers. The five parts measure 21.9 cm³ solid (base 15.7, lid 4.5, screen clip 1.5, dome and spacer 0.2), so under 30 g of PETG even at 100 % infill.
 
 - **Clear PETG** gives a frosted see-through — parts are visible, edges are soft. Tough, slightly flexible, the practical choice.
 - Printing tips for clarity: 0.2 mm layers or thicker, 100 % infill for the lid, nozzle at the hot end of the range, fan low, slow speed.
@@ -161,9 +161,10 @@ Order-of-magnitude only, excluding shipping and tax, for a batch of about five:
 | PCB | under 1 |
 | SuperMini, display, chips, clock module, charger, battery, motor | 8–12 |
 | Passives, switches, LED, socket, screws | 2 |
-| Printed case | 1 (own printer) to 8 (ordered resin) |
+| Printed case, with the screen clip | 1 (own printer) to 8 (ordered resin) |
+| Screen Pack: 0.91" OLED, strip board, headers | 1.50–2.50 (see [COSTS.md](COSTS.md#one-whole-watch-with-a-screen)) |
 | Strap | 2–4 |
-| Each pack | 2–4 |
+| Each extra sensor pack | 2–4 |
 
 Shipping and import handling for the board order will likely exceed the cost of the boards themselves.
 

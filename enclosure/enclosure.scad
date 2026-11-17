@@ -27,7 +27,8 @@
  */
 
 part = "assembly";   // "base", "lid", "plate" (both, ready to print), "assembly", "fit_test",
-                     // "led_dome", "led_spacer", "led_parts" (both LED pieces, ready to print)
+                     // "led_dome", "led_spacer", "led_parts" (both LED pieces, ready to print),
+                     // "screen_clip" (holds the Screen Pack's OLED on the lid), "screen_assembly"
 
 /* [PCB - must match the KiCad board] */
 pcb = [58, 44, 1.6];
@@ -41,6 +42,25 @@ usb_center_y = 15.62;          // centre of the SuperMini on the right-hand edge
 accessory_center = [45.74, 2.7];   // J4, the 2x3 accessory socket
 accessory_opening = [8.6, 6.2];    // 0 width = no opening. Tall enough to join the display window: no thin sliver between them
 accessory_pin1_notch_d = 2.0;      // round notch marking the socket's pin 1 corner
+
+/* [Screen Pack r2: OLED strip lying on the lid, held by the printed screen clip] */
+// hardware/addons/screen_pack/gen_screen_pack.py READS THESE LINES to build the strip PCB,
+// so the board and the clip cannot drift apart. Keep each one a plain number or list
+// on one line (no maths). PCB coordinates, like everything above.
+screen_strip = [10.0, -5.4, 50.5, 5.5];   // strip PCB outline x0, y0, x1, y1: overhangs the case's top edge
+oled = [38.0, 12.0, 2.7];                  // 0.91" module: length, width (sellers' drawings); thickness (DFRobot DFR0648). Measure yours
+oled_y = 0.5;                              // PCB y of the module's centre line
+oled_left = [10.0, 12.54];                 // the module's left edge when soldered in column A / column B
+oled_pin_inset = 1.7;                      // pin row to the module's left edge: read off a seller's photo, measure yours
+oled_view = [7.7, 30.0, 5.9];              // lit area: from / to along the module (from its left edge), and its height. Estimated
+digit_h = 14.2;                            // 0.56" 7-segment digits
+strip_t = 1.6;
+screen_pin_h = 2.5;                        // header plastic between the strip and the module
+screen_pocket_depth = 1.0;                 // pocket in the lid's top for the OLED's trimmed pins under the strip
+clip_wall = 1.2;
+clip_fit = 0.1;                            // clearance over the module; raise it if the clip will not snap on
+clip_hook = [6.0, 1.0, 0.5];               // catch below the lid/base seam, nub height, nub depth
+clip_leaf = [14.0, 1.0];                   // each of the two snap leaves: width, thickness
 
 /* [Heights] */
 below_pcb = 10.0;              // room under the PCB: SuperMini + USB-C, battery, charger (which sits partly under U3)
@@ -154,6 +174,35 @@ assert(led_tip_above_pcb > above_pcb - collar_t, "the LED tip must reach into th
 assert(led_tip_above_pcb + 0.6 < above_pcb + lid_t + dome_h - dome_top_t, "the LED would touch the top of the dome");
 assert(led_spacer_h >= 0, "LED spacer would be negative: lower led_tip_above_pcb");
 
+// Screen Pack, derived. v = PCB y; z is measured up from the lid's top face.
+oled_rows = [for (i = [0 : 3]) oled_y + (i - 1.5) * 2.54];    // SDA, SCL, power, power
+oled_cols = [for (l = oled_left) l + oled_pin_inset];          // column A, column B
+window_top = display_center[1] - display_size[1] / 2 - window_margin;
+digit_top = display_center[1] - digit_h / 2;
+case_edge = -(gap + wall);                                     // the case's top face, in PCB y
+oled_top = strip_t + screen_pin_h + oled[2];
+pocket = [oled_cols[0] - 1.2, oled_cols[1] + 1.2, case_edge - 1, oled_rows[3] + 1.05];   // x0 x1 v0 v1
+clip_x = [min(screen_strip[0], oled_left[0]) - 0.4 - clip_wall,
+          max(screen_strip[2], oled_left[1] + oled[0]) + 0.4 + clip_wall];
+clip_v = [min(screen_strip[1], oled_y - oled[1] / 2) - 0.3 - clip_wall,      // front (outside the case)
+          oled_y + oled[1] / 2 + 0.3 + 0.8];                                 // back edge of the top plate
+clip_top = oled_top + clip_fit + clip_wall;
+clip_catch = -(lid_t + clip_hook[0]);                          // z of the nub's top face = the groove's top
+clip_glass = [oled_left[0] + oled_view[0] - 0.5, oled_left[1] + oled_view[1] + 0.5,
+              oled_y - oled_view[2] / 2 - 0.5, oled_y + oled_view[2] / 2 + 0.5];
+groove = [clip_x[0] - 0.5, clip_x[1] + 0.5, clip_hook[2] + 0.2, clip_hook[1] + 0.3];   // x0 x1 depth height
+echo(str("Screen clip: ", clip_x[1] - clip_x[0], " x ", clip_v[1] - clip_v[0], " mm, ", clip_top,
+         " mm above the lid; module ", digit_top - oled_y - oled[1] / 2, " mm short of the digits"));
+assert(screen_strip[3] <= window_top - 0.2 + 1e-6, "screen strip runs onto the display window");
+assert(oled_y + oled[1] / 2 <= digit_top - 1, "the OLED module would hide the top of the digits");
+assert(pocket[3] <= window_top - 0.3, "pin pocket would break into the display window");
+assert(clip_x[0] >= corner_r - wall - gap && clip_x[1] <= pcb[0] + gap + wall - corner_r,
+       "screen clip's snap leaves must sit on the flat part of the case's top face");
+assert(groove[2] <= wall - 1.0, "clip groove too deep for the wall");
+assert(clip_hook[0] + clip_hook[1] + 0.3 + lid_t < above_pcb + lid_t, "clip groove below the PCB");
+assert(clip_glass[2] > clip_v[0] + clip_wall && clip_glass[3] < oled_y + oled[1] / 2 - 1,
+       "the clip needs a rim over both long edges of the module");
+
 module rounded_box(size, r) {
     hull() for (x = [r, size[0] - r], y = [r, size[1] - r])
         translate([x, y, 0]) cylinder(r = r, h = size[2]);
@@ -186,6 +235,9 @@ module base() {
                        max(0.6, floor_t + charger_usb_z - usb_cutout[1] / 2)])
                 cube([wall + 2, usb_cutout[0], usb_cutout[1]]);
         if (base_text != "") translate([0, 0, -1]) linear_extrude(base_text_depth + 1) base_text_2d();
+        // groove in the top face's outer wall that the screen clip's two leaves snap into
+        pbox(groove[0], groove[1], case_edge - 1, case_edge + groove[2],
+             clip_catch - groove[3], clip_catch);
     }
     // two rails that keep the charger board square to its opening
     if (charger[0] > 0) for (side = [-1, 1])
@@ -246,7 +298,53 @@ module lid() {
         }
         if (lid_pattern != "none")
             translate([0, 0, total_h - pattern_depth]) linear_extrude(pattern_depth + 1) lid_pattern_2d();
+        // pocket under the Screen Pack strip for the OLED's soldered (trimmed) pins
+        pbox(pocket[0], pocket[1], pocket[2], pocket[3], -screen_pocket_depth, 1);
     }
+}
+
+// A box given in PCB x, PCB y (v) and height above the lid's top face, placed in the model.
+module pbox(x0, x1, v0, v1, z0, z1) {
+    translate([wall + gap + x0, wall + gap + pcb[1] - v1, total_h + z0]) cube([x1 - x0, v1 - v0, z1 - z0]);
+}
+
+// ------------------------------------------------------------ screen clip
+// A hood over the Screen Pack strip and its OLED, in its assembled position. Its top
+// rim holds the module down on the strip and the strip down on the lid; its two leaves
+// run down the outside of the case's top face and snap into the groove in the base.
+// The strip's header (J1, in the watch's socket) stops it sliding. The back is open,
+// so nothing rests on the thin skin over the 7-segment display.
+module screen_clip() {
+    front = case_edge - 0.1;                                  // leaves' inner face
+    difference() {
+        union() {
+            pbox(clip_x[0], clip_x[1], clip_v[0], clip_v[1], clip_top - clip_wall, clip_top);               // top plate
+            pbox(clip_x[0], clip_x[1], clip_v[0], clip_v[0] + clip_wall, -1, clip_top);                     // front wall
+            pbox(clip_x[0], clip_x[1], clip_v[0], front, -1, 0.01);                                          // shelf under the overhang
+            for (x = [clip_x[0], clip_x[1] - clip_wall])                                                    // end walls
+                pbox(x, x + clip_wall, clip_v[0], window_top - 0.2, 0, clip_top);
+            for (x = [clip_x[0], clip_x[1] - clip_leaf[0]]) {
+                pbox(x, x + clip_leaf[0], front - clip_leaf[1], front, clip_catch - clip_hook[1], -0.5);       // leaf
+                // the nub: flat catch on top, 45 degree lead-in underneath
+                translate([wall + gap + x, wall + gap + pcb[1], total_h]) rotate([90, 0, 90])
+                    linear_extrude(clip_leaf[0]) polygon([
+                        [-front + 0.01, clip_catch], [-(front + 0.1 + clip_hook[2]), clip_catch],
+                        [-(front + 0.1 + clip_hook[2]), clip_catch - clip_hook[1] + clip_hook[2] + 0.1],
+                        [-front + 0.01, clip_catch - clip_hook[1]]]);
+            }
+        }
+        pbox(clip_glass[0], clip_glass[1], clip_glass[2], clip_glass[3], clip_top - clip_wall - 1, clip_top + 1);
+    }
+}
+
+// Stand-ins for the strip and the module, for the assembly view only.
+module screen_pack_mock(column = 0) {
+    color("darkgreen") pbox(screen_strip[0], screen_strip[2], screen_strip[1], screen_strip[3], 0, strip_t);
+    color("black") pbox(oled_left[column], oled_left[column] + oled[0], oled_y - oled[1] / 2, oled_y + oled[1] / 2,
+                        strip_t + screen_pin_h, oled_top);
+    color("dimgray") pbox(oled_cols[column] - 1.27, oled_cols[column] + 1.27, oled_rows[0] - 1.27, oled_rows[3] + 1.27,
+                          strip_t, strip_t + screen_pin_h);
+    color("dimgray") pbox(43.2 - 1.27, 48.28 + 1.27, 1.4 - 1.27, 3.94 + 1.27, -screen_pin_h, 0);   // J1, in the lid opening
 }
 
 // ------------------------------------------------------- personal touches
@@ -359,9 +457,14 @@ else if (part == "fit_test") fit_test();
 else if (part == "led_dome") led_dome();
 else if (part == "led_spacer") led_spacer();
 else if (part == "led_parts") { led_dome(); translate([collar_d / 2 + 6, 0, 0]) led_spacer(); }
+// Printed upside down: top plate on the bed, leaves pointing up. No supports.
+else if (part == "screen_clip") translate([0, 0, total_h + clip_top]) rotate([180, 0, 0]) screen_clip();
+else if (part == "screen_assembly") { base(); lid(); screen_pack_mock(); color("orange", 0.7) screen_clip(); }
 else {
     base();
     %lid();
     translate(concat(at(led_center), [z_wall - collar_t])) color("white", 0.8) led_dome();
     color("green", 0.6) translate([wall + gap, wall + gap, z_pcb]) cube(pcb);
+    screen_pack_mock();
+    color("orange", 0.5) screen_clip();
 }

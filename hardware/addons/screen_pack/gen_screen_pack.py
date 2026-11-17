@@ -1,4 +1,4 @@
-"""Generate the Screen Pack: a snap-on board that holds a small I2C OLED on the watch.
+"""Generate the Screen Pack r2: a strip that holds a 0.91" OLED flat on top of the watch.
 
 Must run with KiCad's bundled Python (it needs the pcbnew module):
     "%LOCALAPPDATA%\\Programs\\KiCad\\10.0\\bin\\python.exe" gen_screen_pack.py [--fab]
@@ -8,24 +8,37 @@ design-rule check, and with --fab writes fab/screen_pack_gerbers.zip: one zip wi
 copper, mask, silkscreen, drills and the outline on its own Edge_Cuts layer, which
 is what JLCPCB, PCBWay and Elecrow ask for.
 
-Same plug as the Pack Base (hardware/addons/pack_base): a 2x3 header underneath
-that pushes into the watch's accessory socket J4. On top, two 4-hole rows for the
-OLED module, one for each pin order cheap modules come in:
+The strip lies flat on the lid, along the edge above the 7-segment display, and
+plugs straight down into the watch's accessory socket J4 through the lid's opening.
+The OLED module's own 4 header pins go through one of two columns of holes at the
+left-hand end and are soldered underneath, so the screen lies flat over the strip,
+pins on the left, glass facing up. The printed screen clip (enclosure.scad, part
+"screen_clip") holds the screen down and snaps onto the case.
 
-    y=0    ┌─────────────────────────┐   top edge: overhangs the watch
-           │     G   V   CL  DA      │   row A: GND first (most 0.91" and 0.96" boards)
-           │ A   ○   ○   ○   ○       │
-           │     V   G   CL  DA      │   row B: VCC first
-           │ B   ○   ○   ○   ○       │
-           │      ● 1  ○ 3  ○ 5      │
-    y=17.0 └──────○ 2──○ 4──○ 6──────┘   J1: 2x3 header underneath -> watch socket
+Seen from above (watch coordinates, mm; y grows towards the display):
 
-Solder a 4-pin female header into the ONE row whose labels match the letters
-printed on the OLED, so the screen plugs in and out. The other row stays empty.
-Power is 3V3; the firmware switches the panel off (command 0xAE) before the watch
-sleeps. If the screen ends up upside down, tick "Flip the OLED" in Watch Studio.
+  y=-5.3 ┌─A─B──────────────────────────────────────────────┐  overhangs the case edge (y=-2.5)
+         │ ○ ○  DA DA                                         │  SDA
+         │ ○ ○  CL CL                     J1 underneath:  ● ○ ○│  SCL
+         │ ○ ○  V  G                      plastic sits in ○ ○ ○│  VCC / GND
+         │ ○ ○  G  V                      the lid opening      │  GND / VCC
+  y=5.3  └────────────────────────────────────────────────────┘  stops before the display window
+        x=9.9                                                x=50.6
+
+Column A is for modules labelled GND VCC SCL SDA, column B for VCC GND SCL SDA.
+Solder the module into the ONE column whose letters match its own.
+
+Where the pins are on the module comes from a seller's labelled photo
+(protosupplies.com, "OLED-0.91-White-I2C-Connections.jpg"): display facing you, pins
+on the left, top to bottom SDA SCL VCC GND, the row centred across the 12 mm width
+and about 1.7 mm in from the left edge (read off the photo). Measure yours.
+
+Every shared number (the strip outline, the module's size and position) is read from
+enclosure/enclosure.scad, so the board and the clip cannot drift apart; check() fails
+if they disagree.
 """
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -36,6 +49,7 @@ import pcbnew
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT_DIR = os.path.join(HERE, "kicad")
 FAB_DIR = os.path.join(HERE, "fab")
+SCAD = os.path.join(HERE, "..", "..", "..", "enclosure", "enclosure.scad")
 FP_DIR = os.environ.get(
     "KICAD_FOOTPRINT_DIR",
     os.path.expandvars(r"%LOCALAPPDATA%\Programs\KiCad\10.0\share\kicad\footprints"),
@@ -43,56 +57,89 @@ FP_DIR = os.environ.get(
 CLI = os.environ.get("KICAD_CLI") or shutil.which("kicad-cli") or os.path.expandvars(
     r"%LOCALAPPDATA%\Programs\KiCad\10.0\bin\kicad-cli.exe")
 
-W, H = 20.0, 17.0
-OX, OY = 100.0, 100.0
-REV = "r1"
+REV = "r2"
+P = 2.54
 
-# The plug: exactly the Pack Base's J1, 1.3 mm from the edge nearest the display.
-COL = (7.46, 10.0, 12.54)
-ROW_BOT = H - 1.3
-ROW_TOP = ROW_BOT - 2.54
-ROW_A, ROW_B = 4.2, 8.0                      # the two OLED rows
-OLED_X = (6.19, 8.73, 11.27, 13.81)
+
+def scad_values(path=SCAD):
+    """The numbers this board shares with the case, read from enclosure.scad."""
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    out = {}
+    for name in ("screen_strip", "oled", "oled_y", "oled_left", "oled_pin_inset", "accessory_center",
+                 "accessory_opening", "display_center", "display_size", "window_margin", "wall", "gap",
+                 "digit_h"):
+        m = re.search(r"^" + name + r"\s*=\s*([^;]+);", text, re.M)
+        if not m:
+            raise SystemExit(f"enclosure.scad has no '{name} = ...;'")
+        out[name] = eval(m.group(1).replace("[", "(").replace("]", ")"), {"__builtins__": {}})
+    return out
+
+
+S = scad_values()
+SX0, SY0, SX1, SY1 = S["screen_strip"]       # strip outline in watch coordinates
+W, H = SX1 - SX0, SY1 - SY0
+OX, OY = 100.0, 100.0                        # where the board sits on KiCad's sheet
+
+
+def local(x, y):
+    """Watch coordinates -> this board's coordinates (origin = the strip's top-left corner)."""
+    return (x - SX0, y - SY0)
+
+
+# Watch socket J4 (hardware/scripts/gen_pcb.py: J4 at 43.2, 1.4, rotated 90).
+WATCH_J4 = {"1": (43.2, 1.4), "2": (43.2, 3.94), "3": (45.74, 1.4), "4": (45.74, 3.94),
+            "5": (48.28, 1.4), "6": (48.28, 3.94)}
+J1_PIN1 = local(*WATCH_J4["1"])
+
+# OLED columns: the module's pin row, top to bottom SDA SCL then the two power pins.
+COL_A = S["oled_left"][0] + S["oled_pin_inset"]
+COL_B = S["oled_left"][1] + S["oled_pin_inset"]
+ROWS = [S["oled_y"] + (i - 1.5) * P for i in range(4)]     # SDA, SCL, power, power
 
 PARTS = {
     "J1": ("Connector_PinHeader_2.54mm:PinHeader_2x03_P2.54mm_Vertical", "bottom",
            {"1": "GND", "2": "+3V3", "3": "SDA", "4": "SCL", "5": None, "6": None},
-           ("1", COL[0], ROW_TOP),
-           lambda p: near(p["2"], (p["1"][0], p["1"][1] + 2.54)) and near(p["3"], (p["1"][0] + 2.54, p["1"][1]))),
-    "J2": ("Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical", "top",
-           {"1": "GND", "2": "+3V3", "3": "SCL", "4": "SDA"},
-           ("1", OLED_X[0], ROW_A),
-           lambda p: p["2"][0] > p["1"][0] and near((0, p["2"][1]), (0, p["1"][1]))),
-    "J3": ("Connector_PinSocket_2.54mm:PinSocket_1x04_P2.54mm_Vertical", "top",
-           {"1": "+3V3", "2": "GND", "3": "SCL", "4": "SDA"},
-           ("1", OLED_X[0], ROW_B),
-           lambda p: p["2"][0] > p["1"][0] and near((0, p["2"][1]), (0, p["1"][1]))),
+           ("1",) + J1_PIN1,
+           lambda p: near(p["2"], (p["1"][0], p["1"][1] + P)) and near(p["3"], (p["1"][0] + P, p["1"][1]))),
+    "J2": ("Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical", "top",
+           {"1": "SDA", "2": "SCL", "3": "+3V3", "4": "GND"},
+           ("1",) + local(COL_A, ROWS[0]),
+           lambda p: near(p["2"], (p["1"][0], p["1"][1] + P))),
+    "J3": ("Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical", "top",
+           {"1": "SDA", "2": "SCL", "3": "GND", "4": "+3V3"},
+           ("1",) + local(COL_B, ROWS[0]),
+           lambda p: near(p["2"], (p["1"][0], p["1"][1] + P))),
 }
 
+# Tracks, in WATCH coordinates (converted below). Signals on top, power underneath.
 SIG, PWR_W = 0.25, 0.4
-TRACKS = [   # (net, layer, width, [points]); layer "F" = top, "B" = bottom
-    ("SDA", "F", SIG, [(COL[1], ROW_TOP), (COL[1], 11.81), (OLED_X[3], ROW_B), (OLED_X[3], ROW_A)]),
-    ("SCL", "B", SIG, [(COL[1], ROW_BOT), (OLED_X[2], ROW_BOT - 1.27), (OLED_X[2], ROW_B), (OLED_X[2], ROW_A)]),
-    ("GND", "F", PWR_W, [(COL[0], ROW_TOP), (COL[0], 11.27), (OLED_X[1], 10.0), (OLED_X[1], ROW_B)]),
-    ("GND", "F", PWR_W, [(OLED_X[1], ROW_B), (OLED_X[0], ROW_B - 2.54), (OLED_X[0], ROW_A)]),
-    ("+3V3", "F", PWR_W, [(COL[0], ROW_BOT), (5.0, ROW_BOT), (5.0, ROW_B + 1.19), (OLED_X[0], ROW_B)]),
-    ("+3V3", "B", PWR_W, [(OLED_X[0], ROW_B), (OLED_X[1], ROW_B - 2.54), (OLED_X[1], ROW_A)]),
+J = WATCH_J4
+JOG = J["1"][0] + P / 2                       # between J1's first two columns
+BEND = COL_B + 1.26
+_TRACKS = [   # (net, layer, width, [points]); "F" = top, "B" = bottom
+    ("SDA", "F", SIG, [J["3"], (J["3"][0], ROWS[0]), (COL_A, ROWS[0])]),
+    ("SCL", "F", SIG, [J["4"], (JOG, J["4"][1] - P / 2), (JOG, ROWS[1]), (COL_A, ROWS[1])]),
+    ("GND", "B", PWR_W, [J["1"], (BEND, J["1"][1]), (COL_B, ROWS[2]), (COL_A, ROWS[3])]),
+    ("+3V3", "B", PWR_W, [J["2"], (BEND, J["2"][1]), (COL_B, ROWS[3])]),
+    ("+3V3", "F", PWR_W, [(COL_B, ROWS[3]), (COL_A, ROWS[2])]),
 ]
-VIAS = []
+TRACKS = [(n, l, w, [local(*p) for p in pts]) for n, l, w, pts in _TRACKS]
 
-LABEL_A, LABEL_B = 1.9, 6.1
-SILK = [  # text, x, y, layer, size  (0.8 mm is the smallest the factory prints legibly)
-    ("G", OLED_X[0], LABEL_A, "F", 0.8), ("V", OLED_X[1], LABEL_A, "F", 0.8),
-    ("CL", OLED_X[2], LABEL_A, "F", 0.8), ("DA", OLED_X[3], LABEL_A, "F", 0.8),
-    ("V", OLED_X[0], LABEL_B, "F", 0.8), ("G", OLED_X[1], LABEL_B, "F", 0.8),
-    ("CL", OLED_X[2], LABEL_B, "F", 0.8), ("DA", OLED_X[3], LABEL_B, "F", 0.8),
-    ("A", 3.4, ROW_A, "F", 1.0), ("B", 3.4, ROW_B, "F", 1.0),
-    ("1", 5.9, ROW_TOP, "F", 0.8),
-    ("1", 5.0, ROW_TOP, "B", 0.8),
-    ("SCREEN PACK " + REV, 10.0, 1.4, "B", 0.8),
-    ("ONE ROW ONLY:", 10.0, 6.1, "B", 0.8),
-    ("MATCH THE OLED", 10.0, 10.2, "B", 0.8),
+_SILK = [  # text, x, y (watch coords), layer, size  (0.8 mm is the smallest the factory prints legibly)
+    ("A", COL_B + 2.7, SY0 + 0.75, "F", 0.8), ("B", COL_B + 5.1, SY0 + 0.75, "F", 0.8),
+    ("DA", COL_B + 2.7, ROWS[0], "F", 0.8), ("DA", COL_B + 5.1, ROWS[0], "F", 0.8),
+    ("CL", COL_B + 2.7, ROWS[1], "F", 0.8), ("CL", COL_B + 5.1, ROWS[1], "F", 0.8),
+    ("V", COL_B + 2.7, ROWS[2], "F", 0.8), ("G", COL_B + 5.1, ROWS[2], "F", 0.8),
+    ("G", COL_B + 2.7, ROWS[3], "F", 0.8), ("V", COL_B + 5.1, ROWS[3], "F", 0.8),
+    ("OLED PINS THIS END, SCREEN UP", 30.0, ROWS[1] + 1.27, "F", 0.8),
+    ("1", J["1"][0] - 1.9, J["1"][1], "F", 0.8),
+    ("1", J["1"][0] - 1.9, J["1"][1], "B", 0.8),
+    ("SCREEN PACK " + REV, 28.0, ROWS[0], "B", 0.8),
+    ("OLED: COLUMN A IF G V CL DA", 28.0, ROWS[1] + 0.2, "B", 0.8),
+    ("COLUMN B IF V G CL DA", 28.0, ROWS[2] + 0.4, "B", 0.8),
 ]
+SILK = [(t, *local(x, y), layer, size) for t, x, y, layer, size in _SILK]
 
 
 def near(a, b, tol=0.02):
@@ -164,6 +211,18 @@ def build():
                 pad.SetNet(nets[n])
         fps[ref] = fp
 
+    # Columns A and B are two places for the SAME module (only one is ever fitted), so
+    # they overlap on purpose: J3 gives up its courtyard and J2's is widened over both.
+    for item in list(fps["J3"].GraphicalItems()):
+        if item.GetLayer() == pcbnew.F_CrtYd:
+            fps["J3"].Remove(item)
+    for item in fps["J2"].GraphicalItems():
+        if item.GetLayer() == pcbnew.F_CrtYd and item.GetShape() == pcbnew.SHAPE_T_SEGMENT:
+            for get, put in ((item.GetStart, item.SetStart), (item.GetEnd, item.SetEnd)):
+                v = get()
+                if v.x > fps["J2"].GetPosition().x:
+                    put(pcbnew.VECTOR2I(v.x + mm(COL_B - COL_A), v.y))
+
     for a, b in (((0, 0), (W, 0)), ((W, 0), (W, H)), ((W, H), (0, H)), ((0, H), (0, 0))):
         s = pcbnew.PCB_SHAPE(board)
         s.SetShape(pcbnew.SHAPE_T_SEGMENT)
@@ -189,7 +248,7 @@ def build():
         t.SetPosition(pt(x, y))
         t.SetLayer(pcbnew.F_SilkS if layer == "F" else pcbnew.B_SilkS)
         t.SetTextSize(pcbnew.VECTOR2I(mm(size), mm(size)))
-        t.SetTextThickness(mm(0.12))
+        t.SetTextThickness(mm(0.12 if size >= 0.8 else 0.1))
         if layer == "B":
             t.SetMirrored(True)
         board.Add(t)
@@ -197,6 +256,7 @@ def build():
 
 
 def check(fps):
+    """The board against the watch board and the case. Every line must say ok."""
     ok = True
 
     def expect(cond, msg):
@@ -204,19 +264,44 @@ def check(fps):
         print(("  ok   " if cond else "  FAIL ") + msg)
         ok = ok and cond
 
-    j1 = pads_mm(fps["J1"])
-    watch = {"1": (43.2, 1.4), "2": (43.2, 3.94), "3": (45.74, 1.4), "4": (45.74, 3.94), "5": (48.28, 1.4), "6": (48.28, 3.94)}
-    dx, dy = 43.2 - COL[0], 1.4 - ROW_TOP
-    expect(all(near((j1[n][0] + dx, j1[n][1] + dy), watch[n]) for n in watch), "J1 pins sit exactly over the watch socket J4")
+    def watch(p):
+        return (p[0] + SX0, p[1] + SY0)
+
+    j1 = {n: watch(p) for n, p in pads_mm(fps["J1"]).items()}
+    expect(all(near(j1[n], WATCH_J4[n]) for n in WATCH_J4), "J1 pins sit exactly over the watch socket J4")
     expect(fps["J1"].IsFlipped(), "J1 header is underneath the board")
-    expect(3.94 + (H - ROW_BOT) < 5.7, "pack edge stops short of the display window")
+
+    # J1's plastic (7.62 x 5.08) must drop into the lid's accessory opening.
+    cx, cy = (WATCH_J4["1"][0] + WATCH_J4["6"][0]) / 2, (WATCH_J4["1"][1] + WATCH_J4["6"][1]) / 2
+    ox, oy = S["accessory_center"]
+    ow, oh = S["accessory_opening"]
+    expect(abs(cx - ox) + 3.81 <= ow / 2 - 0.2 and abs(cy - oy) + 2.54 <= oh / 2 - 0.2,
+           "J1's plastic fits through the lid's accessory opening with 0.2 mm to spare")
+
+    window_top = S["display_center"][1] - S["display_size"][1] / 2 - S["window_margin"]
+    expect(SY1 <= window_top - 0.2 + 1e-6, f"strip stops {window_top - SY1:.1f} mm short of the display window")
+    case_edge = -(S["gap"] + S["wall"])
+    expect(SY0 < case_edge and SX0 > case_edge and SX1 < 58 + S["gap"] + S["wall"],
+           f"strip overhangs only the top edge of the case, by {case_edge - SY0:.1f} mm")
+
+    # The module, in both columns: inside the lid's length, clear of the digits.
+    L, Wm, _ = S["oled"]
+    digit_top = S["display_center"][1] - S["digit_h"] / 2
+    for name, left in zip("AB", S["oled_left"]):
+        expect(left >= case_edge and left + L <= 58 + S["gap"] + S["wall"],
+               f"module in column {name} (x {left:.1f} to {left + L:.1f}) lies within the lid's length")
+    expect(S["oled_y"] + Wm / 2 <= digit_top - 1.0,
+           f"module's far edge stops {digit_top - S['oled_y'] - Wm / 2:.1f} mm short of the digits")
+    expect(SY0 >= S["oled_y"] - Wm / 2 and SY1 <= S["oled_y"] + Wm / 2,
+           "strip is no wider than the module, so it hides underneath")
+
     a, b = pads_mm(fps["J2"]), pads_mm(fps["J3"])
-    expect([round(a[n][0], 2) for n in "1234"] == list(OLED_X) and [round(b[n][0], 2) for n in "1234"] == list(OLED_X),
-           "both OLED rows run left to right, pin 1 on the left")
+    expect(all(near(watch(a[str(i + 1)]), (COL_A, ROWS[i])) for i in range(4)), "column A: SDA SCL VCC GND from the top")
+    expect(all(near(watch(b[str(i + 1)]), (COL_B, ROWS[i])) for i in range(4)), "column B: SDA SCL GND VCC from the top")
     for ref, fp in fps.items():
         xs = [p[0] for p in pads_mm(fp).values()]
         ys = [p[1] for p in pads_mm(fp).values()]
-        expect(min(xs) > 0.8 and min(ys) > 0.8 and max(xs) < W - 0.8 and max(ys) < H - 0.8, f"{ref} pads inside the outline")
+        expect(min(xs) > 1.0 and min(ys) > 1.0 and max(xs) < W - 1.0 and max(ys) < H - 0.6, f"{ref} pads inside the outline")
     return ok
 
 
@@ -249,7 +334,7 @@ def fab(path):
     with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as z:
         for name in sorted(os.listdir(out)):
             z.write(os.path.join(out, name), name)
-    print("ready to upload: fab/screen_pack_gerbers.zip")
+    print(f"ready to upload: fab/screen_pack_gerbers.zip ({W:.1f} x {H:.1f} mm)")
 
 
 def main():
