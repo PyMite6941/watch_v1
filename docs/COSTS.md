@@ -27,6 +27,44 @@ Each board design is its own minimum order of 5, so a Pack Base order and a Scre
 | **Light Pack** (lux meter) | BH1750 (GY-302) + Pack Base | about $1.09 ([AliExpress](https://www.aliexpress.com/w/wholesale-bh1750-sensor-module.html)) | **about $1.50** | Not yet: needs a BH1750 driver |
 | **Sound Pack** (tuner) | MAX4466 microphone board + Pack Base | $2.50–2.95 ([Smart-Prototyping](https://www.smart-prototyping.com/MAX4466-Electret-Microphone-Amplifier-Module), [ProtoSupplies](https://protosupplies.com/product/max4466-microphone-preamplifier-module/)) | **$2.90–3.40** | Yes |
 
+## Buying the parts in Thailand (Lazada)
+
+Checked on lazada.co.th on 17 November 2026, in Thai baht. For each part I chose the listing that ships **from inside Thailand** and has the **most sales and reviews**, from a shop rated 98% or higher, rather than the cheapest listing. The cheapest listings usually ship from overseas with no sales history. Shipping is per shop: Lazada showed **฿29–45 standard delivery** to its default Bangkok address, so buy from as few shops as you can.
+
+| Module | Part to buy | Price | Shop (rating, sales) | Works now? |
+|---|---|---|---|---|
+| **Screen Pack** | 0.91" 128×32 I²C OLED, white ([listing](https://www.lazada.co.th/products/pdp-i5196772066.html)) | **฿71**\* | BP Smart Shop (100%, 15.5K sold; this listing 416 sold, 58 reviews) | Yes |
+| Screen Pack, larger | 0.96" 128×64 I²C OLED (same listing, 0.96" option) | not confirmed\* | same | Yes |
+| **Environment Pack** | BME280 breakout, 5V or 3.3V ([listing](https://www.lazada.co.th/products/pdp-i16170541579.html)) | **฿115** | myElectron (99%, 683 sold) | Yes |
+| Environment, cheaper | AHT20 + BMP280 board, option "AHT20 + BMP280_5V" ([listing](https://www.lazada.co.th/products/pdp-i4457501546.html)) | **฿50** | Karin Bot32 (98%, 5.8K sold, 4 years) | Needs an AHT20 driver |
+| **Light Pack** | BH1750 / GY-302 ([listing](https://www.lazada.co.th/products/pdp-i1879688467.html)) | **฿53.59** | AEI.th (99%, 97.1K sold, 7 years) | Needs a BH1750 driver |
+| **Sound Pack** | GY-MAX4466 microphone board ([listing](https://www.lazada.co.th/products/pdp-i5798998082.html)) | **฿55** | โอ.อาร์. เทคโนโลยี (99%, 288.1K sold) | Yes |
+| Headers, every module | 40-pin 2.54 mm strips, ฿11 each ([listing](https://www.lazada.co.th/products/pdp-i6046877965.html)); 2×40 male, ฿16 ([listing](https://www.lazada.co.th/products/pdp-i326790101.html)) | about **฿3 a module** | เซอร์กิตทูเดย์ (99%, 57.9K sold) | — |
+
+\* The search results showed ฿71 for this listing, but the product page opened on its 1.3" option (฿131) and stopped loading before I could select 0.91". Check the price for the 0.91" option before buying. Other 0.91" listings shipping from Thailand were ฿75–90 with no sales yet.
+
+**Per module, parts only** (sensor or screen + about ฿3 of headers, without the board and shipping):
+
+| Module | Parts | Cheapest reliable choice |
+|---|---|---|
+| Screen Pack | about **฿74** | the cheapest add-on that works today |
+| Light Pack | about **฿57** | once the BH1750 driver exists |
+| Environment Pack | about **฿118** with the BME280, about **฿53** with the AHT20 + BMP280 | the AHT20 board halves the cost once it has a driver |
+| Sound Pack | about **฿58** | |
+
+**Not chosen, and why:**
+- ฿20 on the AHT20 listing is its bare BMP280 option, which has no humidity sensor.
+- The ฿28–30 "MAX4466 sound detection sensor" listings may be a different board.
+- The ฿48–65 "BME280" listings ship from overseas with almost no sales. Cheap "BME280" listings are often BMP280s (see below).
+
+AliExpress (the table above) is cheaper per piece but ships from China and takes longer. Lazada is the reliable choice when you need a few parts quickly with an easy return (all of these listings offered 7-day free returns, no warranty).
+
+## Boards from Elecrow instead of JLCPCB
+
+[Elecrow](https://www.elecrow.com/pcb-manufacturing.html) also makes the boards: 2 layers, minimum 5, default 1.6 mm, green, HASL, normal lead time 4–7 working days. Its quote page only shows a price after you fill in the form, so **no price here**. Its home page advertises boards up to 10 × 10 cm "for $1", without saying how many boards that covers. Upload the Gerber zip from [ORDERING.md](ORDERING.md) to both Elecrow and JLCPCB with Thailand as the country, then compare the totals *with shipping*.
+
+[Elecrow assembly](https://www.elecrow.com/pcb-assembly.html) is not worth it for these boards. They only carry pin headers, which take minutes to solder by hand, and the example quote alone shows a USD 12 stencil.
+
 **Check before ordering BME280s.** The cheapest "BME280" listings are often the BMP280, which looks the same but has no humidity sensor. A real BME280 chip is square (about 2.5 × 2.5 mm). A BMP280 is longer than it is wide. The watch works with either, but with a BMP280 it never shows humidity.
 
 ## Keeping it cheap
