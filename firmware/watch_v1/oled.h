@@ -11,6 +11,9 @@
 //   2. for an app, a file whose "for" is "app" (every app)
 //   3. the built-in one for the key (tools/oled/builtin.json), else the built-in "card"
 // Only files made for this panel's size are used. Names starting with '_' are ignored.
+// A file with "when" ({"from":"07:30","to":"15:00","days":"12345"}, Monday = 1) is used
+// only at those times, and wins over one without "when" while it applies. So a teacher
+// can have a school-day face and a weekend face for the same screen.
 //
 // settings.oled picks the panel: 0 off, 1 = 128x32 (0.91"), 2 = 128x64 (0.96"),
 // 3 = 64x32 (0.49"). If nothing answers at 0x3C/0x3D it is simply skipped.
@@ -30,6 +33,8 @@
 #define OLED_KEY_LEN   24
 
 // From watch_v1.ino.
+bool timeValid();
+static void localNow(struct tm &out);
 static bool oledField(const char *name, char *out, size_t n);   // a {field}'s value now
 static void oledKey(char *key, size_t n);                       // which screen is on show
 
@@ -40,7 +45,13 @@ static bool     oledLastOk = false;
 static uint32_t oledAt = 0;
 static uint32_t oledFrame = 0;                // counts renders, so fields can be worked out once per picture
 
-struct OledFile { char key[OLED_KEY_LEN]; char path[APP_PATH_LEN]; };
+struct OledFile {
+  char key[OLED_KEY_LEN];
+  char path[APP_PATH_LEN];
+  bool timed;                                 // has "when"
+  uint16_t from, to;                          // minutes after midnight; equal = all day
+  uint8_t days;                               // bit 1 = Monday ... bit 7 = Sunday; 0 = every day
+};
 static OledFile oledFiles[OLED_MAX_FILES];
 static uint8_t  oledFileCount = 0;
 static bool     oledScanned = false;
@@ -82,6 +93,13 @@ static void oledForget() {                    // after the files or the panel si
   oledLastOk = false;
 }
 
+// "07:30" -> 450. Anything else -> 0.
+static uint16_t oledMinutes(const char *s) {
+  int h = 0, m = 0;
+  if (sscanf(s, "%d:%d", &h, &m) != 2 || h < 0 || h > 24 || m < 0 || m > 59) return 0;
+  return (uint16_t)((h * 60 + m) % 1440);
+}
+
 // Finds the screen files made for this panel.
 static void oledScan() {
   oledScanned = true;
@@ -93,6 +111,7 @@ static void oledScan() {
   filter["for"] = true;
   filter["w"] = true;
   filter["h"] = true;
+  filter["when"] = true;
   for (File f = dir.openNextFile(); f && oledFileCount < OLED_MAX_FILES; f = dir.openNextFile()) {
     String name = f.name();
     if (f.isDirectory() || !name.endsWith(".json") || name[0] == '_' || name.length() + 6 >= APP_PATH_LEN) continue;
@@ -103,12 +122,37 @@ static void oledScan() {
     OledFile &o = oledFiles[oledFileCount++];
     strlcpy(o.key, key, sizeof(o.key));
     snprintf(o.path, sizeof(o.path), "/oled/%s", name.c_str());
+    JsonVariantConst when = doc["when"];
+    o.timed = when.is<JsonObjectConst>();
+    o.from = oledMinutes(when["from"] | "");
+    o.to = oledMinutes(when["to"] | "");
+    o.days = 0;
+    for (const char *d = when["days"] | ""; *d; d++) if (*d >= '1' && *d <= '7') o.days |= 1 << (*d - '0');
   }
 }
 
+// Is a timed file's "when" true now? (No clock yet: no.)
+static bool oledWhenNow(const OledFile &o) {
+  if (!timeValid()) return false;
+  struct tm t;
+  localNow(t);
+  int wd = t.tm_wday ? t.tm_wday : 7;
+  if (o.days && !(o.days & (1 << wd))) return false;
+  int m = t.tm_hour * 60 + t.tm_min;
+  if (o.from == o.to) return true;
+  return o.from < o.to ? (m >= o.from && m < o.to) : (m >= o.from || m < o.to);
+}
+
+// A timed file whose "when" applies now wins; otherwise the first one without "when".
 static const char *oledFileFor(const char *key) {
-  for (uint8_t i = 0; i < oledFileCount; i++) if (!strcmp(oledFiles[i].key, key)) return oledFiles[i].path;
-  return nullptr;
+  const char *plain = nullptr;
+  for (uint8_t i = 0; i < oledFileCount; i++) {
+    const OledFile &o = oledFiles[i];
+    if (strcmp(o.key, key)) continue;
+    if (!o.timed) { if (!plain) plain = o.path; }
+    else if (oledWhenNow(o)) return o.path;
+  }
+  return plain;
 }
 static int oledBuiltinFor(const char *key) {
   for (size_t i = 0; i < OLED_BUILTIN_COUNT; i++)

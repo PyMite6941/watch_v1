@@ -61,7 +61,7 @@ About the charge-current resistor: on the TP4056 board, find the small resistor 
 | Sound | MAX4466 microphone amplifier board, 2×3 male header, perfboard scrap | Tuner |
 | Screen | SSD1306 I²C OLED (0.91" 128×32 is the default) on a Screen Pack board with a 4-pin 2.54 mm female header and a 2×3 male header; or a Qwiic OLED on a Pack Base's Qwiic socket | The current screen in words and pictures: full date, weather, messages, teacher-designed screens ([OLED_SCREENS.md](OLED_SCREENS.md)) |
 
-Wiring is in [ADDONS.md](ADDONS.md).
+Wiring is in [ADDONS.md](ADDONS.md). What each pack costs: [COSTS.md](COSTS.md).
 
 ## Tools and consumables
 

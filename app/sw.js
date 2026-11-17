@@ -1,6 +1,6 @@
 // Keeps Watch Studio working with no internet once it has been opened from a web address.
 // Bump the name when index.html changes so installed copies pick up the new version.
-const CACHE = "watch-studio-1.2";
+const CACHE = "watch-studio-1.3";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon.svg", "./oled.js", "./oled-assets.js"];
 
 self.addEventListener("install", e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting())));

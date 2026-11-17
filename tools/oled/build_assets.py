@@ -9,6 +9,8 @@ Sources:
     tools/oled/icons.txt      the icons, as text art ('#' lit, '.' dark)
     tools/oled/builtin.json   the screens the watch shows when nobody designed one
     tools/oled/starters.json  ready-made designs offered in Watch Studio (page only)
+    tools/oled/faces.json     themed clock faces offered in Watch Studio (page only)
+    tools/oled/art.txt        the faces' pictures (made by draw_art.py), plus art_hand.txt if present
     the Adafruit GFX library  the fonts (the watch uses them straight from the
                               library; the page needs a copy). Found through
                               arduino-cli, or set ARDUINO_LIBS=<libraries folder>.
@@ -104,6 +106,74 @@ def read_icons():
     return icons
 
 
+def read_art():
+    """'@name w h' followed by h rows of w '#'/'.': returns {name: {w, h, d (base64, bmp format)}}."""
+    art = {}
+    for fname in ("art.txt", "art_hand.txt"):
+        path = os.path.join(HERE, fname)
+        if not os.path.exists(path):
+            continue
+        lines = open(path, encoding="utf-8").read().split("\n")
+        i = 0
+        while i < len(lines):
+            line = lines[i].strip()
+            if line.startswith("@"):
+                name, w, h = line[1:].split()
+                w, h = int(w), int(h)
+                rows = [r.strip() for r in lines[i + 1:i + 1 + h]]
+                if len(rows) != h or any(len(r) != w or set(r) - {"#", "."} for r in rows):
+                    sys.exit("%s: %s must be %d rows of %d '#' or '.'" % (fname, name, h, w))
+                data = bytearray()
+                for r in rows:
+                    for b in range(0, w, 8):
+                        v = 0
+                        for bit, ch in enumerate(r[b:b + 8]):
+                            if ch == "#":
+                                v |= 0x80 >> bit
+                        data.append(v)
+                art["%s@%d" % (name, w)] = {"w": w, "h": h, "d": base64.b64encode(bytes(data)).decode()}
+                i += 1 + h
+            else:
+                i += 1
+    return art
+
+
+def resolve_art(design, art):
+    """{"k":"bmp","art":"bee","z":32} -> the bitmap itself (designs on the watch carry their pictures)."""
+    for it in design.get("items", []):
+        if it.get("k") == "bmp" and "art" in it:
+            key = "%s@%d" % (it.pop("art"), it.pop("z"))
+            if key not in art:
+                sys.exit("no picture %s in art.txt" % key)
+            it.update(w=art[key]["w"], h=art[key]["h"], d=art[key]["d"])
+
+
+def expand_faces(art):
+    faces = json.load(open(os.path.join(HERE, "faces.json"), encoding="utf-8"))
+    out = {}
+    for size, lay in faces["layouts"].items():
+        w, h = (int(v) for v in size.split("x"))
+        ax, ay, az = lay["art"]
+        lst = out.setdefault(size, [])
+        for p in faces["pictures"]:
+            items = []
+            if p.get("frame"):
+                items.append({"k": "bmp", "art": p["art"], "z": az, "x": ax, "y": ay, "if": "!" + p["anim"]})
+                items.append({"k": "bmp", "art": p["art"] + "~" + p["frame"], "z": az, "x": ax, "y": ay, "if": p["anim"]})
+            else:
+                items.append({"k": "bmp", "art": p["art"], "z": az, "x": ax, "y": ay})
+            items += json.loads(json.dumps(lay["items"]))
+            lst.append({"name": p["name"] + " clock", "group": p["group"], "for": "time", "items": items})
+        for d in faces.get(size, []):
+            lst.append(d)
+        for d in lst:
+            d.setdefault("v", 1)
+            d.setdefault("w", w)
+            d.setdefault("h", h)
+            resolve_art(d, art)
+    return out
+
+
 def main():
     gfx = find_gfx()
     version = re.search(r"version=(\S+)", open(os.path.join(gfx, "library.properties")).read()).group(1)
@@ -114,6 +184,7 @@ def main():
     icons = read_icons()
     builtin = json.load(open(os.path.join(HERE, "builtin.json"), encoding="utf-8"))
     starters = json.load(open(os.path.join(HERE, "starters.json"), encoding="utf-8"))
+    art = read_art()
     for size, designs in starters.items():
         if size.startswith("_"):
             continue
@@ -122,6 +193,11 @@ def main():
             d.setdefault("v", 1)
             d.setdefault("w", w)
             d.setdefault("h", h)
+            d.setdefault("group", "Classroom")
+            resolve_art(d, art)
+    for size, designs in expand_faces(art).items():
+        starters.setdefault(size, [])
+        starters[size] = designs + starters[size]
     for size, screens in builtin.items():
         if size.startswith("_"):
             continue
@@ -177,11 +253,12 @@ def main():
               "icons": {k: base64.b64encode(v).decode() for k, v in icons.items()},
               "builtin": {k: v for k, v in builtin.items() if not k.startswith("_")},
               "starters": {k: v for k, v in starters.items() if not k.startswith("_")},
+              "art": art,
           }, separators=(",", ":")) + ";", ""]
     with open(OUT_JS, "w", newline="\n") as f:
         f.write("\n".join(js))
-    print("GFX %s: %d fonts, %d icons, %d built-in screens -> %s, %s (%d kB)" % (
-        version, len(fonts), len(icons), sum(len(v) for k, v in builtin.items() if not k.startswith("_")),
+    print("GFX %s: %d fonts, %d icons, %d pictures, %d built-in screens -> %s, %s (%d kB)" % (
+        version, len(fonts), len(icons), len(art), sum(len(v) for k, v in builtin.items() if not k.startswith("_")),
         os.path.relpath(OUT_H, ROOT), os.path.relpath(OUT_JS, ROOT), os.path.getsize(OUT_JS) // 1024))
 
 
