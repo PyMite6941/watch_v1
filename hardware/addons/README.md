@@ -102,11 +102,11 @@ r2: 40.5 × 10.9 mm, 2 layers, all through-hole: one 2×3 header and two columns
 
 ![Strip, top](screen_pack/render_top.png)
 
-- **Everything is mapped from one set of numbers.** The strip's outline, the module's size and where it sits are written once in [`enclosure/enclosure.scad`](../../enclosure/enclosure.scad) (the *Screen Pack r2* block). `gen_screen_pack.py` reads those lines to build the board, and the case model uses the same lines for the clip, the lid's pin pocket and the groove. Each side checks itself every time it runs:
+- **Everything is mapped from one set of numbers.** The strip's outline, the module's size and where it sits are written once in [`enclosure/enclosure.scad`](../../enclosure/enclosure.scad) (the *Screen Pack r2* block). `gen_screen_pack.py` reads those lines to build the board, and the case model uses the same lines for the screen clip and the lid's pin pocket. Each side checks itself every time it runs:
   - the generator checks that J1's pins sit exactly over the watch's socket J4 (taken from the watch board's coordinates), that J1's plastic fits through the lid's opening with 0.2 mm to spare, that the strip stops short of the display window, that the module stays inside the lid's length in either column and stops 1.9 mm short of the digits, and that both columns have the right pin order;
-  - `enclosure.scad` asserts that the strip and the pin pocket stay out of the display window, that the clip's leaves land on the flat part of the case wall, that the groove is shallow enough for the wall, and that the clip has a rim over both long edges of the module.
+  - `enclosure.scad` asserts that the strip and the pin pocket stay out of the display window, that the clip's end blocks and front wall keep 0.4 mm or more from the strip and the module in either column, that its plate stays above the glass, that its arms keep clear of both USB openings, that its hooks miss the screw counterbores, that the rib grooves are shallow enough for the wall and sit on the flat part of it, and that the hook still has at least 0.2 mm of height tolerance.
 - **Two columns, because cheap OLED boards come with two pin orders.** Column A is for modules labelled `GND VCC SCL SDA` (most 0.91" boards), column B for `VCC GND SCL SDA`. Solder the module into the one column whose letters match its own. Column B is one pin pitch (2.54 mm) to the right, so the module simply sits 2.54 mm further right; the clip covers both positions.
-- **Why on top, and not under the lid:** the lid's top strip is the only free surface the socket reaches. Under the lid along this edge are C1, C4 and the standing resistors R1–R8, R22 and R23, so the clip does not reach under the lid at all. It hooks the case's outer wall instead, into a groove in the base 6 mm below the lid seam.
+- **Why on top, and not under the lid:** the lid's top strip is the only free surface the socket reaches. Under the lid along this edge are C1, C4 and the standing resistors R1–R8, R22 and R23, so the clip does not reach under the lid at all. It goes round the outside of the case instead (next section).
 - The OLED runs from the watch's 3V3. AUX and AIN (pins 5 and 6) are not connected.
 - **Measured from photos, not from a module in hand.** The module's 38 × 12 mm outline is from sellers' drawings ([ProtoSupplies](https://protosupplies.com/product/oled-0-91-128x32-i2c-white-display/), [ThingBits](https://thingbits.in/products/0-91-inch-oled-128x32-display-board-with-i2c)). Its 2.7 mm thickness is DFRobot's figure for its DFR0648. The pin row's position (1.7 mm in from the left edge, centred across the width) and where the lit area sits were read off a seller's labelled photo. **Measure your module before ordering many**, then change the numbers in `enclosure.scad` and rebuild both: one edit moves the board and the clip together.
 - A 0.96" 128×64 module is square, more than twice as tall as the 0.91" one, so it would cover the digits. It does not fit this strip. Use it on a cable with the Pack Base ([ADDONS.md](../../docs/ADDONS.md)).
@@ -119,15 +119,36 @@ python hardware/addons/screen_pack/gen_screen_pack_sch.py
 openscad -D "part=\"screen_clip\"" -o enclosure/stl/screen_clip.stl enclosure/enclosure.scad
 openscad -D "part=\"lid\""  -o enclosure/stl/lid.stl  enclosure/enclosure.scad
 openscad -D "part=\"base\"" -o enclosure/stl/base.stl enclosure/enclosure.scad
+openscad -D "part=\"screen_clip_test\"" -o enclosure/stl/screen_clip_test.stl enclosure/enclosure.scad
 ```
 
 `openscad -D "part=\"screen_assembly\"" enclosure/enclosure.scad` shows the strip, the module and the clip in place on the case.
 
 Order it like the Pack Base: upload `screen_pack/fab/screen_pack_gerbers.zip` with the default settings, ideally in the same basket as the watch boards.
 
+### The screen clip
+
+It holds the strip and the OLED on the watch, and it is braced on the case from **both sides, the top and the bottom**:
+
+- **Two side arms** run down the case's left and right ends (the short sides), 0.1 mm off the wall, and each ends in a **hook under the case floor**. They sit in the top 15 mm of each end, clear of the USB-C and charger openings, the strap lugs and the screw heads.
+- The hooks' catch face slopes at **18°**, and each hook starts 0.2 mm into the floor. So when the clip is on, both arms are bent outward a little and their spring **pulls the clip down onto the lid**: it does not rattle, and a case a little taller or shorter than the model still fits. The model's window is **0.2 mm shorter to 0.29 mm taller** than `case_h`: down to 0.2 mm shorter the clip stays tight (any shorter and it has a little play), and more than 0.29 mm taller the hooks no longer reach under. Worked out for PETG: about 1 N of spring per arm when fitted, about 2.5 N per arm to push it on, and roughly 10–30 N per arm to pull it straight off, depending on friction: far more than it meets by accident. These are worked out, not measured.
+- **Two end blocks** rest on the lid top either side of the strip (the top brace), and their front faces sit against the case's front face.
+- A **rib** inside each arm runs in a vertical **groove** in each end wall (base and lid), so the clip cannot slide forward or back, and it guides the clip straight down while you push.
+- The **top plate** stays 0.6 mm above the OLED glass, with a window over the lit area that is open at the back: nothing presses on the module or on the thin skin over the 7-segment digits. The strip itself is held by J1 in the socket; the plate only stops it lifting.
+- Nothing goes under the strip, so the clip goes on and off with the screen in place.
+
+**One print, so measure first.** Printed cases come out a little off the model, and the hooks need the real height:
+
+1. Screw the lid on the printed case. With calipers, measure from the **bottom face to the lid's top face**, at the left and at the right end, next to the screen edge. Use the average of the two.
+2. Put it in `measured_case_h` at the top of `enclosure.scad` (0 means the model's 25.3 mm). If you have the screen already, you can also measure the glass's height above the lid and put it in `measured_glass_h`.
+3. Export and print **`screen_clip_test.stl`** first: the left end of the clip only (arm, hook, rib, block), 2.3 cm³. It should slide down with the rib in its groove, click under the floor, and sit on the lid with no rattle. If it will not click under the floor, raise `measured_case_h` by 0.1; if it rattles up and down, lower it by 0.1. Then print the test piece again.
+4. Then export and print `screen_clip.stl`.
+
+**Printing it:** the STL is already lying on its **front face** (the flat face with the long front wall); print it that way, PETG, 0.2 mm layers, no supports, at least 3 walls. Every part of it grows straight up from the bed, and the arms bend along the layers rather than across them, so they do not snap at a layer line. PLA works, but it is stiffer and more brittle: it will be harder to push on and may crack if taken off often.
+
 ### Building it
 
-You need the strip, a 0.91" OLED module (with the 4-pin male header it comes with), a 2×3 male header, and `enclosure/stl/screen_clip.stl` printed upside down (top on the bed, no supports, PETG). The case must be the current `base.stl` and `lid.stl`, which have the groove and the pin pocket.
+You need the strip, a 0.91" OLED module (with the 4-pin male header it comes with), a 2×3 male header, and the screen clip, printed after measuring your case (see *The screen clip* above). The case must be the current `base.stl` and `lid.stl`, which have the rib grooves in both end walls and the pin pocket.
 
 1. **J1 first:** a 2×3 male header, plastic **underneath**, the long pins pointing down. Solder on top and trim flush: the module lies over these joints.
 2. Read the four letters on your OLED's pins. They pick the column: **A** if the module reads `GND VCC SCL SDA`, **B** if `VCC GND SCL SDA`.
@@ -135,9 +156,9 @@ You need the strip, a 0.91" OLED module (with the 4-pin male header it comes wit
 4. Solder the four pins underneath and **trim them to about 1 mm**. They sit in a 1 mm pocket in the lid; longer stubs stop the strip lying flat.
 5. Before the first plug-in, measure between J1 pins 1 and 2: it must not be near 0 Ω.
 6. With the watch off, push J1 down into the socket through the lid's opening (pin 1, the square pad, goes to the notched corner). The strip lies flat on the lid, overhanging the top edge.
-7. Snap the screen clip on from above: its two leaves slide down the outside of the case's top wall and click into the groove. To take it off, lever the leaves out with a fingernail.
+7. Fit the screen clip from above: line the ribs inside its arms up with the grooves in the case's end walls, then press straight down until both hooks click under the floor. To take it off, pull one arm's hook outward with a fingernail and lift that end, then the other.
 8. If the picture is upside down, tick *OLED picture upside down* in Watch Studio's settings.
-9. In the desk stand, stand the watch with the screen edge at the **top**: the clip sticks out 4.5 mm past the case and 8 mm above the lid, so it does not fit in the stand's trough.
+9. In the desk stand, stand the watch with the screen edge at the **top**: the clip sticks out 4.5 mm past the case's front, 8.6 mm above the lid and about 2.2 mm below the floor at both ends, so it does not fit in the stand's trough. The hooks sit outside the stand's 44 mm back, so the watch still leans flat.
 4. Plug the OLED in, set *Settings › OLED screen* to its size, and press *Screens › Show the watch's OLED now*.
 
 ## Catalogue

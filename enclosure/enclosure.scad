@@ -28,7 +28,8 @@
 
 part = "assembly";   // "base", "lid", "plate" (both, ready to print), "assembly", "fit_test",
                      // "led_dome", "led_spacer", "led_parts" (both LED pieces, ready to print),
-                     // "screen_clip" (holds the Screen Pack's OLED on the lid), "screen_assembly"
+                     // "screen_clip" (holds the Screen Pack's OLED on the lid), "screen_clip_test"
+                     // (its left end only, to check the fit), "screen_assembly"
 
 /* [PCB - must match the KiCad board] */
 pcb = [58, 44, 1.6];
@@ -57,10 +58,18 @@ digit_h = 14.2;                            // 0.56" 7-segment digits
 strip_t = 1.6;
 screen_pin_h = 2.5;                        // header plastic between the strip and the module
 screen_pocket_depth = 1.0;                 // pocket in the lid's top for the OLED's trimmed pins under the strip
-clip_wall = 1.2;
-clip_fit = 0.1;                            // clearance over the module; raise it if the clip will not snap on
-clip_hook = [6.0, 1.0, 0.5];               // catch below the lid/base seam, nub height, nub depth
-clip_leaf = [14.0, 1.0];                   // each of the two snap leaves: width, thickness
+// The screen clip: two side arms that run down both short sides of the case and hook
+// under its floor, joined over the top by a plate that braces on the lid.
+// MEASURE YOUR PRINTED CASE FIRST (lid screwed on), then export the clip:
+measured_case_h = 0;                       // calipers, bottom face to lid top face, at the left or right end. 0 = the model's 25.3
+measured_glass_h = 0;                      // OLED glass top above the lid top, with the strip plugged in. 0 = the model's value
+clip_wall = 1.2;                           // top plate thickness
+clip_arm_t = 1.5;                          // side arm thickness (it is the spring)
+clip_arm_v = [-7.0, 8.0];                  // PCB y range of each arm: clear of both USB openings
+clip_side_gap = 0.1;                       // arm to case side face
+clip_hook = [1.5, 18, 0.2];                // hook depth under the floor, catch angle (degrees), interference
+clip_glass_gap = 0.6;                      // plate above the OLED glass
+clip_rib = [1.0, 0.6, 4.0];                // locating rib on each arm: width, height, PCB y of its centre
 
 /* [Heights] */
 below_pcb = 10.0;              // room under the PCB: SuperMini + USB-C, battery, charger (which sits partly under U3)
@@ -182,26 +191,49 @@ digit_top = display_center[1] - digit_h / 2;
 case_edge = -(gap + wall);                                     // the case's top face, in PCB y
 oled_top = strip_t + screen_pin_h + oled[2];
 pocket = [oled_cols[0] - 1.2, oled_cols[1] + 1.2, case_edge - 1, oled_rows[3] + 1.05];   // x0 x1 v0 v1
-clip_x = [min(screen_strip[0], oled_left[0]) - 0.4 - clip_wall,
-          max(screen_strip[2], oled_left[1] + oled[0]) + 0.4 + clip_wall];
-clip_v = [min(screen_strip[1], oled_y - oled[1] / 2) - 0.3 - clip_wall,      // front (outside the case)
-          oled_y + oled[1] / 2 + 0.3 + 0.8];                                 // back edge of the top plate
-clip_top = oled_top + clip_fit + clip_wall;
-clip_catch = -(lid_t + clip_hook[0]);                          // z of the nub's top face = the groove's top
+case_h = measured_case_h > 0 ? measured_case_h : total_h;
+glass_h = measured_glass_h > 0 ? measured_glass_h : oled_top;
 clip_glass = [oled_left[0] + oled_view[0] - 0.5, oled_left[1] + oled_view[1] + 0.5,
               oled_y - oled_view[2] / 2 - 0.5, oled_y + oled_view[2] / 2 + 0.5];
-groove = [clip_x[0] - 0.5, clip_x[1] + 0.5, clip_hook[2] + 0.2, clip_hook[1] + 0.3];   // x0 x1 depth height
-echo(str("Screen clip: ", clip_x[1] - clip_x[0], " x ", clip_v[1] - clip_v[0], " mm, ", clip_top,
-         " mm above the lid; module ", digit_top - oled_y - oled[1] / 2, " mm short of the digits"));
+// Left half in PCB x (the right half is its mirror about the case centre, x' = pcb[0] - x).
+clip_face = -(gap + wall);                                     // the case's left side face
+clip_arm = [clip_face - clip_side_gap - clip_arm_t, clip_face - clip_side_gap];   // outer, inner face
+clip_tip = clip_arm[1] + clip_side_gap + clip_hook[0];         // hook tip, under the floor
+clip_tan = tan(clip_hook[1]);
+clip_zb = -case_h;                                             // the case's bottom face
+clip_zr = clip_zb + clip_hook[2] + clip_side_gap * clip_tan;   // catch face where it leaves the arm
+clip_tip_z = clip_zr - (clip_tip - clip_arm[1]) * clip_tan;    // catch face at the tip
+clip_plate_z = glass_h + clip_glass_gap;
+clip_top = clip_plate_z + clip_wall;
+clip_front = [clip_arm_v[0], clip_arm_v[0] + clip_wall];       // front wall, in PCB y
+clip_back = oled_y + oled[1] / 2 + 0.5;                        // back edge of the plate between the arms
+// End blocks resting on the lid top, each side of the strip and the module
+clip_block_l = min(screen_strip[0], oled_left[0]) - 0.5;                  // left block reaches to here
+clip_block_r = max(screen_strip[2], oled_left[1] + oled[0]) + 0.5;       // right block starts here
+clip_block_v = [clip_face - clip_side_gap, window_top - 0.2];             // on the lid top
+clip_groove = [clip_rib[0] + 0.4, clip_rib[1] + 0.1, -13];               // width, depth, bottom z
+clip_rib_z = [-12, -2.8];
+// Hook window: how far the real case may differ from case_h and the clip still fits
+clip_win_short = -clip_hook[2];                                 // shorter: the clip is loose by this much
+clip_win_tall = clip_hook[0] * clip_tan - clip_hook[2];         // taller: the hook no longer reaches under
+echo(str("Screen clip: ", pcb[0] + 2 * (clip_side_gap + clip_arm_t + gap + wall), " mm wide, ",
+         clip_top, " mm above the lid, hooks ", -clip_zb, " mm below it. Fits a case ",
+         clip_win_short, " to +", clip_win_tall, " mm off case_h = ", case_h));
 assert(screen_strip[3] <= window_top - 0.2 + 1e-6, "screen strip runs onto the display window");
 assert(oled_y + oled[1] / 2 <= digit_top - 1, "the OLED module would hide the top of the digits");
 assert(pocket[3] <= window_top - 0.3, "pin pocket would break into the display window");
-assert(clip_x[0] >= corner_r - wall - gap && clip_x[1] <= pcb[0] + gap + wall - corner_r,
-       "screen clip's snap leaves must sit on the flat part of the case's top face");
-assert(groove[2] <= wall - 1.0, "clip groove too deep for the wall");
-assert(clip_hook[0] + clip_hook[1] + 0.3 + lid_t < above_pcb + lid_t, "clip groove below the PCB");
-assert(clip_glass[2] > clip_v[0] + clip_wall && clip_glass[3] < oled_y + oled[1] / 2 - 1,
-       "the clip needs a rim over both long edges of the module");
+assert(clip_win_tall >= 0.2, "hook window too small: deepen the hook or steepen the catch");
+assert(clip_arm_v[1] + 0.5 <= usb_center_y - usb_cutout[0] / 2, "clip arm would cover the USB-C opening");
+assert(charger[0] == 0 || clip_arm_v[1] + 0.5 <= charger_center_y - usb_cutout[0] / 2,
+       "clip arm would cover the charger opening");
+assert(clip_rib[2] - clip_groove[0] / 2 >= corner_r - wall - gap + 0.5, "rib groove on the case's rounded corner");
+assert(clip_groove[1] <= wall - 1.0, "rib groove too deep for the wall");
+assert(clip_tip < pcb_holes[0][0] - screw_head_d / 2 - 0.5, "hook would reach the screw counterbore");
+assert(clip_block_l <= min(screen_strip[0], oled_left[0]) - 0.4 &&
+       clip_block_r >= max(screen_strip[2], oled_left[1] + oled[0]) + 0.4, "end blocks touch the strip or module");
+assert(clip_front[1] <= screen_strip[1] - 0.4 + 1e-6, "front wall touches the strip");
+assert(clip_plate_z >= glass_h + 0.3, "plate would press on the OLED glass");
+assert(clip_glass[2] >= oled_y - oled[1] / 2 + 1, "plate needs a rim over the module's front edge");
 
 module rounded_box(size, r) {
     hull() for (x = [r, size[0] - r], y = [r, size[1] - r])
@@ -235,9 +267,8 @@ module base() {
                        max(0.6, floor_t + charger_usb_z - usb_cutout[1] / 2)])
                 cube([wall + 2, usb_cutout[0], usb_cutout[1]]);
         if (base_text != "") translate([0, 0, -1]) linear_extrude(base_text_depth + 1) base_text_2d();
-        // groove in the top face's outer wall that the screen clip's two leaves snap into
-        pbox(groove[0], groove[1], case_edge - 1, case_edge + groove[2],
-             clip_catch - groove[3], clip_catch);
+        // vertical grooves in both side walls that the screen clip's ribs run in
+        clip_grooves(clip_groove[2], -lid_t + 0.01);
     }
     // two rails that keep the charger board square to its opening
     if (charger[0] > 0) for (side = [-1, 1])
@@ -300,7 +331,22 @@ module lid() {
             translate([0, 0, total_h - pattern_depth]) linear_extrude(pattern_depth + 1) lid_pattern_2d();
         // pocket under the Screen Pack strip for the OLED's soldered (trimmed) pins
         pbox(pocket[0], pocket[1], pocket[2], pocket[3], -screen_pocket_depth, 1);
+        // the screen clip's rib grooves continue through the plate's edges
+        clip_grooves(-lid_t - 0.01, 1);
     }
+}
+
+// The rib grooves, left and right side walls, between heights z0 and z1 above the lid top.
+module clip_grooves(z0, z1) {
+    for (s = [0, 1]) clip_mirror(s)
+        pbox(clip_face - 1, clip_face + clip_groove[1], clip_rib[2] - clip_groove[0] / 2,
+             clip_rib[2] + clip_groove[0] / 2, z0, z1);
+}
+
+// s = 0: as modelled (left side); s = 1: mirrored onto the right side about the case centre.
+module clip_mirror(s) {
+    if (s == 0) children();
+    else translate([outer[0], 0, 0]) mirror([1, 0, 0]) children();
 }
 
 // A box given in PCB x, PCB y (v) and height above the lid's top face, placed in the model.
@@ -309,32 +355,58 @@ module pbox(x0, x1, v0, v1, z0, z1) {
 }
 
 // ------------------------------------------------------------ screen clip
-// A hood over the Screen Pack strip and its OLED, in its assembled position. Its top
-// rim holds the module down on the strip and the strip down on the lid; its two leaves
-// run down the outside of the case's top face and snap into the groove in the base.
-// The strip's header (J1, in the watch's socket) stops it sliding. The back is open,
-// so nothing rests on the thin skin over the 7-segment display.
+// In its assembled position. Fitted from above AFTER the strip and the OLED are plugged in:
+//  - two side arms run down the case's left and right faces and hook under the floor
+//    (the bottom brace). The catch face slopes 18 degrees, so the arms' spring pulls the
+//    clip down onto the lid and a case a little taller or shorter than case_h still fits;
+//  - two end blocks rest on the lid top either side of the strip (the top brace), and
+//    their front faces sit against the case's front face;
+//  - a rib on each arm runs in a vertical groove in the case wall, so the clip cannot
+//    slide forward or back, and guides it straight down while it is pushed on;
+//  - the top plate sits 0.6 mm above the OLED glass with a window over the lit area,
+//    open at the back: nothing presses on the module or on the display's thin skin.
+// Nothing reaches under the strip, so it can go on and off with the strip in place.
 module screen_clip() {
-    front = case_edge - 0.1;                                  // leaves' inner face
-    difference() {
-        union() {
-            pbox(clip_x[0], clip_x[1], clip_v[0], clip_v[1], clip_top - clip_wall, clip_top);               // top plate
-            pbox(clip_x[0], clip_x[1], clip_v[0], clip_v[0] + clip_wall, -1, clip_top);                     // front wall
-            pbox(clip_x[0], clip_x[1], clip_v[0], front, -1, 0.01);                                          // shelf under the overhang
-            for (x = [clip_x[0], clip_x[1] - clip_wall])                                                    // end walls
-                pbox(x, x + clip_wall, clip_v[0], window_top - 0.2, 0, clip_top);
-            for (x = [clip_x[0], clip_x[1] - clip_leaf[0]]) {
-                pbox(x, x + clip_leaf[0], front - clip_leaf[1], front, clip_catch - clip_hook[1], -0.5);       // leaf
-                // the nub: flat catch on top, 45 degree lead-in underneath
-                translate([wall + gap + x, wall + gap + pcb[1], total_h]) rotate([90, 0, 90])
-                    linear_extrude(clip_leaf[0]) polygon([
-                        [-front + 0.01, clip_catch], [-(front + 0.1 + clip_hook[2]), clip_catch],
-                        [-(front + 0.1 + clip_hook[2]), clip_catch - clip_hook[1] + clip_hook[2] + 0.1],
-                        [-front + 0.01, clip_catch - clip_hook[1]]]);
-            }
-        }
-        pbox(clip_glass[0], clip_glass[1], clip_glass[2], clip_glass[3], clip_top - clip_wall - 1, clip_top + 1);
+    xr = pcb[0] - clip_arm[0];                                     // right arm's outer face
+    clip_half(clip_block_l);
+    clip_mirror(1) clip_half(pcb[0] - clip_block_r);
+    pbox(clip_arm[0], xr, clip_front[0], clip_front[1], -2.5, clip_top);                 // front wall
+    difference() {                                                                       // top plate
+        pbox(clip_arm[0], xr, clip_front[0], clip_back, clip_plate_z, clip_top);
+        pbox(clip_glass[0], clip_glass[1], clip_glass[2], clip_arm_v[1] + 1, clip_plate_z - 1, clip_top + 1);
     }
+}
+
+// One arm with its hook, rib and end block (left side; mirrored for the right).
+// reach = the end block's inner edge, in this side's PCB x.
+module clip_half(reach) {
+    a0 = clip_arm[0];
+    a1 = clip_arm[1];
+    low = clip_tip_z - 0.3;
+    pbox(a0, a1, clip_arm_v[0], clip_arm_v[1], clip_zr - 0.01, clip_top);                // arm
+    // hook: sloped catch on top, 0.3 mm flat at the tip, 45 degree lead-in underneath
+    vprism(clip_arm_v[0], clip_arm_v[1]) polygon([
+        [a0, clip_zr], [a1, clip_zr], [clip_tip, clip_tip_z], [clip_tip, low],
+        [a1, low - (clip_tip - a1)], [a0, low - (clip_tip - a1)]]);
+    // locating rib, with a 45 degree lead-in at its lower end
+    vprism(clip_rib[2] - clip_rib[0] / 2, clip_rib[2] + clip_rib[0] / 2) polygon([
+        [a1 - 0.01, clip_rib_z[1]], [a1 + clip_rib[1], clip_rib_z[1]],
+        [a1 + clip_rib[1], clip_rib_z[0] + clip_rib[1]], [a1 - 0.01, clip_rib_z[0]]]);
+    // end block: on the lid top, and down in front of the case's front face
+    pbox(a1 - 0.01, reach, clip_front[0], clip_block_v[0] + 0.01, -2.5, clip_plate_z + 0.01);
+    pbox(a1 - 0.01, reach, clip_block_v[0], clip_block_v[1], 0, clip_plate_z + 0.01);
+}
+
+// A 2D profile in (PCB x, height above the lid top), extruded from PCB y v0 to v1.
+module vprism(v0, v1) {
+    translate([wall + gap, wall + gap + pcb[1] - v0, total_h]) rotate([90, 0, 0])
+        linear_extrude(v1 - v0) children();
+}
+
+// The clip's print orientation: lying on its front face, every feature a prism
+// growing straight up from the bed. No supports.
+module screen_clip_for_printing() {
+    translate([0, 0, wall + gap + pcb[1] - clip_front[0]]) rotate([-90, 0, 0]) children();
 }
 
 // Stand-ins for the strip and the module, for the assembly view only.
@@ -457,8 +529,12 @@ else if (part == "fit_test") fit_test();
 else if (part == "led_dome") led_dome();
 else if (part == "led_spacer") led_spacer();
 else if (part == "led_parts") { led_dome(); translate([collar_d / 2 + 6, 0, 0]) led_spacer(); }
-// Printed upside down: top plate on the bed, leaves pointing up. No supports.
-else if (part == "screen_clip") translate([0, 0, total_h + clip_top]) rotate([180, 0, 0]) screen_clip();
+else if (part == "screen_clip") screen_clip_for_printing() screen_clip();
+// Left end only (arm, hook, rib, end block): a cheap print to check the fit first.
+else if (part == "screen_clip_test") screen_clip_for_printing() intersection() {
+    screen_clip();
+    translate([-20, -20, -20]) cube([20 + wall + gap + clip_block_l + 0.5, outer[1] + 40, total_h + 60]);
+}
 else if (part == "screen_assembly") { base(); lid(); screen_pack_mock(); color("orange", 0.7) screen_clip(); }
 else {
     base();
