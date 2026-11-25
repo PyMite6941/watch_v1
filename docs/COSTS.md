@@ -89,9 +89,10 @@ Every watch gets a Screen Pack: a 0.91" OLED on a strip that lies on the lid, he
 |---|---|
 | `base.stl` | 15.7 cm³ |
 | `lid.stl` (or a patterned lid) | 4.5 cm³ |
-| `screen_clip.stl` | 1.5 cm³ |
+| `screen_clip.stl` | 5.2 cm³ |
+| `screen_clip_test.stl` (print once, to check the fit) | 2.3 cm³ |
 | `led_dome.stl` + `led_spacer.stl` | 0.2 cm³ |
-| **All five** | **21.9 cm³** |
+| **All five** (without the test piece) | **25.6 cm³** |
 
 ### Elecrow: the quote is still to get
 

@@ -63,13 +63,13 @@ Rules depend on the country you are shipping to, so check yours before paying:
 
 ## The case
 
-Five printed parts in `enclosure/stl/`: `base.stl`, `lid.stl`, `led_dome.stl` (the hexagonal light dome over the RGB LED), `led_spacer.stl` (sets the LED's height) and `screen_clip.stl` (holds the Screen Pack's OLED on the lid; print it upside down, top on the bed). Print `fit_test.stl` first. Clearances are set for a first print to fit without sanding: 0.5 mm round the board, 0.3 mm round the lid's lip, 0.2 mm round the dome's stem, 0.3 mm round the LED.
+Five printed parts in `enclosure/stl/`: `base.stl`, `lid.stl`, `led_dome.stl` (the hexagonal light dome over the RGB LED), `led_spacer.stl` (sets the LED's height) and `screen_clip.stl` (holds the Screen Pack's OLED on the lid; it hooks under the case, so measure your printed case and print `screen_clip_test.stl` first, as in [hardware/addons](../hardware/addons/README.md#the-screen-clip); print it lying on its front face, as the STL is). Print `fit_test.stl` first. Clearances are set for a first print to fit without sanding: 0.5 mm round the board, 0.3 mm round the lid's lip, 0.2 mm round the dome's stem, 0.3 mm round the LED.
 
 Optional extras in the same folder: lids with an engraved pattern (`lid_honeycomb`, `lid_binary`, `lid_staff`, `lid_sine`), a desk stand (`desk_stand.stl`, about 25 g) and a vented sensor probe case (`probe_sleeve.stl` + `probe_plug.stl`). Which suits whom: [`kits/`](../kits/README.md).
 
 ### Print it yourself, or locally
 
-Any ordinary filament printer can make it: no supports, 0.2 mm layers. The five parts measure 21.9 cm³ solid (base 15.7, lid 4.5, screen clip 1.5, dome and spacer 0.2), so under 30 g of PETG even at 100 % infill.
+Any ordinary filament printer can make it: no supports, 0.2 mm layers. The five parts measure 25.6 cm³ solid (base 15.7, lid 4.5, screen clip 5.2, dome and spacer 0.2), so about 33 g of PETG at 100 % infill and well under 30 g at normal infill.
 
 - **Clear PETG** gives a frosted see-through — parts are visible, edges are soft. Tough, slightly flexible, the practical choice.
 - Printing tips for clarity: 0.2 mm layers or thicker, 100 % infill for the lid, nozzle at the hot end of the range, fan low, slow speed.
